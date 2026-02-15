@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
-import coil3.load
+import coil.load
 import com.spiderybook.databinding.FragmentResultBinding
 import com.spiderybook.ui.common.BaseFragment
 import com.spiderybook.util.Resource
