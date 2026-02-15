@@ -20,8 +20,19 @@ abstract class MainAPI {
     
     open suspend fun search(query: String): List<SearchResponse>? = null
     
-    open suspend fun load(url: String): LoadResponse? = null
+import com.spiderybook.plugins.MainAPI.ExtractorLink
+
+abstract class MainAPI {
+    // ...
     
-    // Simplification: We'll deal with video links later
-    // open suspend fun loadLinks(...)
+    open suspend fun loadLinks(data: String, callback: (ExtractorLink) -> Unit): Boolean = false
+    
+    data class ExtractorLink(
+        val name: String,
+        val url: String,
+        val referer: String,
+        val quality: Int = 0,
+        val isM3u8: Boolean = false
+    )
 }
+

@@ -41,8 +41,12 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 binding.imgPoster.load(data.posterUrl)
                 
                 binding.rvEpisodes.adapter = EpisodeAdapter(data.episodes) { episode ->
-                    Toast.makeText(context, "Play ${episode.name}", Toast.LENGTH_SHORT).show()
-                    // Navigate to Player
+                    // Toast.makeText(context, "Play ${episode.name}", Toast.LENGTH_SHORT).show()
+                    val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
+                        putExtra("data", episode.data)
+                        putExtra("apiName", data.apiName)
+                    }
+                    startActivity(intent)
                 }
             } else if (resource is Resource.Error) {
                 binding.tvError.text = resource.message

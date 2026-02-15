@@ -74,5 +74,17 @@ class TestProvider @Inject constructor() : MainAPI() {
             }
         )
     }
+
+    override suspend fun loadLinks(data: String, callback: (MainAPI.ExtractorLink) -> Unit): Boolean {
+        callback(
+            MainAPI.ExtractorLink(
+                name = "Test 720p",
+                url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                referer = mainUrl,
+                quality = 720
+            )
+        )
+        return true
+    }
 }
 
