@@ -70,8 +70,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         viewModel.availableProviders.observe(viewLifecycleOwner) { providers ->
             val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, providers)
             binding.spinnerProvider.adapter = adapter
-            
-            // Should probably select the current one
+        }
+        
+        viewModel.selectedProvider.observe(viewLifecycleOwner) { selected ->
+            val adapter = binding.spinnerProvider.adapter as? ArrayAdapter<String>
+            if (adapter != null && selected != null) {
+                val position = adapter.getPosition(selected)
+                if (position >= 0 && binding.spinnerProvider.selectedItemPosition != position) {
+                    binding.spinnerProvider.setSelection(position, false)
+                }
+            }
         }
         
         binding.btnDownloads.setOnClickListener {

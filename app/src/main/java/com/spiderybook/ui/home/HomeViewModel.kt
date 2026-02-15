@@ -16,12 +16,9 @@ class HomeViewModel @Inject constructor(
     private val pluginManager: PluginManager
 ) : BaseViewModel() {
 
-    private val _homePage = MutableLiveData<Resource<HomePageResponse>>()
-    val homePage: LiveData<Resource<HomePageResponse>> = _homePage
-    
-    private val _availableProviders = MutableLiveData<List<String>>()
-    val availableProviders: LiveData<List<String>> = _availableProviders
-    
+    private val _selectedProvider = MutableLiveData<String>()
+    val selectedProvider: LiveData<String> = _selectedProvider
+
     init {
         loadProviders()
     }
@@ -29,18 +26,30 @@ class HomeViewModel @Inject constructor(
     fun loadProviders() {
         val providers = pluginManager.apis.map { it.name }
         _availableProviders.postValue(providers)
+        
         if (providers.isNotEmpty()) {
-            loadHomePage(providers.first())
+            val current = _selectedProvider.value
+            if (current == null || !providers.contains(current)) {
+                loadHomePage(providers.first())
+            } else {
+                // If we already have a selection, ensure we reload only if needed or just keep current state
+                // Actually, if we return from backstack, we might want to ensure the UI reflects this.
+            }
         }
     }
 
-    fun loadHomePage(apiName: String) = launchIO {
-        _homePage.setLoading()
-        val result = homeRepository.getHomePage(apiName)
-        if (result != null) {
-            _homePage.setSuccess(result)
-        } else {
-            _homePage.setError("Failed to load home page")
+    fun loadHomePage(apiName: String) {
+        if (_selectedProvider.value != apiName) {
+            _selectedProvider.value = apiName
+            launchIO {
+                _homePage.setLoading()
+                val result = homeRepository.getHomePage(apiName)
+                if (result != null) {
+                    _homePage.setSuccess(result)
+                } else {
+                    _homePage.setError("Failed to load home page")
+                }
+            }
         }
     }
 }
