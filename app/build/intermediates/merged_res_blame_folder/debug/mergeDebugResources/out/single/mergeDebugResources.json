@@ -1,23 +1,23 @@
 [
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_fragment_search.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_search.xml"
+        "merged": "com.spiderybook.app-debug-56:/layout_fragment_home.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_home.xml"
     },
     {
-        "merged": "com.spiderybook.app-debug-56:/drawable_ic_launcher.xml.flat",
-        "source": "com.spiderybook.app-main-58:/drawable/ic_launcher.xml"
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_fragment_search.xml.flat",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_search.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\xml_backup_rules.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\xml\\backup_rules.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_fragment_home.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_home.xml"
-    },
-    {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_activity_player.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\activity_player.xml"
+    },
+    {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_fragment_home.xml.flat",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_home.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\drawable_gradient_bottom.xml.flat",
@@ -28,8 +28,8 @@
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\xml\\data_extraction_rules.xml"
     },
     {
-        "merged": "com.spiderybook.app-debug-56:/drawable_ic_launcher_round.xml.flat",
-        "source": "com.spiderybook.app-main-58:/drawable/ic_launcher_round.xml"
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\drawable_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\drawable\\ic_launcher_round.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\navigation_nav_graph.xml.flat",
@@ -62,5 +62,9 @@
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_item_home_child.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\item_home_child.xml"
+    },
+    {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\drawable_ic_launcher.xml.flat",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\drawable\\ic_launcher.xml"
     }
 ]
