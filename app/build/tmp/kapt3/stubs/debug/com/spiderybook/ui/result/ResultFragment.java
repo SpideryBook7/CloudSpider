@@ -3,7 +3,6 @@ package com.spiderybook.ui.result;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
-import coil3.load;
 import com.spiderybook.databinding.FragmentResultBinding;
 import com.spiderybook.ui.common.BaseFragment;
 import com.spiderybook.util.Resource;

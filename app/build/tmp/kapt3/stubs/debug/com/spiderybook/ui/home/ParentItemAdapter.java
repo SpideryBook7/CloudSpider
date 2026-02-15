@@ -4,7 +4,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import coil3.load;
 import com.spiderybook.databinding.ItemHomeChildBinding;
 import com.spiderybook.databinding.ItemHomeParentBinding;
 import com.spiderybook.domain.model.HomePageList;

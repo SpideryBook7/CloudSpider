@@ -2,15 +2,13 @@ package com.spiderybook;
 
 import android.app.Application;
 import android.content.Context;
-import coil3.ImageLoader;
-import coil3.SingletonImageLoader;
-import coil3.PlatformContext;
+import coil.ImageLoaderFactory;
 import dagger.hilt.android.HiltAndroidApp;
 import java.lang.ref.WeakReference;
 
 @dagger.hilt.android.HiltAndroidApp()
-@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\u0014\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0006\n\u0002\u0010\u0002\n\u0002\b\u0002\b\u0007\u0018\u0000 \t2\u00020\u0001:\u0001\tB\u0005\u00a2\u0006\u0002\u0010\u0002J\u0015\u0010\u0003\u001a\u00020\u00042\u0006\u0010\u0005\u001a\u00020\u0004H\u0016\u00a2\u0006\u0002\u0010\u0006J\b\u0010\u0007\u001a\u00020\bH\u0016\u00a8\u0006\n"}, d2 = {"Lcom/spiderybook/SpideryBookApp;", "Landroid/app/Application;", "()V", "newImageLoader", "error/NonExistentClass", "context", "(Lerror/NonExistentClass;)Lerror/NonExistentClass;", "onCreate", "", "Companion", "app_debug"})
-public final class SpideryBookApp extends android.app.Application implements SingletonImageLoader.Factory {
+@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\u001e\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0010\u0002\n\u0002\b\u0002\b\u0007\u0018\u0000 \b2\u00020\u00012\u00020\u0002:\u0001\bB\u0005\u00a2\u0006\u0002\u0010\u0003J\b\u0010\u0004\u001a\u00020\u0005H\u0016J\b\u0010\u0006\u001a\u00020\u0007H\u0016\u00a8\u0006\t"}, d2 = {"Lcom/spiderybook/SpideryBookApp;", "Landroid/app/Application;", "Lcoil/ImageLoaderFactory;", "()V", "newImageLoader", "Lcoil/ImageLoader;", "onCreate", "", "Companion", "app_debug"})
+public final class SpideryBookApp extends android.app.Application implements coil.ImageLoaderFactory {
     @org.jetbrains.annotations.Nullable()
     private static java.lang.ref.WeakReference<com.spiderybook.SpideryBookApp> _instance;
     @org.jetbrains.annotations.NotNull()
@@ -24,9 +22,9 @@ public final class SpideryBookApp extends android.app.Application implements Sin
     public void onCreate() {
     }
     
+    @java.lang.Override()
     @org.jetbrains.annotations.NotNull()
-    public ImageLoader newImageLoader(@org.jetbrains.annotations.NotNull()
-    PlatformContext context) {
+    public coil.ImageLoader newImageLoader() {
         return null;
     }
     

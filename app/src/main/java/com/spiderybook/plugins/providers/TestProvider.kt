@@ -68,7 +68,7 @@ class TestProvider @Inject constructor() : MainAPI() {
             episodes = (1..10).map {
                 com.spiderybook.domain.model.Episode(
                     name = "Episode $it",
-                    data = "$url/episode/$it",
+                    url = "$url/episode/$it",
                     episode = it,
                     posterUrl = "https://via.placeholder.com/300x200.png?text=Ep+$it"
                 )
