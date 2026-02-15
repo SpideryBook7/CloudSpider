@@ -78,8 +78,35 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse>? {
-        // Todo: Implement search
-        return emptyList()
+        return try {
+            val url = "$mainUrl/browse?q=$query"
+            val doc = Jsoup.connect(url).get()
+            val animeList = mutableListOf<SearchResponse>()
+            
+            val animeElements = doc.select("ul.ListAnimes li")
+            for (element in animeElements) {
+                val title = element.select("h3.Title").text()
+                val typeText = element.select("span.Type").text()
+                val link = element.select("article a").attr("href")
+                val imagePath = element.select("div.Image img").attr("src")
+                val imageUrl = if (imagePath.startsWith("http")) imagePath else "https://animeflv.net$imagePath"
+
+                animeList.add(
+                    SearchResponse(
+                        name = title,
+                        url = if (link.startsWith("http")) link else "$mainUrl$link",
+                        apiName = name,
+                        type = TvType.Anime,
+                        posterUrl = imageUrl,
+                        year = null
+                    )
+                )
+            }
+            animeList
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
     }
 
     override suspend fun load(url: String): com.spiderybook.domain.model.LoadResponse? {
