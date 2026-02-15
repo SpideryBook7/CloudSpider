@@ -202,15 +202,21 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                                          val linkUrl = if (code.isNotEmpty()) code else url
                                          
                                          if (linkUrl.isNotEmpty()) {
-                                             callback(
-                                                 ExtractorLink(
-                                                     name = serverName,
-                                                     url = linkUrl,
-                                                     referer = mainUrl,
-                                                     quality = 0, // Unknown quality
-                                                     isM3u8 = linkUrl.contains(".m3u8")
+                                             if (serverName.equals("stape", ignoreCase = true) || linkUrl.contains("streamtape")) {
+                                                 val extractor = com.spiderybook.plugins.extractors.StreamtapeExtractor(this)
+                                                 val links = extractor.extract(linkUrl)
+                                                 links.forEach { callback(it) }
+                                             } else {
+                                                 callback(
+                                                     ExtractorLink(
+                                                         name = serverName,
+                                                         url = linkUrl,
+                                                         referer = mainUrl,
+                                                         quality = 0, // Unknown quality
+                                                         isM3u8 = linkUrl.contains(".m3u8")
+                                                     )
                                                  )
-                                             )
+                                             }
                                          }
                                      }
                                  }
