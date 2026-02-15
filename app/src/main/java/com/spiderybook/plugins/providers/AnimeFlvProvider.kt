@@ -86,6 +86,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
         return try {
             val doc = Jsoup.connect(url).get()
 
+            // Check if it's an episode page (URL contains /ver/)
+            if (url.contains("/ver/")) {
+                val animeLink = doc.select("nav.Brdcrmb a[href^=/anime/]").attr("href")
+                if (animeLink.isNotEmpty()) {
+                    val fullAnimeUrl = if (animeLink.startsWith("http")) animeLink else "$mainUrl$animeLink"
+                    return load(fullAnimeUrl)
+                }
+            }
+
             // Parse details
             val title = doc.select("h1.Title").text()
             val plot = doc.select("div.Description p").text()

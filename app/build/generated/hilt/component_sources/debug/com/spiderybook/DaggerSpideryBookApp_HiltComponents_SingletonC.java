@@ -436,16 +436,16 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_spiderybook_ui_search_SearchViewModel = "com.spiderybook.ui.search.SearchViewModel";
+      static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
 
       static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
 
       static String com_spiderybook_ui_home_HomeViewModel = "com.spiderybook.ui.home.HomeViewModel";
 
-      static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
+      static String com_spiderybook_ui_search_SearchViewModel = "com.spiderybook.ui.search.SearchViewModel";
 
       @KeepFieldType
-      SearchViewModel com_spiderybook_ui_search_SearchViewModel2;
+      PlayerViewModel com_spiderybook_ui_player_PlayerViewModel2;
 
       @KeepFieldType
       ResultViewModel com_spiderybook_ui_result_ResultViewModel2;
@@ -454,7 +454,7 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
       HomeViewModel com_spiderybook_ui_home_HomeViewModel2;
 
       @KeepFieldType
-      PlayerViewModel com_spiderybook_ui_player_PlayerViewModel2;
+      SearchViewModel com_spiderybook_ui_search_SearchViewModel2;
     }
   }
 
@@ -504,25 +504,25 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_spiderybook_ui_search_SearchViewModel = "com.spiderybook.ui.search.SearchViewModel";
-
       static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
-
-      static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
 
       static String com_spiderybook_ui_home_HomeViewModel = "com.spiderybook.ui.home.HomeViewModel";
 
-      @KeepFieldType
-      SearchViewModel com_spiderybook_ui_search_SearchViewModel2;
+      static String com_spiderybook_ui_search_SearchViewModel = "com.spiderybook.ui.search.SearchViewModel";
+
+      static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
 
       @KeepFieldType
       PlayerViewModel com_spiderybook_ui_player_PlayerViewModel2;
 
       @KeepFieldType
-      ResultViewModel com_spiderybook_ui_result_ResultViewModel2;
+      HomeViewModel com_spiderybook_ui_home_HomeViewModel2;
 
       @KeepFieldType
-      HomeViewModel com_spiderybook_ui_home_HomeViewModel2;
+      SearchViewModel com_spiderybook_ui_search_SearchViewModel2;
+
+      @KeepFieldType
+      ResultViewModel com_spiderybook_ui_result_ResultViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
