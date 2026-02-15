@@ -56,7 +56,7 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 binding.rvEpisodes.adapter = EpisodeAdapter(data.episodes) { episode ->
                     // Toast.makeText(context, "Play ${episode.name}", Toast.LENGTH_SHORT).show()
                     val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
-                        putExtra("data", episode.data)
+                        putExtra("data", episode.url)
                         putExtra("apiName", data.apiName)
                     }
                     startActivity(intent)
