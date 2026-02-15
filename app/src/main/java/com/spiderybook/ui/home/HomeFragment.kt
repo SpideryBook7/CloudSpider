@@ -25,6 +25,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         setupRecyclerView()
         setupObservers()
         setupSpinner()
+        setupSearch()
     }
 
     private fun setupRecyclerView() {
@@ -39,13 +40,42 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.rvHome.adapter = parentAdapter
     }
     
+    private fun setupSearch() {
+        binding.etSearch.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                val query = binding.etSearch.text.toString()
+                viewModel.search(query)
+                com.spiderybook.util.hideKeyboard(v)
+                return@setOnEditorActionListener true
+            }
+            false
+        }
+        
+        binding.btnClearSearch.setOnClickListener {
+            binding.etSearch.text.clear()
+            viewModel.search("") // Reload home
+            binding.btnClearSearch.isVisible = false
+            com.spiderybook.util.hideKeyboard(it)
+        }
+        
+        binding.etSearch.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                binding.btnClearSearch.isVisible = !s.isNullOrEmpty()
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+    }
+
     private fun setupSpinner() {
         binding.spinnerProvider.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val providerName = parent?.getItemAtPosition(position) as? String
+                // Only load if it's a DIFFERENT provider, to avoid reloading on rotation/recreation if handled by VM
+                // But VM handles checks too.
                 providerName?.let { viewModel.loadHomePage(it) }
             }
-
+ 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }

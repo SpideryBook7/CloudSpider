@@ -58,4 +58,47 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+    
+    fun search(query: String) {
+        val currentProvider = _selectedProvider.value ?: return
+        if (query.isBlank()) {
+            // Reload home page if query is empty
+            // Force reload by temporarily clearing selection or just calling repo directly
+            launchIO {
+                 _homePage.setLoading()
+                val result = homeRepository.getHomePage(currentProvider)
+                if (result != null) {
+                    _homePage.setSuccess(result)
+                } else {
+                    _homePage.setError("Failed to load home page")
+                }
+            }
+            return
+        }
+        
+        launchIO {
+            _homePage.setLoading()
+            // We need a way to search via repository. 
+            // Currently HomeRepository only has getHomePage.
+            // We should add search to Repository or access plugin manager directly. 
+            // For now, let's fast-track and access plugin directly via manager for this task, 
+            // although updating repository is cleaner.
+            
+            val api = pluginManager.apis.find { it.name == currentProvider }
+            if (api != null) {
+                val results = api.search(query)
+                if (results != null) {
+                    // Wrap results in HomePageResponse structure for reuse of adapter
+                    val searchList = com.spiderybook.domain.model.HomePageList(
+                        name = "Search Results: $query",
+                        list = results,
+                        isHorizontal = false // vertical list for search results usually
+                    )
+                    _homePage.setSuccess(HomePageResponse(listOf(searchList)))
+                } else {
+                    _homePage.setError("No results found")
+                }
+            }
+        }
+    }
 }
