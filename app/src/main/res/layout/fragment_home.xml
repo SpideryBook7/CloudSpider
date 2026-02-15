@@ -29,8 +29,17 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="8dp"
             android:src="@android:drawable/stat_sys_download"
-            android:contentDescription="Downloads"
-             />
+            android:contentDescription="Downloads" />
+
+        <ImageButton
+            android:id="@+id/btn_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_preferences"
+            android:contentDescription="Settings" />
 
     </androidx.appcompat.widget.Toolbar>
     

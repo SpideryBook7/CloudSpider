@@ -50,7 +50,7 @@ class TestProvider @Inject constructor() : MainAPI() {
                 "$mainUrl/search/$it",
                 name,
                 TvType.Movie,
-                null,
+                "https://via.placeholder.com/300x450.png?text=Poster+$it",
                 2023
             )
         }
@@ -62,14 +62,15 @@ class TestProvider @Inject constructor() : MainAPI() {
             name = "Test Movie Details",
             apiName = name,
             type = TvType.Movie,
-            posterUrl = null,
+            posterUrl = "https://via.placeholder.com/300x450.png?text=Movie+Details",
             year = 2023,
             plot = "This is a test plot for the movie loaded from $url",
             episodes = (1..10).map {
                 com.spiderybook.domain.model.Episode(
                     name = "Episode $it",
                     data = "$url/episode/$it",
-                    episode = it
+                    episode = it,
+                    posterUrl = "https://via.placeholder.com/300x200.png?text=Ep+$it"
                 )
             }
         )

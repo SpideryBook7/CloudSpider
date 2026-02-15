@@ -75,5 +75,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.btnDownloads.setOnClickListener {
             androidx.navigation.fragment.findNavController().navigate(com.spiderybook.R.id.nav_downloads)
         }
+        
+        binding.btnSettings.setOnClickListener {
+            androidx.navigation.fragment.findNavController().navigate(com.spiderybook.R.id.nav_settings)
+        }
     }
 }
