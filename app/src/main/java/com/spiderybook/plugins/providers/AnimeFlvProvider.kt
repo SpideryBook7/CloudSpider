@@ -153,7 +153,6 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                 plot = plot,
                 tags = genres,
                 rating = rating,
-                recommendations = emptyList(), // Can be implemented later
                 episodes = episodeList
             )
 

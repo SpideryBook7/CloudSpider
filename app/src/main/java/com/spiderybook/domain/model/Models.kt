@@ -30,7 +30,7 @@ data class LoadResponse(
     val year: Int? = null,
     val plot: String? = null,
     val tags: List<String>? = null,
-    val rating: Int? = null,
+    val rating: Double? = null,
     val actors: List<String>? = null,
     val episodes: List<Episode> = emptyList()
 )
