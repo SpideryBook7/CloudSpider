@@ -21,11 +21,13 @@ import java.lang.Boolean;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.SuppressWarnings;
+import javax.annotation.processing.Generated;
 import kotlin.jvm.functions.Function3;
 
 /**
  * A generated base class to be extended by the @dagger.hilt.android.AndroidEntryPoint annotated class. If using the Gradle plugin, this is swapped as the base class via bytecode transformation.
  */
+@Generated("dagger.hilt.android.processor.internal.androidentrypoint.FragmentGenerator")
 public abstract class Hilt_SearchFragment<VB extends ViewBinding> extends BaseFragment<VB> implements GeneratedComponentManagerHolder {
   private ContextWrapper componentContext;
 

@@ -1441,11 +1441,15 @@ int color accent_material_dark 0x7f060019
 int color accent_material_light 0x7f06001a
 int color androidx_core_ripple_material_light 0x7f06001b
 int color androidx_core_secondary_text_default_material_light 0x7f06001c
+int color background_dark 0x7f060314
 int color background_floating_material_dark 0x7f06001d
 int color background_floating_material_light 0x7f06001e
 int color background_material_dark 0x7f06001f
 int color background_material_light 0x7f060020
 int color black 0x7f060021
+int color brand_accent 0x7f060315
+int color brand_primary 0x7f060316
+int color brand_secondary 0x7f060317
 int color bright_foreground_disabled_material_dark 0x7f060022
 int color bright_foreground_disabled_material_light 0x7f060023
 int color bright_foreground_inverse_material_dark 0x7f060024
@@ -1502,6 +1506,7 @@ int color dim_foreground_disabled_material_dark 0x7f060056
 int color dim_foreground_disabled_material_light 0x7f060057
 int color dim_foreground_material_dark 0x7f060058
 int color dim_foreground_material_light 0x7f060059
+int color error 0x7f060318
 int color error_color_material_dark 0x7f06005a
 int color error_color_material_light 0x7f06005b
 int color exo_black_opacity_60 0x7f06005c
@@ -2189,6 +2194,9 @@ int color secondary_text_default_material_dark 0x7f060305
 int color secondary_text_default_material_light 0x7f060306
 int color secondary_text_disabled_material_dark 0x7f060307
 int color secondary_text_disabled_material_light 0x7f060308
+int color success 0x7f060319
+int color surface_dark 0x7f06031a
+int color surface_light 0x7f06031b
 int color switch_thumb_disabled_material_dark 0x7f060309
 int color switch_thumb_disabled_material_light 0x7f06030a
 int color switch_thumb_material_dark 0x7f06030b
@@ -2197,8 +2205,12 @@ int color switch_thumb_normal_material_dark 0x7f06030d
 int color switch_thumb_normal_material_light 0x7f06030e
 int color teal_200 0x7f06030f
 int color teal_700 0x7f060310
+int color text_hint 0x7f06031c
+int color text_primary 0x7f06031d
+int color text_secondary 0x7f06031e
 int color tooltip_background_dark 0x7f060311
 int color tooltip_background_light 0x7f060312
+int color warning 0x7f06031f
 int color white 0x7f060313
 int dimen abc_action_bar_content_inset_material 0x7f070000
 int dimen abc_action_bar_content_inset_with_nav 0x7f070001

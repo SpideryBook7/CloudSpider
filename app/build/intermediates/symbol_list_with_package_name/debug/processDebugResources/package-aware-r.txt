@@ -1442,11 +1442,15 @@ color accent_material_dark
 color accent_material_light
 color androidx_core_ripple_material_light
 color androidx_core_secondary_text_default_material_light
+color background_dark
 color background_floating_material_dark
 color background_floating_material_light
 color background_material_dark
 color background_material_light
 color black
+color brand_accent
+color brand_primary
+color brand_secondary
 color bright_foreground_disabled_material_dark
 color bright_foreground_disabled_material_light
 color bright_foreground_inverse_material_dark
@@ -1503,6 +1507,7 @@ color dim_foreground_disabled_material_dark
 color dim_foreground_disabled_material_light
 color dim_foreground_material_dark
 color dim_foreground_material_light
+color error
 color error_color_material_dark
 color error_color_material_light
 color exo_black_opacity_60
@@ -2190,6 +2195,9 @@ color secondary_text_default_material_dark
 color secondary_text_default_material_light
 color secondary_text_disabled_material_dark
 color secondary_text_disabled_material_light
+color success
+color surface_dark
+color surface_light
 color switch_thumb_disabled_material_dark
 color switch_thumb_disabled_material_light
 color switch_thumb_material_dark
@@ -2198,8 +2206,12 @@ color switch_thumb_normal_material_dark
 color switch_thumb_normal_material_light
 color teal_200
 color teal_700
+color text_hint
+color text_primary
+color text_secondary
 color tooltip_background_dark
 color tooltip_background_light
+color warning
 color white
 dimen abc_action_bar_content_inset_material
 dimen abc_action_bar_content_inset_with_nav

@@ -11,7 +11,9 @@ import dagger.hilt.android.internal.lifecycle.HiltViewModelMap;
 import dagger.hilt.codegen.OriginatingElement;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.LazyClassKey;
+import javax.annotation.processing.Generated;
 
+@Generated("dagger.hilt.android.processor.internal.viewmodel.ViewModelProcessor")
 @OriginatingElement(
     topLevelClass = PlayerViewModel.class
 )
