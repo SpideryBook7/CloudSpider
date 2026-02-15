@@ -17,6 +17,7 @@ class PluginManager @Inject constructor() {
     
     init {
         register(com.spiderybook.plugins.providers.TestProvider())
+        register(com.spiderybook.plugins.providers.AnimeFlvProvider())
     }
     
     fun getAPI(name: String): MainAPI? {
