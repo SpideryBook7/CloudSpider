@@ -172,7 +172,60 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
     }
 
     override suspend fun loadLinks(data: String, callback: (ExtractorLink) -> Unit): Boolean {
-        // Todo: Implement loadLinks
-        return false
+        return try {
+            val doc = Jsoup.connect(data).get()
+            val scripts = doc.select("script")
+            
+            for (script in scripts) {
+                val html = script.html()
+                if (html.contains("var videos =")) {
+                    // Extract videos JSON
+                    val pattern = java.util.regex.Pattern.compile("var videos = (\\{.*?\\});")
+                    val matcher = pattern.matcher(html)
+                    if (matcher.find()) {
+                        val jsonInfo = matcher.group(1)
+                        if (jsonInfo != null) {
+                             // Simple string parsing to avoid full JSON parser complexity if possible, 
+                             // but JSON parsing is safer. Let's use JSONObject since this is Android.
+                             try {
+                                 val jsonObject = org.json.JSONObject(jsonInfo)
+                                 val subArray = jsonObject.optJSONArray("SUB")
+                                 
+                                 if (subArray != null) {
+                                     for (i in 0 until subArray.length()) {
+                                         val serverObj = subArray.getJSONObject(i)
+                                         val serverName = serverObj.optString("title")
+                                         val code = serverObj.optString("code")
+                                         val url = serverObj.optString("url")
+                                         
+                                         // Prefer 'code' as it usually contains the embed URL, fall back to 'url'
+                                         val linkUrl = if (code.isNotEmpty()) code else url
+                                         
+                                         if (linkUrl.isNotEmpty()) {
+                                             callback(
+                                                 ExtractorLink(
+                                                     name = serverName,
+                                                     url = linkUrl,
+                                                     referer = mainUrl,
+                                                     quality = 0, // Unknown quality
+                                                     isM3u8 = linkUrl.contains(".m3u8")
+                                                 )
+                                             )
+                                         }
+                                     }
+                                 }
+                             } catch (e: Exception) {
+                                 e.printStackTrace()
+                             }
+                        }
+                    }
+                    break
+                }
+            }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }
