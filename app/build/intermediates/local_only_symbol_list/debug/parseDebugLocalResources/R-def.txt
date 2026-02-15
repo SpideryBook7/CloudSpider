@@ -7,6 +7,8 @@ color teal_200
 color teal_700
 color white
 drawable gradient_bottom
+drawable ic_launcher
+drawable ic_launcher_round
 id btn_download
 id btn_downloads
 id btn_settings

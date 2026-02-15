@@ -9,24 +9,21 @@ abstract class MainAPI {
     abstract val name: String
     abstract val mainUrl: String
     open val lang: String = "en"
-    
+
     open val supportedTypes: Set<TvType> = emptySet()
-    
+
     open val hasMainPage: Boolean = false
     open val hasQuickSearch: Boolean = true
     open val hasSearch: Boolean = true
 
     open suspend fun getMainPage(page: Int): HomePageResponse? = null
-    
+
     open suspend fun search(query: String): List<SearchResponse>? = null
     
-import com.spiderybook.plugins.MainAPI.ExtractorLink
+    open suspend fun load(url: String): LoadResponse? = null
 
-abstract class MainAPI {
-    // ...
-    
     open suspend fun loadLinks(data: String, callback: (ExtractorLink) -> Unit): Boolean = false
-    
+
     data class ExtractorLink(
         val name: String,
         val url: String,
@@ -35,4 +32,3 @@ abstract class MainAPI {
         val isM3u8: Boolean = false
     )
 }
-
