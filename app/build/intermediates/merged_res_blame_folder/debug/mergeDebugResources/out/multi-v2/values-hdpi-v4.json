@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.spiderybook.app-mergeDebugResources-54:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\d0a7b33d4a5af2a551a4ac6ad18d471d\\transformed\\appcompat-1.7.0\\res\\values-hdpi-v4\\values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,58 @@
+[
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_activity_player.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/activity_player.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_fragment_home.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_home.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_item_episode.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/item_episode.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_fragment_settings.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_settings.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_fragment_search.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_search.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_fragment_result.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_result.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_item_home_parent.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/item_home_parent.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_fragment_downloads.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_downloads.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/xml_data_extraction_rules.xml.flat",
+        "source": "com.spiderybook.app-main-58:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/xml_backup_rules.xml.flat",
+        "source": "com.spiderybook.app-main-58:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/navigation_nav_graph.xml.flat",
+        "source": "com.spiderybook.app-main-58:/navigation/nav_graph.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_item_home_child.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/item_home_child.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/drawable_gradient_bottom.xml.flat",
+        "source": "com.spiderybook.app-main-58:/drawable/gradient_bottom.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_activity_main.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/activity_main.xml"
+    }
+]

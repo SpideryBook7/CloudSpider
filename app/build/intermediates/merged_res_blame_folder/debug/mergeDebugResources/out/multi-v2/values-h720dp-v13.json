@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.spiderybook.app-mergeDebugResources-54:/values-h720dp-v13/values-h720dp-v13.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\d0a7b33d4a5af2a551a4ac6ad18d471d\\transformed\\appcompat-1.7.0\\res\\values-h720dp-v13\\values-h720dp-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "66",
+                        "endOffsets": "117"
+                    }
+                }
+            ]
+        }
+    ]
+}

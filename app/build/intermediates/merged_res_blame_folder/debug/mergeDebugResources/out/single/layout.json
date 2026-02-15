@@ -1,0 +1,42 @@
+[
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/fragment_search.xml",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_search.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/fragment_settings.xml",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_settings.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/item_episode.xml",
+        "source": "com.spiderybook.app-main-58:/layout/item_episode.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/activity_main.xml",
+        "source": "com.spiderybook.app-main-58:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/fragment_home.xml",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_home.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/item_home_parent.xml",
+        "source": "com.spiderybook.app-main-58:/layout/item_home_parent.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/item_home_child.xml",
+        "source": "com.spiderybook.app-main-58:/layout/item_home_child.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/fragment_result.xml",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_result.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/activity_player.xml",
+        "source": "com.spiderybook.app-main-58:/layout/activity_player.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/fragment_downloads.xml",
+        "source": "com.spiderybook.app-main-58:/layout/fragment_downloads.xml"
+    }
+]
