@@ -27,8 +27,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
     private fun setupRecyclerView() {
         parentAdapter = ParentItemAdapter { item ->
-            Toast.makeText(requireContext(), "Clicked: ${item.name}", Toast.LENGTH_SHORT).show()
-            // Navigate to Details later
+            // Toast.makeText(requireContext(), "Clicked: ${item.name}", Toast.LENGTH_SHORT).show()
+            val bundle = Bundle().apply {
+                putString("url", item.url)
+                putString("apiName", item.apiName)
+            }
+            androidx.navigation.fragment.findNavController().navigate(com.spiderybook.R.id.nav_result, bundle)
         }
         binding.rvHome.adapter = parentAdapter
     }

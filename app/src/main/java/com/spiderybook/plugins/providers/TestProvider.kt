@@ -55,4 +55,24 @@ class TestProvider @Inject constructor() : MainAPI() {
             )
         }
     }
+
+    override suspend fun load(url: String): com.spiderybook.domain.model.LoadResponse {
+        return com.spiderybook.domain.model.LoadResponse(
+            url = url,
+            name = "Test Movie Details",
+            apiName = name,
+            type = TvType.Movie,
+            posterUrl = null,
+            year = 2023,
+            plot = "This is a test plot for the movie loaded from $url",
+            episodes = (1..10).map {
+                com.spiderybook.domain.model.Episode(
+                    name = "Episode $it",
+                    data = "$url/episode/$it",
+                    episode = it
+                )
+            }
+        )
+    }
 }
+
