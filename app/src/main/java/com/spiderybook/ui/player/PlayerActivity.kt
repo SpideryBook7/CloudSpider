@@ -51,6 +51,7 @@ class PlayerActivity : AppCompatActivity() {
             if (resource is Resource.Success) {
                 val link = resource.data.firstOrNull()
                 if (link != null) {
+                     Toast.makeText(this, "Playing: ${link.name}", Toast.LENGTH_SHORT).show()
                      initializePlayer(link.url)
                 } else {
                     Toast.makeText(this, "No links found", Toast.LENGTH_SHORT).show()

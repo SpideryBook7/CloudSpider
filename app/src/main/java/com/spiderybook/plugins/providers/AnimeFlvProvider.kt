@@ -192,6 +192,8 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                                  val subArray = jsonObject.optJSONArray("SUB")
                                  
                                  if (subArray != null) {
+                                     val linksToEmit = mutableListOf<ExtractorLink>()
+                                     
                                      for (i in 0 until subArray.length()) {
                                          val serverObj = subArray.getJSONObject(i)
                                          val serverName = serverObj.optString("title")
@@ -205,9 +207,9 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                                              if (serverName.equals("stape", ignoreCase = true) || linkUrl.contains("streamtape")) {
                                                  val extractor = com.spiderybook.plugins.extractors.StreamtapeExtractor(this)
                                                  val links = extractor.extract(linkUrl)
-                                                 links.forEach { callback(it) }
+                                                 linksToEmit.addAll(links)
                                              } else {
-                                                 callback(
+                                                 linksToEmit.add(
                                                      ExtractorLink(
                                                          name = serverName,
                                                          url = linkUrl,
@@ -219,6 +221,13 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                                              }
                                          }
                                      }
+                                     
+                                     // Sort: Prioritize Streamtape (or any link that is NOT just the raw embed)
+                                     // Since Streamtape extractor returns "Streamtape" as name, and raw links return their original name (e.g. "MEGA", "SW")
+                                     // We put "Streamtape" first.
+                                     val sortedLinks = linksToEmit.sortedByDescending { it.name == "Streamtape" }
+                                     
+                                     sortedLinks.forEach { callback(it) }
                                  }
                              } catch (e: Exception) {
                                  e.printStackTrace()
