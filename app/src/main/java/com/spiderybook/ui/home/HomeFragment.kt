@@ -13,6 +13,7 @@ import com.spiderybook.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
 import androidx.navigation.fragment.findNavController
+import com.spiderybook.util.hideKeyboard
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::inflate) {

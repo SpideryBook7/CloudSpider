@@ -26,6 +26,7 @@ C:\Users\crist\Downloads\Stream\SpideryBook\app\src\main\java\com\spiderybook\pl
 C:\Users\crist\Downloads\Stream\SpideryBook\app\src\main\java\com\spiderybook\SpideryBookApp.kt
 C:\Users\crist\Downloads\Stream\SpideryBook\app\src\main\java\com\spiderybook\ui\MainActivity.kt
 C:\Users\crist\Downloads\Stream\SpideryBook\app\src\main\java\com\spiderybook\plugins\providers\TestProvider.kt
+C:\Users\crist\Downloads\Stream\SpideryBook\app\src\main\java\com\spiderybook\util\Extensions.kt
 C:\Users\crist\Downloads\Stream\SpideryBook\app\src\main\java\com\spiderybook\ui\common\BaseViewModel.kt
 C:\Users\crist\Downloads\Stream\SpideryBook\app\src\main\java\com\spiderybook\ui\player\PlayerViewModel.kt
 C:\Users\crist\Downloads\Stream\SpideryBook\app\src\main\java\com\spiderybook\plugins\providers\AnimeFlvProvider.kt
