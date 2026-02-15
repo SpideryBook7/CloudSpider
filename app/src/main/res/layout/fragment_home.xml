@@ -40,18 +40,15 @@
             android:padding="8dp"
             android:src="@android:drawable/ic_menu_preferences"
             android:contentDescription="Settings" />
+            
+        <Spinner
+            android:id="@+id/spinner_provider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:minHeight="48dp" />
 
     </androidx.appcompat.widget.Toolbar>
-    
-    <Spinner
-        android:id="@+id/spinner_provider"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_home"
