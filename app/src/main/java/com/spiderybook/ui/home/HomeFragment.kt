@@ -39,10 +39,40 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.rvHome.adapter = parentAdapter
     }
     
-    // ...
+    private fun setupSpinner() {
+        binding.spinnerProvider.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val providerName = parent?.getItemAtPosition(position) as? String
+                providerName?.let { viewModel.loadHomePage(it) }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
 
     private fun setupObservers() {
-        // ...
+        viewModel.homePage.observe(viewLifecycleOwner) { resource ->
+            binding.progressBar.isVisible = resource is Resource.Loading
+            binding.tvError.isVisible = resource is Resource.Error
+            binding.rvHome.isVisible = resource is Resource.Success
+            
+            when (resource) {
+                is Resource.Success -> {
+                    parentAdapter.submitList(resource.data.items)
+                }
+                is Resource.Error -> {
+                    binding.tvError.text = resource.message
+                }
+                else -> {}
+            }
+        }
+        
+        viewModel.availableProviders.observe(viewLifecycleOwner) { providers ->
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, providers)
+            binding.spinnerProvider.adapter = adapter
+            
+            // Should probably select the current one
+        }
         
         binding.btnDownloads.setOnClickListener {
             findNavController().navigate(com.spiderybook.R.id.nav_downloads)
