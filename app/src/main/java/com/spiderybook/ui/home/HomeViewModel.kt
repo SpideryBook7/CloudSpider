@@ -19,6 +19,12 @@ class HomeViewModel @Inject constructor(
     private val _selectedProvider = MutableLiveData<String>()
     val selectedProvider: LiveData<String> = _selectedProvider
 
+    private val _homePage = MutableLiveData<Resource<HomePageResponse>>()
+    val homePage: LiveData<Resource<HomePageResponse>> = _homePage
+    
+    private val _availableProviders = MutableLiveData<List<String>>()
+    val availableProviders: LiveData<List<String>> = _availableProviders
+
     init {
         loadProviders()
     }
