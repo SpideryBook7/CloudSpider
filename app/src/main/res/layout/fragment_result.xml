@@ -59,6 +59,14 @@
                 android:textSize="14sp"
                 tools:text="Description..." />
 
+            <Button
+                android:id="@+id/btn_download"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Download (Sample)"
+                app:icon="@android:drawable/stat_sys_download" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
