@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand Colors -->
+    <color name="brand_primary">#0A0E17</color> <!-- Very Dark Blue/Black -->
+    <color name="brand_secondary">#151F2E</color> <!-- Lighter Dark Blue -->
+    <color name="brand_accent">#00E5FF</color> <!-- Cyan Accent -->
+    
+    <!-- UI Colors -->
+    <color name="background_dark">#0A0E17</color>
+    <color name="surface_dark">#151F2E</color>
+    <color name="surface_light">#1F2B3E</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0BEC5</color>
+    <color name="text_hint">#78909C</color>
+    
+    <!-- Status/Functional -->
+    <color name="error">#CF6679</color>
+    <color name="success">#03DAC5</color>
+    <color name="warning">#FFB74D</color>
+    
+    <!-- Legacy Mappings for Backward Compatibility/Theme defaults -->
+    <color name="purple_500">@color/brand_primary</color>
+    <color name="purple_700">@color/brand_secondary</color>
+    <color name="teal_200">@color/brand_accent</color>
+    <color name="teal_700">@color/brand_accent</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
