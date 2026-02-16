@@ -16,7 +16,7 @@ object PackedDecoder {
         return unpack(p, a, c, k)
     }
 
-    private fun unpack(p: String, a: Int, c: Int, k: List<String>): String {
+    fun unpack(p: String, a: Int, c: Int, k: List<String>): String {
         var unpacked = p
         var count = c
         

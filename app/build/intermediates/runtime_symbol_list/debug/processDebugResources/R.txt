@@ -3425,7 +3425,9 @@ int id bounceStart 0x7f0a0063
 int id btn_clear_search 0x7f0a0260
 int id btn_download 0x7f0a0064
 int id btn_downloads 0x7f0a0065
+int id btn_fullscreen 0x7f0a0265
 int id btn_settings 0x7f0a0066
+int id btn_sources_control 0x7f0a0264
 int id buttonPanel 0x7f0a0067
 int id cache_measures 0x7f0a0068
 int id callMeasure 0x7f0a0069
@@ -4053,6 +4055,7 @@ int layout abc_tooltip 0x7f0d001b
 int layout activity_main 0x7f0d001c
 int layout activity_player 0x7f0d001d
 int layout custom_dialog 0x7f0d001e
+int layout custom_player_controls 0x7f0d0088
 int layout design_bottom_navigation_item 0x7f0d001f
 int layout design_bottom_sheet_dialog 0x7f0d0020
 int layout design_layout_snackbar 0x7f0d0021

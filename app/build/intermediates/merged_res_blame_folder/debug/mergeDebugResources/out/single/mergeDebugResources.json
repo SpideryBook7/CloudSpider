@@ -1,23 +1,23 @@
 [
     {
-        "merged": "com.spiderybook.app-debug-56:/layout_fragment_home.xml.flat",
-        "source": "com.spiderybook.app-main-58:/layout/fragment_home.xml"
-    },
-    {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_fragment_search.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_search.xml"
+    },
+    {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_custom_player_controls.xml.flat",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\custom_player_controls.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\xml_backup_rules.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\xml\\backup_rules.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_activity_player.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\activity_player.xml"
-    },
-    {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_fragment_home.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_home.xml"
+    },
+    {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_activity_player.xml.flat",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\activity_player.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\drawable_gradient_bottom.xml.flat",
@@ -34,6 +34,10 @@
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\navigation_nav_graph.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\navigation\\nav_graph.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-56:/layout_custom_player_controls.xml.flat",
+        "source": "com.spiderybook.app-main-58:/layout/custom_player_controls.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-56:\\layout_fragment_downloads.xml.flat",

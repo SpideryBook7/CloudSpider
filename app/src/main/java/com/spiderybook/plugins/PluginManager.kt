@@ -16,7 +16,6 @@ class PluginManager @Inject constructor() {
     }
     
     init {
-        register(com.spiderybook.plugins.providers.TestProvider())
         register(com.spiderybook.plugins.providers.AnimeFlvProvider())
         register(com.spiderybook.plugins.providers.PelisPlusProvider())
     }

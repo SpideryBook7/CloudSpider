@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:show_buffering="when_playing"
-        app:show_shuffle_button="true" />
+        app:show_shuffle_button="true"
+        app:controller_layout_id="@layout/custom_player_controls" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -22,5 +23,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

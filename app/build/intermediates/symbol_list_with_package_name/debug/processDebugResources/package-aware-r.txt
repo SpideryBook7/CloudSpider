@@ -3426,7 +3426,9 @@ id bounceStart
 id btn_clear_search
 id btn_download
 id btn_downloads
+id btn_fullscreen
 id btn_settings
+id btn_sources_control
 id buttonPanel
 id cache_measures
 id callMeasure
@@ -4054,6 +4056,7 @@ layout abc_tooltip
 layout activity_main
 layout activity_player
 layout custom_dialog
+layout custom_player_controls
 layout design_bottom_navigation_item
 layout design_bottom_sheet_dialog
 layout design_layout_snackbar

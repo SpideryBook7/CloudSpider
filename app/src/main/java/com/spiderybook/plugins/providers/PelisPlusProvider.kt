@@ -157,14 +157,28 @@ class PelisPlusProvider : MainAPI() {
                                     callback(link)
                                 }
                             } else {
+                                // MULTI-OPTION STRATEGY:
+                                // 1. Provide the Raw/Web link IMMEDIATELY. This is the "Fallback" that always appears.
                                 callback(
                                     ExtractorLink(
-                                        name = serverName,
+                                        name = "$serverName - 1. Web/Raw",
                                         url = resolvedSrc,
                                         referer = playerUrl,
                                         quality = 0
                                     )
                                 )
+
+                                // 2. Try Smart Extraction (Heavy operation, takes time)
+                                // If successful, these will pop up as "2. Extracted" options.
+                                try {
+                                    val genericExtractor = com.spiderybook.plugins.extractors.GenericExtractor(this)
+                                    val genericLinks = genericExtractor.extract(resolvedSrc, serverName, playerUrl)
+                                    for (link in genericLinks) {
+                                        callback(link)
+                                    }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
                             }
                         }
                     } catch (e: Exception) {

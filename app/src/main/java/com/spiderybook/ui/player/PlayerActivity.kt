@@ -49,9 +49,48 @@ class PlayerActivity : AppCompatActivity() {
             binding.progressBar.visibility = if (resource is Resource.Loading) View.VISIBLE else View.GONE
             
             if (resource is Resource.Success) {
-                val link = resource.data.firstOrNull()
-                if (link != null) {
-                     initializePlayer(link.url, link.referer)
+                val links = resource.data
+                
+                // Find the integrated button inside the PlayerView controls
+                val btnSources = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_sources_control)
+                
+                if (btnSources != null) {
+                    // Show button only if multiple links exist
+                    btnSources.visibility = if (links.size > 1) View.VISIBLE else View.GONE
+                    
+                    // Set click listener to reopen the dialog
+                    btnSources.setOnClickListener {
+                        showSourceSelectionDialog(links)
+                    }
+                }
+                
+                // Fullscreen Logic
+                val btnFullscreen = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_fullscreen)
+                btnFullscreen?.setOnClickListener {
+                    requestedOrientation = if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+                        android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    } else {
+                        android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                    }
+                }
+
+                if (links.isNotEmpty()) {
+                     // Check if player is already playing to avoid auto-restart
+                     if (player == null) {
+                        // REVERTED BEHAVIOR FOR ANIME:
+                        // Only show the selection dialog for "PelisPlus" (as requested).
+                        // For AnimeFLV and others, Auto-Play the first link (automatic behavior).
+
+                        // Actually, we have apiName in the activity scope from Intent
+                        val currentApiName = intent.getStringExtra("apiName")
+                        
+                        if (links.size > 1 && currentApiName == "PelisPlus") {
+                            showSourceSelectionDialog(links)
+                        } else {
+                            val link = links.first()
+                            initializePlayer(link.url, link.referer)
+                        }
+                     }
                 } else {
                     Toast.makeText(this, "No links found", Toast.LENGTH_SHORT).show()
                 }
@@ -61,8 +100,24 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    private fun showSourceSelectionDialog(links: List<com.spiderybook.plugins.MainAPI.ExtractorLink>) {
+        val names = links.map { it.name }.toTypedArray()
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Select Source")
+            .setItems(names) { _, which ->
+                val link = links[which]
+                initializePlayer(link.url, link.referer)
+            }
+            .setCancelable(true)
+            .setOnCancelListener { finish() } // Finish if user cancels selection
+            .show()
+    }
+
     @OptIn(UnstableApi::class)
     private fun initializePlayer(url: String, referer: String?) {
+        // Release existing player to prevent audio overlap
+        releasePlayer()
+
         val dataSourceFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true)
             .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")

@@ -24,7 +24,9 @@ drawable ic_launcher_round
 id btn_clear_search
 id btn_download
 id btn_downloads
+id btn_fullscreen
 id btn_settings
+id btn_sources_control
 id cv_search
 id et_search
 id img_poster
@@ -58,6 +60,7 @@ id tv_title
 id tv_version
 layout activity_main
 layout activity_player
+layout custom_player_controls
 layout fragment_downloads
 layout fragment_home
 layout fragment_result

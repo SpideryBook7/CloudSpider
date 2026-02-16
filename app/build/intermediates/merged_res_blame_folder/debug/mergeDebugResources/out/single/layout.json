@@ -1,5 +1,25 @@
 [
     {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\fragment_downloads.xml",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_downloads.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/custom_player_controls.xml",
+        "source": "com.spiderybook.app-main-58:/layout/custom_player_controls.xml"
+    },
+    {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\item_episode.xml",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\item_episode.xml"
+    },
+    {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\fragment_home.xml",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_home.xml"
+    },
+    {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\activity_main.xml",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\activity_main.xml"
+    },
+    {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\item_home_child.xml",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\item_home_child.xml"
     },
@@ -8,20 +28,8 @@
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_search.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\fragment_downloads.xml",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_downloads.xml"
-    },
-    {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\item_episode.xml",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\item_episode.xml"
-    },
-    {
-        "merged": "com.spiderybook.app-mergeDebugResources-55:/layout/fragment_home.xml",
-        "source": "com.spiderybook.app-main-58:/layout/fragment_home.xml"
-    },
-    {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\fragment_home.xml",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_home.xml"
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\custom_player_controls.xml",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\custom_player_controls.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\fragment_settings.xml",
@@ -34,10 +42,6 @@
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\fragment_result.xml",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\fragment_result.xml"
-    },
-    {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\activity_main.xml",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-58:\\layout\\activity_main.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-mergeDebugResources-55:\\layout\\item_home_parent.xml",
