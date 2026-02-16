@@ -21,9 +21,12 @@ color white
 drawable gradient_bottom
 drawable ic_launcher
 drawable ic_launcher_round
+id btn_clear_search
 id btn_download
 id btn_downloads
 id btn_settings
+id cv_search
+id et_search
 id img_poster
 id nav_downloads
 id nav_graph

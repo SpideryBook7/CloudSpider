@@ -3423,6 +3423,7 @@ id bounce
 id bounceBoth
 id bounceEnd
 id bounceStart
+id btn_clear_search
 id btn_download
 id btn_downloads
 id btn_settings
@@ -3467,6 +3468,7 @@ id currentState
 id custom
 id customPanel
 id cut
+id cv_search
 id date_picker_actions
 id decelerate
 id decelerateAndComplete
@@ -3511,6 +3513,7 @@ id end_padder
 id enterAlways
 id enterAlwaysCollapsed
 id escape
+id et_search
 id exitUntilCollapsed
 id exo_ad_overlay
 id exo_artwork

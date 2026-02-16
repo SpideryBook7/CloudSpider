@@ -3422,6 +3422,7 @@ int id bounce 0x7f0a0060
 int id bounceBoth 0x7f0a0061
 int id bounceEnd 0x7f0a0062
 int id bounceStart 0x7f0a0063
+int id btn_clear_search 0x7f0a0260
 int id btn_download 0x7f0a0064
 int id btn_downloads 0x7f0a0065
 int id btn_settings 0x7f0a0066
@@ -3466,6 +3467,7 @@ int id currentState 0x7f0a008c
 int id custom 0x7f0a008d
 int id customPanel 0x7f0a008e
 int id cut 0x7f0a008f
+int id cv_search 0x7f0a0261
 int id date_picker_actions 0x7f0a0090
 int id decelerate 0x7f0a0091
 int id decelerateAndComplete 0x7f0a0092
@@ -3510,6 +3512,7 @@ int id end_padder 0x7f0a00b8
 int id enterAlways 0x7f0a00b9
 int id enterAlwaysCollapsed 0x7f0a00ba
 int id escape 0x7f0a00bb
+int id et_search 0x7f0a0262
 int id exitUntilCollapsed 0x7f0a00bc
 int id exo_ad_overlay 0x7f0a00bd
 int id exo_artwork 0x7f0a00be

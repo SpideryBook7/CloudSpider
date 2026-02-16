@@ -51,7 +51,7 @@ class PlayerActivity : AppCompatActivity() {
             if (resource is Resource.Success) {
                 val link = resource.data.firstOrNull()
                 if (link != null) {
-                     initializePlayer(link.url)
+                     initializePlayer(link.url, link.referer)
                 } else {
                     Toast.makeText(this, "No links found", Toast.LENGTH_SHORT).show()
                 }
@@ -62,12 +62,42 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     @OptIn(UnstableApi::class)
-    private fun initializePlayer(url: String) {
-        player = ExoPlayer.Builder(this).build()
+    private fun initializePlayer(url: String, referer: String?) {
+        val dataSourceFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
+            .setAllowCrossProtocolRedirects(true)
+            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+        
+        if (!referer.isNullOrEmpty()) {
+            val headers = mutableMapOf<String, String>()
+            headers["Referer"] = referer
+            dataSourceFactory.setDefaultRequestProperties(headers)
+        }
+
+        player = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(
+                androidx.media3.exoplayer.source.DefaultMediaSourceFactory(dataSourceFactory)
+            )
+            .build()
+        
         binding.playerView.player = player
+        
+        // Add error listener for debugging
+        player?.addListener(object : androidx.media3.common.Player.Listener {
+            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                super.onPlayerError(error)
+                Toast.makeText(this@PlayerActivity, "Playback Error: ${error.message}", Toast.LENGTH_LONG).show()
+                error.printStackTrace()
+            }
+        })
+        
         
         val mediaItem = MediaItem.fromUri(Uri.parse(url))
         player?.setMediaItem(mediaItem)
+        
+        // DEBUG: Show the URL being played
+        Toast.makeText(this, "Playing: $url", Toast.LENGTH_LONG).show()
+        android.util.Log.d("PlayerActivity", "Initializing player with URL: $url and Referer: $referer")
+
         player?.prepare()
         player?.play()
     }

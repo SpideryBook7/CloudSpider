@@ -4,13 +4,16 @@ package com.spiderybook.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
@@ -25,10 +28,19 @@ public final class FragmentHomeBinding implements ViewBinding {
   private final ConstraintLayout rootView;
 
   @NonNull
+  public final ImageView btnClearSearch;
+
+  @NonNull
   public final ImageButton btnDownloads;
 
   @NonNull
   public final ImageButton btnSettings;
+
+  @NonNull
+  public final CardView cvSearch;
+
+  @NonNull
+  public final EditText etSearch;
 
   @NonNull
   public final ProgressBar progressBar;
@@ -45,13 +57,17 @@ public final class FragmentHomeBinding implements ViewBinding {
   @NonNull
   public final TextView tvError;
 
-  private FragmentHomeBinding(@NonNull ConstraintLayout rootView, @NonNull ImageButton btnDownloads,
-      @NonNull ImageButton btnSettings, @NonNull ProgressBar progressBar,
+  private FragmentHomeBinding(@NonNull ConstraintLayout rootView, @NonNull ImageView btnClearSearch,
+      @NonNull ImageButton btnDownloads, @NonNull ImageButton btnSettings,
+      @NonNull CardView cvSearch, @NonNull EditText etSearch, @NonNull ProgressBar progressBar,
       @NonNull RecyclerView rvHome, @NonNull Spinner spinnerProvider, @NonNull Toolbar toolbar,
       @NonNull TextView tvError) {
     this.rootView = rootView;
+    this.btnClearSearch = btnClearSearch;
     this.btnDownloads = btnDownloads;
     this.btnSettings = btnSettings;
+    this.cvSearch = cvSearch;
+    this.etSearch = etSearch;
     this.progressBar = progressBar;
     this.rvHome = rvHome;
     this.spinnerProvider = spinnerProvider;
@@ -86,6 +102,12 @@ public final class FragmentHomeBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.btn_clear_search;
+      ImageView btnClearSearch = ViewBindings.findChildViewById(rootView, id);
+      if (btnClearSearch == null) {
+        break missingId;
+      }
+
       id = R.id.btn_downloads;
       ImageButton btnDownloads = ViewBindings.findChildViewById(rootView, id);
       if (btnDownloads == null) {
@@ -95,6 +117,18 @@ public final class FragmentHomeBinding implements ViewBinding {
       id = R.id.btn_settings;
       ImageButton btnSettings = ViewBindings.findChildViewById(rootView, id);
       if (btnSettings == null) {
+        break missingId;
+      }
+
+      id = R.id.cv_search;
+      CardView cvSearch = ViewBindings.findChildViewById(rootView, id);
+      if (cvSearch == null) {
+        break missingId;
+      }
+
+      id = R.id.et_search;
+      EditText etSearch = ViewBindings.findChildViewById(rootView, id);
+      if (etSearch == null) {
         break missingId;
       }
 
@@ -128,8 +162,8 @@ public final class FragmentHomeBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentHomeBinding((ConstraintLayout) rootView, btnDownloads, btnSettings,
-          progressBar, rvHome, spinnerProvider, toolbar, tvError);
+      return new FragmentHomeBinding((ConstraintLayout) rootView, btnClearSearch, btnDownloads,
+          btnSettings, cvSearch, etSearch, progressBar, rvHome, spinnerProvider, toolbar, tvError);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));
