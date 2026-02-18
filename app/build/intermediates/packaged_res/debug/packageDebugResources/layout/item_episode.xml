@@ -1,27 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp"
+    android:gravity="center_vertical"
     android:background="?attr/selectableItemBackground">
 
-    <TextView
-        android:id="@+id/tv_episode_number"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        tools:text="1" />
+    <androidx.cardview.widget.CardView
+        android:layout_width="120dp"
+        android:layout_height="68dp"
+        app:cardCornerRadius="4dp"
+        android:layout_marginEnd="12dp"
+        app:cardBackgroundColor="@android:color/darker_gray">
+        
+        <ImageView
+            android:id="@+id/img_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            tools:src="@android:color/darker_gray" />
+            
+        <ImageView
+             android:layout_width="24dp"
+             android:layout_height="24dp"
+             android:src="@android:drawable/ic_media_play"
+             android:layout_gravity="center"
+             app:tint="@android:color/white"
+             android:alpha="0.8"/>
+            
+    </androidx.cardview.widget.CardView>
 
-    <TextView
-        android:id="@+id/tv_episode_name"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textSize="16sp"
-        tools:text="Episode Name" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_episode_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            tools:text="1. The End's Beginning" />
+            
+        <TextView
+            android:id="@+id/tv_duration"
+             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:text="24m" 
+            android:visibility="gone"/>
+    </LinearLayout>
+    
+    <ImageButton
+        android:id="@+id/btn_download_episode"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@android:drawable/stat_sys_download"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:tint="@color/text_secondary"
+        android:padding="12dp"
+        android:contentDescription="Download"/>
 
 </LinearLayout>

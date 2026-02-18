@@ -15,6 +15,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.spiderybook.databinding.ActivityPlayerBinding
 import com.spiderybook.util.Resource
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,8 +24,12 @@ class PlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPlayerBinding
     private var player: ExoPlayer? = null
+    private var startPosition: Long = 0L
     
     private val viewModel: PlayerViewModel by viewModels()
+    
+    @javax.inject.Inject
+    lateinit var localRepository: com.spiderybook.data.repository.LocalRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,8 +40,37 @@ class PlayerActivity : AppCompatActivity() {
         
         val data = intent.getStringExtra("data")
         val apiName = intent.getStringExtra("apiName")
+        val title = intent.getStringExtra("title")
+        val poster = intent.getStringExtra("poster")
+        val type = intent.getStringExtra("type")
         
         if (data != null && apiName != null) {
+            // Save/Update History
+            if (title != null && poster != null) {
+                lifecycleScope.launch {
+                    val existing = localRepository.getHistoryItem(data)
+                    var savedPosition = 0L
+                    
+                    if (existing != null) {
+                        savedPosition = existing.playbackPosition
+                        // Store it in a member variable to use when player initializes
+                        startPosition = savedPosition
+                        Toast.makeText(this@PlayerActivity, "Resuming from ${generatedTime(savedPosition)}", Toast.LENGTH_SHORT).show()
+                    }
+                    
+                    localRepository.insertHistory(
+                        com.spiderybook.data.local.entity.HistoryEntity(
+                            url = data,
+                            name = title,
+                            posterUrl = poster,
+                            apiName = apiName,
+                            type = type,
+                            playbackPosition = savedPosition
+                        )
+                    )
+                }
+            }
+            
             setupObservers()
             viewModel.loadLinks(apiName, data)
         } else {
@@ -64,7 +99,7 @@ class PlayerActivity : AppCompatActivity() {
                     }
                 }
                 
-                // Fullscreen Logic
+                // Fullscreen (Rotation) Logic
                 val btnFullscreen = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_fullscreen)
                 btnFullscreen?.setOnClickListener {
                     requestedOrientation = if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
@@ -72,6 +107,20 @@ class PlayerActivity : AppCompatActivity() {
                     } else {
                         android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                     }
+                }
+                
+                // Aspect Ratio Logic (Toggle: Original <-> Stretch)
+                val btnAspectRatio = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_aspect_ratio)
+                btnAspectRatio?.setOnClickListener {
+                    val currentMode = binding.playerView.resizeMode
+                    val newMode = if (currentMode == androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL) {
+                        Toast.makeText(this, "Original (Fit)", Toast.LENGTH_SHORT).show()
+                        androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+                    } else {
+                        Toast.makeText(this, "Stretch to Fill", Toast.LENGTH_SHORT).show()
+                        androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
+                    }
+                    binding.playerView.resizeMode = newMode
                 }
 
                 if (links.isNotEmpty()) {
@@ -136,8 +185,33 @@ class PlayerActivity : AppCompatActivity() {
         
         binding.playerView.player = player
         
-        // Add error listener for debugging
+        // Manual Play/Pause Logic
+        val btnPlay = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_play_custom)
+        val btnPause = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_pause_custom)
+        
+        btnPlay?.setOnClickListener { player?.play() }
+        btnPause?.setOnClickListener { player?.pause() }
+
+        // Add listener for state changes
         player?.addListener(object : androidx.media3.common.Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (isPlaying) {
+                    btnPlay?.visibility = View.GONE
+                    btnPause?.visibility = View.VISIBLE
+                } else {
+                    btnPlay?.visibility = View.VISIBLE
+                    btnPause?.visibility = View.GONE
+                }
+            }
+            
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                super.onPlaybackStateChanged(playbackState)
+                if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
+                    btnPlay?.visibility = View.VISIBLE
+                    btnPause?.visibility = View.GONE
+                }
+            }
+
             override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
                 super.onPlayerError(error)
                 Toast.makeText(this@PlayerActivity, "Playback Error: ${error.message}", Toast.LENGTH_LONG).show()
@@ -153,12 +227,38 @@ class PlayerActivity : AppCompatActivity() {
         Toast.makeText(this, "Playing: $url", Toast.LENGTH_LONG).show()
         android.util.Log.d("PlayerActivity", "Initializing player with URL: $url and Referer: $referer")
 
+        if (startPosition > 0L) {
+             player?.seekTo(startPosition)
+        }
         player?.prepare()
         player?.play()
     }
 
     override fun onStop() {
         super.onStop()
+        if (player != null && player!!.playbackState != androidx.media3.common.Player.STATE_IDLE) {
+            val currentPos = player!!.currentPosition
+            val data = intent.getStringExtra("data")
+            val apiName = intent.getStringExtra("apiName")
+            val title = intent.getStringExtra("title")
+            val poster = intent.getStringExtra("poster")
+            val type = intent.getStringExtra("type")
+
+            if (data != null && title != null && poster != null && apiName != null) {
+                lifecycleScope.launch {
+                    localRepository.insertHistory(
+                        com.spiderybook.data.local.entity.HistoryEntity(
+                            url = data,
+                            name = title,
+                            posterUrl = poster,
+                            apiName = apiName,
+                            type = type,
+                            playbackPosition = currentPos
+                        )
+                    )
+                }
+            }
+        }
         releasePlayer()
     }
 
@@ -172,6 +272,19 @@ class PlayerActivity : AppCompatActivity() {
         WindowInsetsControllerCompat(window, binding.root).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    private fun generatedTime(ms: Long): String {
+        val seconds = ms / 1000
+        val minutes = seconds / 60
+        val remainingSeconds = seconds % 60
+        return if (minutes > 60) {
+            val hours = minutes / 60
+            val remainingMinutes = minutes % 60
+            String.format("%02d:%02d:%02d", hours, remainingMinutes, remainingSeconds)
+        } else {
+            String.format("%02d:%02d", minutes, remainingSeconds)
         }
     }
 }

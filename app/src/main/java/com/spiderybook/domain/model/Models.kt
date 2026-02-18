@@ -8,7 +8,8 @@ data class HomePageResponse(
 data class HomePageList(
     val name: String,
     val list: List<SearchResponse>,
-    val isHorizontal: Boolean = true
+    val isHorizontal: Boolean = true,
+    var isExpanded: Boolean = true
 )
 
 data class SearchResponse(
@@ -32,6 +33,8 @@ data class LoadResponse(
     val tags: List<String>? = null,
     val rating: Double? = null,
     val actors: List<String>? = null,
+    val recommendations: List<SearchResponse> = emptyList(),
+    val related: List<SearchResponse> = emptyList(),
     val episodes: List<Episode> = emptyList()
 )
 

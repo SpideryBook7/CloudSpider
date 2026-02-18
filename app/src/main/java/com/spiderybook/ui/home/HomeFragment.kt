@@ -13,67 +13,82 @@ import com.spiderybook.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
 import androidx.navigation.fragment.findNavController
+import coil.load
 import com.spiderybook.util.hideKeyboard
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::inflate) {
 
     private val viewModel: HomeViewModel by viewModels()
+    private lateinit var filterAdapter: FilterAdapter
+    private lateinit var childAdapter: ChildItemAdapter // Reuse for Grid
     private lateinit var parentAdapter: ParentItemAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
+        setupFilterRecyclerView()
         setupObservers()
         setupSpinner()
-        setupSearch()
+        setupFab()
     }
 
     private fun setupRecyclerView() {
+        // Initialize adapters
         parentAdapter = ParentItemAdapter { item ->
-            // Toast.makeText(requireContext(), "Clicked: ${item.name}", Toast.LENGTH_SHORT).show()
-            val bundle = Bundle().apply {
-                putString("url", item.url)
-                putString("apiName", item.apiName)
-            }
-            findNavController().navigate(com.spiderybook.R.id.nav_result, bundle)
+            navigateToDetails(item.url, item.apiName, item.name, item.posterUrl, item.type?.name)
         }
-        binding.rvHome.adapter = parentAdapter
+        childAdapter = ChildItemAdapter(emptyList()) { item ->
+             navigateToDetails(item.url, item.apiName, item.name, item.posterUrl, item.type?.name)
+        }
+        
+        // Default to parent adapter
+        binding.rvHome.apply {
+            adapter = parentAdapter
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+        }
     }
     
-    private fun setupSearch() {
-        binding.etSearch.setOnEditorActionListener { v, actionId, event ->
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
-                val query = binding.etSearch.text.toString()
-                viewModel.search(query)
-                com.spiderybook.util.hideKeyboard(v)
-                return@setOnEditorActionListener true
-            }
-            false
+    private fun setupFilterRecyclerView() {
+        filterAdapter = FilterAdapter { category ->
+            viewModel.selectCategory(category)
+        }
+        binding.rvFilter.apply {
+            adapter = filterAdapter
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false)
+        }
+    }
+    
+    private fun navigateToDetails(url: String, apiName: String, title: String, poster: String?, type: String?) {
+        val bundle = Bundle().apply {
+            putString("url", url)
+            putString("apiName", apiName)
+            putString("title", title)
+            putString("poster", poster)
+            putString("type", type)
+        }
+        findNavController().navigate(com.spiderybook.R.id.nav_result, bundle)
+    }
+
+    private fun setupFab() {
+        // Scroll Up FAB Logic - Return to Top
+        binding.fabScrollUp.setOnClickListener {
+            // Scroll the NestedScrollView to the top
+            binding.nsvHome.smoothScrollTo(0, 0)
+            // Always expand the header
+            binding.appbar.setExpanded(true, true)
         }
         
-        binding.btnClearSearch.setOnClickListener {
-            binding.etSearch.text.clear()
-            viewModel.search("") // Reload home
-            binding.btnClearSearch.isVisible = false
-            com.spiderybook.util.hideKeyboard(it)
+        // Settings Button Logic (Moved to Toolbar)
+        binding.btnSettings.setOnClickListener {
+            findNavController().navigate(com.spiderybook.R.id.nav_settings)
         }
-        
-        binding.etSearch.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                binding.btnClearSearch.isVisible = !s.isNullOrEmpty()
-            }
-            override fun afterTextChanged(s: android.text.Editable?) {}
-        })
     }
 
     private fun setupSpinner() {
         binding.spinnerProvider.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val providerName = parent?.getItemAtPosition(position) as? String
-                // Only load if it's a DIFFERENT provider, to avoid reloading on rotation/recreation if handled by VM
-                // But VM handles checks too.
                 providerName?.let { viewModel.loadHomePage(it) }
             }
  
@@ -87,15 +102,59 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             binding.tvError.isVisible = resource is Resource.Error
             binding.rvHome.isVisible = resource is Resource.Success
             
-            when (resource) {
-                is Resource.Success -> {
-                    parentAdapter.submitList(resource.data.items)
-                }
-                is Resource.Error -> {
-                    binding.tvError.text = resource.message
-                }
-                else -> {}
+            if (resource is Resource.Error) {
+                binding.tvError.text = resource.message
             }
+        }
+        
+        viewModel.filterCategories.observe(viewLifecycleOwner) { categories ->
+            filterAdapter.submitList(categories)
+        }
+        
+        viewModel.displayedContent.observe(viewLifecycleOwner) { content ->
+            if (content is List<*>) {
+                if (content.isNotEmpty() && content.first() is com.spiderybook.domain.model.HomePageList) {
+                    // It's a list of sections (Inicio)
+                    @Suppress("UNCHECKED_CAST")
+                    val items = content as List<com.spiderybook.domain.model.HomePageList>
+                    binding.rvHome.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+                    binding.rvHome.adapter = parentAdapter
+                    parentAdapter.submitList(items)
+                } else if (content.isNotEmpty() && content.first() is com.spiderybook.domain.model.SearchResponse) {
+                    // It's a flat list of items (Letter Grid)
+                    @Suppress("UNCHECKED_CAST")
+                    val items = content as List<com.spiderybook.domain.model.SearchResponse>
+                    binding.rvHome.layoutManager = androidx.recyclerview.widget.GridLayoutManager(context, 3)
+                    binding.rvHome.adapter = childAdapter
+                    childAdapter.updateList(items)
+                } else if (content.isEmpty()) {
+                     // Empty list handling
+                     // Check selected category to decide layout? Or just clear adapter?
+                     // Defaulting to grid/child adapter for empty letter results
+                     binding.rvHome.adapter = childAdapter // or parent depending on context
+                     childAdapter.updateList(emptyList())
+                }
+            }
+        }
+        
+        viewModel.featuredItem.observe(viewLifecycleOwner) { featured ->
+             if (featured != null) {
+                 binding.appbar.setExpanded(true, true)
+                 binding.imgBanner.load(featured.posterUrl) {
+                     crossfade(true)
+                 }
+                 binding.tvBannerTitle.text = featured.name
+                 
+                 binding.btnBannerPlay.setOnClickListener {
+                     navigateToDetails(featured.url, featured.apiName, featured.name, featured.posterUrl, featured.type?.name)
+                 }
+                 
+                 binding.btnBannerInfo.setOnClickListener {
+                     navigateToDetails(featured.url, featured.apiName, featured.name, featured.posterUrl, featured.type?.name)
+                 }
+             } else {
+                 binding.appbar.setExpanded(false, false)
+             }
         }
         
         viewModel.availableProviders.observe(viewLifecycleOwner) { providers ->
@@ -104,6 +163,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
         
         viewModel.selectedProvider.observe(viewLifecycleOwner) { selected ->
+            @Suppress("UNCHECKED_CAST")
             val adapter = binding.spinnerProvider.adapter as? ArrayAdapter<String>
             if (adapter != null && selected != null) {
                 val position = adapter.getPosition(selected)
@@ -113,12 +173,5 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             }
         }
         
-        binding.btnDownloads.setOnClickListener {
-            findNavController().navigate(com.spiderybook.R.id.nav_downloads)
-        }
-        
-        binding.btnSettings.setOnClickListener {
-            findNavController().navigate(com.spiderybook.R.id.nav_settings)
-        }
     }
 }

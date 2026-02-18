@@ -1,6 +1,7 @@
 package com.spiderybook.ui.search;
 
 import com.spiderybook.data.repository.SearchRepository;
+import com.spiderybook.plugins.PluginManager;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -25,21 +26,26 @@ import javax.inject.Provider;
 public final class SearchViewModel_Factory implements Factory<SearchViewModel> {
   private final Provider<SearchRepository> searchRepositoryProvider;
 
-  public SearchViewModel_Factory(Provider<SearchRepository> searchRepositoryProvider) {
+  private final Provider<PluginManager> pluginManagerProvider;
+
+  public SearchViewModel_Factory(Provider<SearchRepository> searchRepositoryProvider,
+      Provider<PluginManager> pluginManagerProvider) {
     this.searchRepositoryProvider = searchRepositoryProvider;
+    this.pluginManagerProvider = pluginManagerProvider;
   }
 
   @Override
   public SearchViewModel get() {
-    return newInstance(searchRepositoryProvider.get());
+    return newInstance(searchRepositoryProvider.get(), pluginManagerProvider.get());
   }
 
-  public static SearchViewModel_Factory create(
-      Provider<SearchRepository> searchRepositoryProvider) {
-    return new SearchViewModel_Factory(searchRepositoryProvider);
+  public static SearchViewModel_Factory create(Provider<SearchRepository> searchRepositoryProvider,
+      Provider<PluginManager> pluginManagerProvider) {
+    return new SearchViewModel_Factory(searchRepositoryProvider, pluginManagerProvider);
   }
 
-  public static SearchViewModel newInstance(SearchRepository searchRepository) {
-    return new SearchViewModel(searchRepository);
+  public static SearchViewModel newInstance(SearchRepository searchRepository,
+      PluginManager pluginManager) {
+    return new SearchViewModel(searchRepository, pluginManager);
   }
 }

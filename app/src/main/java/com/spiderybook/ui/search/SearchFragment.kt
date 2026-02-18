@@ -41,9 +41,8 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(FragmentSearchBinding
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (!query.isNullOrEmpty()) {
-                    // TODO: Get selected API from args or shared prefs?
-                    // For now hardcoded to "Test Provider"
-                    viewModel.search("Test Provider", query)
+                    // Pass null to let ViewModel pick the first available provider
+                    viewModel.search(null, query)
                 }
                 return true
             }

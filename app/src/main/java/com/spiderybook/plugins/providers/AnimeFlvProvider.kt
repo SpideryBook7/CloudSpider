@@ -7,6 +7,7 @@ import com.spiderybook.domain.model.TvType
 import com.spiderybook.plugins.MainAPI
 import org.jsoup.Jsoup
 import javax.inject.Inject
+import kotlinx.coroutines.*
 
 class AnimeFlvProvider @Inject constructor() : MainAPI() {
     override val name = "AnimeFLV"
@@ -67,13 +68,152 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                 )
             }
             if (animeList.isNotEmpty()) {
-                items.add(HomePageList("Últimos Animes Agregados", animeList, isHorizontal = true))
+                items.add(HomePageList("Ultimos Animes Agregados", animeList, isHorizontal = true))
+            }
+
+            // 2b. Concurrent Fetch for Data Sections (Year & Movies)
+            try {
+                coroutineScope {
+                    val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+                    
+                    // Fetch Current Year (2026) and Previous Year (2025)
+                    val yearDeferred = async { 
+                        val list2026 = fetchSearchResponseList("$mainUrl/browse?year=$currentYear&order=default")
+                        val list2025 = fetchSearchResponseList("$mainUrl/browse?year=${currentYear - 1}&order=default")
+                        list2026 + list2025
+                    }
+                    val moviesDeferred = async { 
+                        val moviePages = (1..10).map { page ->
+                            async { fetchSearchResponseList("$mainUrl/browse?type=movie&order=default&page=$page") }
+                        }
+                        moviePages.awaitAll().flatten()
+                    }
+                    
+                    val yearList = yearDeferred.await()
+                    if (yearList.isNotEmpty()) {
+                        items.add(HomePageList("Ultimos del año", yearList, isHorizontal = true))
+                    }
+                    
+                    val moviesList = moviesDeferred.await()
+                    if (moviesList.isNotEmpty()) {
+                        items.add(HomePageList("Peliculas", moviesList, isHorizontal = false, isExpanded = false))
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            // 3. All Animes (Browse) - Sectioned by Letter
+            try {
+                // Fetch pages 1 to 200 concurrently (approx 4800 items - Full Catalog)
+                // Using coroutineScope to wait for all
+                 val allAnimes = coroutineScope {
+                    val deferreds = (1..200).map { i ->
+                        async {
+                            try {
+                                val browseUrl = "$mainUrl/browse?order=title&page=$i"
+                                // Use a common User-Agent to avoid blocking
+                                val browseDoc = Jsoup.connect(browseUrl)
+                                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                                    .timeout(30000) // Increase timeout for massive fetch
+                                    .get()
+                                    
+                                val browseElements = browseDoc.select("ul.ListAnimes li")
+                                val pageItems = mutableListOf<SearchResponse>()
+                                
+                                for (element in browseElements) {
+                                     val title = element.select("h3.Title").text()
+                                     val link = element.select("article a").attr("href")
+                                     val imagePath = element.select("div.Image img").attr("src")
+                                     val imageUrl = if (imagePath.startsWith("http")) imagePath else "https://animeflv.net$imagePath"
+                
+                                     pageItems.add(
+                                        SearchResponse(
+                                            name = title,
+                                            url = if (link.startsWith("http")) link else "$mainUrl$link",
+                                            apiName = name,
+                                            type = TvType.Anime,
+                                            posterUrl = imageUrl,
+                                            year = null
+                                        )
+                                    )
+                                }
+                                pageItems
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                emptyList<SearchResponse>()
+                            }
+                        }
+                    }
+                    deferreds.awaitAll().flatten()
+                }
+
+                if (allAnimes.isNotEmpty()) {
+                    // Sort locally by name to ensure correct order after concurrent fetch
+                    val sortedAnimes = allAnimes.sortedBy { it.name }
+                    
+                    // Group by First Letter
+                    val grouped = sortedAnimes.groupBy { 
+                        val firstChar = it.name.firstOrNull()?.uppercaseChar()
+                        if (firstChar != null && firstChar.isLetter()) firstChar.toString() else "#"
+                    }
+                    
+                    // Add "#" section first if exists
+                    grouped["#"]?.let { list ->
+                        items.add(HomePageList("#", list, isHorizontal = false, isExpanded = false))
+                    }
+                    
+                    // Add Letter sections A-Z
+                    grouped.keys.filter { it != "#" }.sorted().forEach { letter ->
+                         grouped[letter]?.let { list ->
+                            items.add(HomePageList(letter, list, isHorizontal = false, isExpanded = false))
+                         }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
 
             HomePageResponse(items)
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+    
+    // New function for dedicated Browse/Directory
+    override suspend fun getBrowsePage(page: Int): List<SearchResponse> {
+         return try {
+            val url = "$mainUrl/browse?order=title&page=$page"
+            // Use a common User-Agent to avoid blocking
+            val doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                .timeout(10000)
+                .get()
+            val items = mutableListOf<SearchResponse>()
+            
+            val elements = doc.select("ul.ListAnimes li")
+            for (element in elements) {
+                val title = element.select("h3.Title").text()
+                val link = element.select("article a").attr("href")
+                val imagePath = element.select("div.Image img").attr("src")
+                val imageUrl = if (imagePath.startsWith("http")) imagePath else "https://animeflv.net$imagePath"
+
+                items.add(
+                    SearchResponse(
+                        name = title,
+                        url = if (link.startsWith("http")) link else "$mainUrl$link",
+                        apiName = name,
+                        type = TvType.Anime,
+                        posterUrl = imageUrl,
+                        year = null
+                    )
+                )
+            }
+            items
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
         }
     }
 
@@ -139,9 +279,25 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
             // Parse episodes from script
             val scripts = doc.select("script")
             var episodeList = listOf<com.spiderybook.domain.model.Episode>()
+            var animeId: String? = null
             
             for (script in scripts) {
                 val html = script.html()
+                
+                // Parse anime_info for ID
+                if (html.contains("var anime_info =")) {
+                    val pattern = java.util.regex.Pattern.compile("var anime_info = (\\[.*?\\]);")
+                    val matcher = pattern.matcher(html)
+                    if (matcher.find()) {
+                        val json = matcher.group(1)
+                        // ["2439","One Piece","one-piece-tv","2026-02-15"]
+                        val parts = json?.replace("[", "")?.replace("]", "")?.replace("\"", "")?.split(",")
+                        if (!parts.isNullOrEmpty()) {
+                            animeId = parts[0]
+                        }
+                    }
+                }
+
                 if (html.contains("var episodes =")) {
                     // Extract episodes array: [[num, id], [num, id], ...]
                     val pattern = java.util.regex.Pattern.compile("var episodes = (\\[\\[.*?\\]\\]);")
@@ -157,26 +313,115 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                                 if (parts.size >= 2) {
                                     val number = parts[0].trim()
                                     // Construct episode URL: /ver/{anime-slug}-{number}
-                                    // We need to extract the anime slug from the current URL
-                                    // URL: https://www3.animeflv.net/anime/{slug}
                                     val msgUrl = url.replace("https://www3.animeflv.net", "")
                                         .replace("https://animeflv.net", "")
                                         .replace("/anime/", "")
                                     
                                     val episodeUrl = "/ver/$msgUrl-$number"
                                     
+                                    // Construct Thumbnail URL
+                                    // https://cdn.animeflv.net/screenshots/{animeId}/{number}/th_3.jpg
+                                    val safePoster = if (!animeId.isNullOrEmpty()) {
+                                        "https://cdn.animeflv.net/screenshots/$animeId/$number/th_3.jpg"
+                                    } else {
+                                        posterUrl // Fallback to main poster
+                                    }
+                                    
                                     com.spiderybook.domain.model.Episode(
                                         name = "Episodio $number",
                                         url = "$mainUrl$episodeUrl", // Absolute URL
                                         season = 1,
-                                        episode = number.toIntOrNull() ?: 0
+                                        episode = number.toIntOrNull() ?: 0,
+                                        posterUrl = safePoster
                                     )
                                 } else null
                             }
                         }
                     }
-                    break
+                    // Don't break immediately, we might find anime_info in the same or next script
+                     if (episodeList.isNotEmpty() && animeId != null) break
                 }
+            }
+            
+            // Parse Related Animes (Recommendations / Temporadas)
+            // Strategy: 
+            // 1. Get explicit relations from page (ListAnmRel) - these have "RelType" (Secuela, etc) but no images.
+            // 2. Perform a Search(title) to find ALL related content (Movies, OVAs, etc) - these have images.
+            // 3. Merge lists: Explicit first (with images fetched), then Search results (excluding duplicates).
+
+            val relatedElements = doc.select("ul.ListAnmRel li, ul.AnmRel li")
+            
+            val recommendations = coroutineScope {
+                // Task A: Fetch explicit relations and get their images
+                val explicitDeferred = async {
+                    relatedElements.map { element ->
+                        async {
+                            try {
+                                val link = element.select("a").attr("href")
+                                val titleText = element.select("a").text()
+                                var relType = element.ownText().replace("(", "").replace(")", "").trim()
+                                if (relType.isEmpty()) {
+                                     relType = element.select("i").text().replace("(", "").replace(")", "").trim()
+                                }
+                                val fullTitle = if (relType.isNotEmpty()) "$titleText ($relType)" else titleText
+                                val fullUrl = if (link.startsWith("http")) link else "$mainUrl$link"
+
+                                if (titleText.isNotEmpty()) {
+                                    // Fetch details page to get image
+                                    val detailsDoc = Jsoup.connect(fullUrl)
+                                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                                        .timeout(5000)
+                                        .get()
+                                        
+                                    val posterPath = detailsDoc.select("div.Image img").attr("src")
+                                    val posterUrl = if (posterPath.startsWith("http")) posterPath else "https://animeflv.net$posterPath"
+                                    
+                                    SearchResponse(
+                                        name = fullTitle,
+                                        url = fullUrl,
+                                        apiName = name,
+                                        type = TvType.Anime,
+                                        posterUrl = posterUrl,
+                                        year = null
+                                    )
+                                } else null
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                null
+                            }
+                        }
+                    }.awaitAll().filterNotNull()
+                }
+
+                // Task B: Search for the anime title to find other related versions/movies
+                val searchDeferred = async {
+                    // Search using the raw title (e.g. "Dragon Ball")
+                    // If title contains "TV", remove it? Usually title is clean.
+                    search(title) ?: emptyList()
+                }
+                
+                val explicitList = explicitDeferred.await()
+                val searchList = searchDeferred.await()
+                
+                // Merge Logic Split:
+                // 1. explicitList -> recommendations (Seasons/Sequels)
+                // 2. searchList (without duplicates) -> related (Movies/OVAs/etc)
+                
+                val relatedList = mutableListOf<SearchResponse>()
+                val currentUrl = url
+                
+                searchList.forEach { searchItem ->
+                    // Check if already in explicit (by URL match)
+                    val isDuplicate = explicitList.any { it.url == searchItem.url }
+                    // Check if is self
+                    val isSelf = searchItem.url == currentUrl
+                    
+                    if (!isDuplicate && !isSelf) {
+                        relatedList.add(searchItem)
+                    }
+                }
+                
+                Pair(explicitList, relatedList)
             }
             
             com.spiderybook.domain.model.LoadResponse(
@@ -189,7 +434,9 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                 plot = plot,
                 tags = genres,
                 rating = rating,
-                episodes = episodeList
+                episodes = episodeList,
+                recommendations = recommendations.first,
+                related = recommendations.second
             )
 
         } catch (e: Exception) {
@@ -268,6 +515,39 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
         } catch (e: Exception) {
             e.printStackTrace()
             false
+        }
+    }
+    private fun fetchSearchResponseList(url: String): List<SearchResponse> {
+        return try {
+            val doc = Jsoup.connect(url)
+                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                 .timeout(10000)
+                 .get()
+            
+            val items = mutableListOf<SearchResponse>()
+            val elements = doc.select("ul.ListAnimes li")
+            
+            for (element in elements) {
+                val title = element.select("h3.Title").text()
+                val link = element.select("article a").attr("href")
+                val imagePath = element.select("div.Image img").attr("src")
+                val imageUrl = if (imagePath.startsWith("http")) imagePath else "https://animeflv.net$imagePath"
+
+                items.add(
+                    SearchResponse(
+                        name = title,
+                        url = if (link.startsWith("http")) link else "$mainUrl$link",
+                        apiName = name,
+                        type = TvType.Anime,
+                        posterUrl = imageUrl,
+                        year = null
+                    )
+                )
+            }
+            items
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
         }
     }
 }

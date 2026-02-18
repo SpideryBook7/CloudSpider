@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.spiderybook.app-mergeDebugResources-54:/values-h550dp-port-v13/values-h550dp-port-v13.xml",
+            "outputFile": "com.spiderybook.app-mergeDebugResources-58:/values-h550dp-port-v13/values-h550dp-port-v13.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\0569452655df79f38245a852e680850e\\transformed\\material-1.12.0\\res\\values-h550dp-port-v13\\values-h550dp-port-v13.xml",
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\c717a8d6bca3e4a13f8da631fb7c0f64\\transformed\\material-1.12.0\\res\\values-h550dp-port-v13\\values-h550dp-port-v13.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

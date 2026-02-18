@@ -18,10 +18,16 @@
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-            <ImageButton android:id="@id/exo_play"
-                style="@style/ExoMediaButton.Play"/>
-            <ImageButton android:id="@id/exo_pause"
-                style="@style/ExoMediaButton.Pause"/>
+            <ImageButton android:id="@+id/btn_play_custom"
+                style="@style/ExoMediaButton.Play"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:visibility="visible"/>
+            <ImageButton android:id="@+id/btn_pause_custom"
+                style="@style/ExoMediaButton.Pause"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:visibility="gone"/>
         </FrameLayout>
 
         <ImageButton android:id="@id/exo_ffwd"
@@ -90,14 +96,26 @@
                 app:tint="@android:color/white"
                 xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
-            <!-- FULLSCREEN BUTTON -->
+            <!-- ASPECT RATIO BUTTON -->
             <ImageButton
-                android:id="@+id/btn_fullscreen"
+                android:id="@+id/btn_aspect_ratio"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@android:drawable/ic_menu_crop"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Fullscreen"
+                android:contentDescription="Aspect Ratio"
+                android:padding="12dp"
+                app:tint="@android:color/white"
+                xmlns:app="http://schemas.android.com/apk/res-auto"/>
+
+            <!-- FULLSCREEN BUTTON (Change icon to ROTATE to distinguish) -->
+            <ImageButton
+                android:id="@+id/btn_fullscreen"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_menu_rotate"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Rotate Screen"
                 android:padding="12dp"
                 app:tint="@android:color/white"
                 xmlns:app="http://schemas.android.com/apk/res-auto"/>

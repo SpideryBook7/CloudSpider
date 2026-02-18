@@ -11,9 +11,14 @@ import com.spiderybook.domain.model.HomePageList
 import com.spiderybook.domain.model.SearchResponse
 
 class ChildItemAdapter(
-    private val items: List<SearchResponse>,
+    private var items: List<SearchResponse>,
     private val onClick: (SearchResponse) -> Unit
 ) : RecyclerView.Adapter<ChildItemAdapter.ChildViewHolder>() {
+
+    fun updateList(newItems: List<SearchResponse>) {
+        items = newItems
+        notifyDataSetChanged()
+    }
 
     inner class ChildViewHolder(private val binding: ItemHomeChildBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -62,10 +67,23 @@ class ParentItemAdapter(
         fun bind(item: HomePageList) {
             binding.tvHeader.text = item.name
             
+            // Toggle visibility based on isExpanded
+            binding.rvChild.visibility = if (item.isExpanded) android.view.View.VISIBLE else android.view.View.GONE
+            
+            // Header Click Listener
+            binding.root.setOnClickListener {
+                item.isExpanded = !item.isExpanded
+                notifyItemChanged(bindingAdapterPosition)
+            }
+            
             val childAdapter = ChildItemAdapter(item.list, onClick)
             binding.rvChild.apply {
                 adapter = childAdapter
-                layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                layoutManager = if (item.isHorizontal) {
+                    LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                } else {
+                    androidx.recyclerview.widget.GridLayoutManager(context, 3) // Grid for vertical lists
+                }
             }
         }
     }

@@ -44,6 +44,21 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private val _featuredItem = MutableLiveData<com.spiderybook.domain.model.SearchResponse?>()
+    val featuredItem: LiveData<com.spiderybook.domain.model.SearchResponse?> = _featuredItem
+
+    private val _filterCategories = MutableLiveData<List<String>>()
+    val filterCategories: LiveData<List<String>> = _filterCategories
+
+    private val _selectedCategory = MutableLiveData<String>("Inicio")
+    val selectedCategory: LiveData<String> = _selectedCategory
+    
+    // Holds the currently displayed content. Can be List<HomePageList> (Inicio) or List<SearchResponse> (Grid)
+    private val _displayedContent = MutableLiveData<Any>()
+    val displayedContent: LiveData<Any> = _displayedContent
+    
+    private var fullHomePageResponse: HomePageResponse? = null
+
     fun loadHomePage(apiName: String) {
         if (_selectedProvider.value != apiName) {
             _selectedProvider.value = apiName
@@ -51,50 +66,94 @@ class HomeViewModel @Inject constructor(
                 _homePage.setLoading()
                 val result = homeRepository.getHomePage(apiName)
                 if (result != null) {
+                    fullHomePageResponse = result
                     _homePage.setSuccess(result)
+                    
+                    // Process Categories
+                    val categories = mutableListOf("Inicio")
+                    
+                    // Add Special Tabs (Peliculas, Series, Dorama, Kids, Reality)
+                    val specialTabs = listOf("Peliculas", "Series", "Dorama", "Kids", "Reality")
+                    specialTabs.forEach { tab ->
+                        if (result.items.any { it.name == tab }) {
+                            categories.add(tab)
+                        }
+                    }
+                    
+                    val letterCategories = result.items
+                        .filter { it.name.length == 1 || it.name == "#" } // Simple heuristic for our single letter names
+                        .map { it.name }
+                    categories.addAll(letterCategories)
+                    
+                    _filterCategories.postValue(categories)
+                    
+                    // Pick a random item from the first list as Featured (usually episodes)
+                    if (result.items.isNotEmpty()) {
+                        val firstList = result.items.first().list
+                        if (firstList.isNotEmpty()) {
+                            _featuredItem.postValue(firstList.random())
+                        } else {
+                            _featuredItem.postValue(null)
+                        }
+                    } else {
+                        _featuredItem.postValue(null)
+                    }
+                    
+                    // Load default category
+                    selectCategory("Inicio")
+                    
                 } else {
                     _homePage.setError("Failed to load home page")
+                    _featuredItem.postValue(null)
                 }
             }
         }
     }
     
+    fun selectCategory(category: String) {
+        _selectedCategory.postValue(category)
+        val data = fullHomePageResponse ?: return
+        
+        if (category == "Inicio") {
+            // Show only non-letter sections (Updates, Episodes) AND exclude Special Tabs
+            val specialTabs = listOf("Peliculas", "Series", "Dorama", "Kids", "Reality", "#")
+            val inicioItems = data.items.filter { 
+                it.name.length > 1 && !specialTabs.contains(it.name)
+            }
+            _displayedContent.postValue(inicioItems)
+        } else {
+            // Show the grid for the specific letter OR Peliculas
+            val section = data.items.find { it.name == category }
+            if (section != null) {
+                _displayedContent.postValue(section.list)
+            } else {
+                 _displayedContent.postValue(emptyList<com.spiderybook.domain.model.SearchResponse>())
+            }
+        }
+    }
+
     fun search(query: String) {
         val currentProvider = _selectedProvider.value ?: return
         if (query.isBlank()) {
-            // Reload home page if query is empty
-            // Force reload by temporarily clearing selection or just calling repo directly
-            launchIO {
-                 _homePage.setLoading()
-                val result = homeRepository.getHomePage(currentProvider)
-                if (result != null) {
-                    _homePage.setSuccess(result)
-                } else {
-                    _homePage.setError("Failed to load home page")
-                }
-            }
-            return
+             // Reset to home
+             loadHomePage(currentProvider)
+             return
         }
         
         launchIO {
             _homePage.setLoading()
-            // We need a way to search via repository. 
-            // Currently HomeRepository only has getHomePage.
-            // We should add search to Repository or access plugin manager directly. 
-            // For now, let's fast-track and access plugin directly via manager for this task, 
-            // although updating repository is cleaner.
-            
             val api = pluginManager.apis.find { it.name == currentProvider }
             if (api != null) {
                 val results = api.search(query)
                 if (results != null) {
-                    // Wrap results in HomePageResponse structure for reuse of adapter
                     val searchList = com.spiderybook.domain.model.HomePageList(
                         name = "Search Results: $query",
                         list = results,
-                        isHorizontal = false // vertical list for search results usually
+                        isHorizontal = false
                     )
+                    // For search, we treat it like "Inicio" (List of Lists)
                     _homePage.setSuccess(HomePageResponse(listOf(searchList)))
+                    _displayedContent.postValue(listOf(searchList))
                 } else {
                     _homePage.setError("No results found")
                 }

@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.spiderybook.app-mergeDebugResources-54:/values-watch-v21/values-watch-v21.xml",
+            "outputFile": "com.spiderybook.app-mergeDebugResources-58:/values-watch-v21/values-watch-v21.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\d0a7b33d4a5af2a551a4ac6ad18d471d\\transformed\\appcompat-1.7.0\\res\\values-watch-v21\\values-watch-v21.xml",
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\bcb0d51b71b3991e22732c3ab9436bea\\transformed\\appcompat-1.7.0\\res\\values-watch-v21\\values-watch-v21.xml",
                     "from": {
                         "startLines": "2,6,10",
                         "startColumns": "4,4,4",

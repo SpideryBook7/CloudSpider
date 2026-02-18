@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.spiderybook.app-mergeDebugResources-54:/values-en-rCA/values-en-rCA.xml",
+            "outputFile": "com.spiderybook.app-mergeDebugResources-58:/values-en-rCA/values-en-rCA.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\d0a7b33d4a5af2a551a4ac6ad18d471d\\transformed\\appcompat-1.7.0\\res\\values-en-rCA\\values-en-rCA.xml",
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\bcb0d51b71b3991e22732c3ab9436bea\\transformed\\appcompat-1.7.0\\res\\values-en-rCA\\values-en-rCA.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\db18adf729220bded4a37dd4881b7f97\\transformed\\core-1.13.1\\res\\values-en-rCA\\values-en-rCA.xml",
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\f67e98be54868cb4c2679ace7bc85f1e\\transformed\\core-1.13.1\\res\\values-en-rCA\\values-en-rCA.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",

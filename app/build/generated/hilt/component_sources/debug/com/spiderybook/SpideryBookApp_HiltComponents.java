@@ -1,10 +1,17 @@
 package com.spiderybook;
 
 import com.spiderybook.di.AppModule;
+import com.spiderybook.di.DatabaseModule;
 import com.spiderybook.di.NetworkModule;
 import com.spiderybook.di.PluginModule;
 import com.spiderybook.ui.MainActivity_GeneratedInjector;
+import com.spiderybook.ui.browse.BrowseFragment_GeneratedInjector;
+import com.spiderybook.ui.browse.BrowseViewModel_HiltModules;
 import com.spiderybook.ui.downloads.DownloadsFragment_GeneratedInjector;
+import com.spiderybook.ui.favorites.FavoritesFragment_GeneratedInjector;
+import com.spiderybook.ui.favorites.FavoritesViewModel_HiltModules;
+import com.spiderybook.ui.history.HistoryFragment_GeneratedInjector;
+import com.spiderybook.ui.history.HistoryViewModel_HiltModules;
 import com.spiderybook.ui.home.HomeFragment_GeneratedInjector;
 import com.spiderybook.ui.home.HomeViewModel_HiltModules;
 import com.spiderybook.ui.player.PlayerActivity_GeneratedInjector;
@@ -140,6 +147,7 @@ public final class SpideryBookApp_HiltComponents {
       modules = {
           AppModule.class,
           ApplicationContextModule.class,
+          DatabaseModule.class,
           HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule.class,
           NetworkModule.class,
           PluginModule.class,
@@ -167,8 +175,11 @@ public final class SpideryBookApp_HiltComponents {
 
   @Subcomponent(
       modules = {
+          BrowseViewModel_HiltModules.KeyModule.class,
+          FavoritesViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
           HiltWrapper_SavedStateHandleModule.class,
+          HistoryViewModel_HiltModules.KeyModule.class,
           HomeViewModel_HiltModules.KeyModule.class,
           PlayerViewModel_HiltModules.KeyModule.class,
           ResultViewModel_HiltModules.KeyModule.class,
@@ -211,7 +222,10 @@ public final class SpideryBookApp_HiltComponents {
 
   @Subcomponent(
       modules = {
+          BrowseViewModel_HiltModules.BindsModule.class,
+          FavoritesViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
+          HistoryViewModel_HiltModules.BindsModule.class,
           HomeViewModel_HiltModules.BindsModule.class,
           PlayerViewModel_HiltModules.BindsModule.class,
           ResultViewModel_HiltModules.BindsModule.class,
@@ -240,7 +254,10 @@ public final class SpideryBookApp_HiltComponents {
       modules = ViewWithFragmentCBuilderModule.class
   )
   @FragmentScoped
-  public abstract static class FragmentC implements DownloadsFragment_GeneratedInjector,
+  public abstract static class FragmentC implements BrowseFragment_GeneratedInjector,
+      DownloadsFragment_GeneratedInjector,
+      FavoritesFragment_GeneratedInjector,
+      HistoryFragment_GeneratedInjector,
       HomeFragment_GeneratedInjector,
       ResultFragment_GeneratedInjector,
       SearchFragment_GeneratedInjector,

@@ -17,6 +17,8 @@ abstract class MainAPI {
     open val hasSearch: Boolean = true
 
     open suspend fun getMainPage(page: Int): HomePageResponse? = null
+    
+    open suspend fun getBrowsePage(page: Int): List<SearchResponse> = emptyList()
 
     open suspend fun search(query: String): List<SearchResponse>? = null
     

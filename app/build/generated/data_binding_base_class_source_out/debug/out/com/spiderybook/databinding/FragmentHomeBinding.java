@@ -4,8 +4,6 @@ package com.spiderybook.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -13,11 +11,15 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
-import androidx.cardview.widget.CardView;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.spiderybook.R;
 import java.lang.NullPointerException;
 import java.lang.Override;
@@ -25,25 +27,40 @@ import java.lang.String;
 
 public final class FragmentHomeBinding implements ViewBinding {
   @NonNull
-  private final ConstraintLayout rootView;
+  private final CoordinatorLayout rootView;
 
   @NonNull
-  public final ImageView btnClearSearch;
+  public final AppBarLayout appbar;
 
   @NonNull
-  public final ImageButton btnDownloads;
+  public final MaterialButton btnBannerInfo;
 
   @NonNull
-  public final ImageButton btnSettings;
+  public final MaterialButton btnBannerPlay;
 
   @NonNull
-  public final CardView cvSearch;
+  public final ImageView btnSettings;
 
   @NonNull
-  public final EditText etSearch;
+  public final CollapsingToolbarLayout collapsingToolbar;
+
+  @NonNull
+  public final FloatingActionButton fabScrollUp;
+
+  @NonNull
+  public final ImageView imgAppLogo;
+
+  @NonNull
+  public final ImageView imgBanner;
+
+  @NonNull
+  public final NestedScrollView nsvHome;
 
   @NonNull
   public final ProgressBar progressBar;
+
+  @NonNull
+  public final RecyclerView rvFilter;
 
   @NonNull
   public final RecyclerView rvHome;
@@ -55,29 +72,41 @@ public final class FragmentHomeBinding implements ViewBinding {
   public final Toolbar toolbar;
 
   @NonNull
+  public final TextView tvBannerTitle;
+
+  @NonNull
   public final TextView tvError;
 
-  private FragmentHomeBinding(@NonNull ConstraintLayout rootView, @NonNull ImageView btnClearSearch,
-      @NonNull ImageButton btnDownloads, @NonNull ImageButton btnSettings,
-      @NonNull CardView cvSearch, @NonNull EditText etSearch, @NonNull ProgressBar progressBar,
+  private FragmentHomeBinding(@NonNull CoordinatorLayout rootView, @NonNull AppBarLayout appbar,
+      @NonNull MaterialButton btnBannerInfo, @NonNull MaterialButton btnBannerPlay,
+      @NonNull ImageView btnSettings, @NonNull CollapsingToolbarLayout collapsingToolbar,
+      @NonNull FloatingActionButton fabScrollUp, @NonNull ImageView imgAppLogo,
+      @NonNull ImageView imgBanner, @NonNull NestedScrollView nsvHome,
+      @NonNull ProgressBar progressBar, @NonNull RecyclerView rvFilter,
       @NonNull RecyclerView rvHome, @NonNull Spinner spinnerProvider, @NonNull Toolbar toolbar,
-      @NonNull TextView tvError) {
+      @NonNull TextView tvBannerTitle, @NonNull TextView tvError) {
     this.rootView = rootView;
-    this.btnClearSearch = btnClearSearch;
-    this.btnDownloads = btnDownloads;
+    this.appbar = appbar;
+    this.btnBannerInfo = btnBannerInfo;
+    this.btnBannerPlay = btnBannerPlay;
     this.btnSettings = btnSettings;
-    this.cvSearch = cvSearch;
-    this.etSearch = etSearch;
+    this.collapsingToolbar = collapsingToolbar;
+    this.fabScrollUp = fabScrollUp;
+    this.imgAppLogo = imgAppLogo;
+    this.imgBanner = imgBanner;
+    this.nsvHome = nsvHome;
     this.progressBar = progressBar;
+    this.rvFilter = rvFilter;
     this.rvHome = rvHome;
     this.spinnerProvider = spinnerProvider;
     this.toolbar = toolbar;
+    this.tvBannerTitle = tvBannerTitle;
     this.tvError = tvError;
   }
 
   @Override
   @NonNull
-  public ConstraintLayout getRoot() {
+  public CoordinatorLayout getRoot() {
     return rootView;
   }
 
@@ -102,39 +131,69 @@ public final class FragmentHomeBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
-      id = R.id.btn_clear_search;
-      ImageView btnClearSearch = ViewBindings.findChildViewById(rootView, id);
-      if (btnClearSearch == null) {
+      id = R.id.appbar;
+      AppBarLayout appbar = ViewBindings.findChildViewById(rootView, id);
+      if (appbar == null) {
         break missingId;
       }
 
-      id = R.id.btn_downloads;
-      ImageButton btnDownloads = ViewBindings.findChildViewById(rootView, id);
-      if (btnDownloads == null) {
+      id = R.id.btn_banner_info;
+      MaterialButton btnBannerInfo = ViewBindings.findChildViewById(rootView, id);
+      if (btnBannerInfo == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_banner_play;
+      MaterialButton btnBannerPlay = ViewBindings.findChildViewById(rootView, id);
+      if (btnBannerPlay == null) {
         break missingId;
       }
 
       id = R.id.btn_settings;
-      ImageButton btnSettings = ViewBindings.findChildViewById(rootView, id);
+      ImageView btnSettings = ViewBindings.findChildViewById(rootView, id);
       if (btnSettings == null) {
         break missingId;
       }
 
-      id = R.id.cv_search;
-      CardView cvSearch = ViewBindings.findChildViewById(rootView, id);
-      if (cvSearch == null) {
+      id = R.id.collapsing_toolbar;
+      CollapsingToolbarLayout collapsingToolbar = ViewBindings.findChildViewById(rootView, id);
+      if (collapsingToolbar == null) {
         break missingId;
       }
 
-      id = R.id.et_search;
-      EditText etSearch = ViewBindings.findChildViewById(rootView, id);
-      if (etSearch == null) {
+      id = R.id.fab_scroll_up;
+      FloatingActionButton fabScrollUp = ViewBindings.findChildViewById(rootView, id);
+      if (fabScrollUp == null) {
+        break missingId;
+      }
+
+      id = R.id.img_app_logo;
+      ImageView imgAppLogo = ViewBindings.findChildViewById(rootView, id);
+      if (imgAppLogo == null) {
+        break missingId;
+      }
+
+      id = R.id.img_banner;
+      ImageView imgBanner = ViewBindings.findChildViewById(rootView, id);
+      if (imgBanner == null) {
+        break missingId;
+      }
+
+      id = R.id.nsv_home;
+      NestedScrollView nsvHome = ViewBindings.findChildViewById(rootView, id);
+      if (nsvHome == null) {
         break missingId;
       }
 
       id = R.id.progress_bar;
       ProgressBar progressBar = ViewBindings.findChildViewById(rootView, id);
       if (progressBar == null) {
+        break missingId;
+      }
+
+      id = R.id.rv_filter;
+      RecyclerView rvFilter = ViewBindings.findChildViewById(rootView, id);
+      if (rvFilter == null) {
         break missingId;
       }
 
@@ -156,14 +215,21 @@ public final class FragmentHomeBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.tv_banner_title;
+      TextView tvBannerTitle = ViewBindings.findChildViewById(rootView, id);
+      if (tvBannerTitle == null) {
+        break missingId;
+      }
+
       id = R.id.tv_error;
       TextView tvError = ViewBindings.findChildViewById(rootView, id);
       if (tvError == null) {
         break missingId;
       }
 
-      return new FragmentHomeBinding((ConstraintLayout) rootView, btnClearSearch, btnDownloads,
-          btnSettings, cvSearch, etSearch, progressBar, rvHome, spinnerProvider, toolbar, tvError);
+      return new FragmentHomeBinding((CoordinatorLayout) rootView, appbar, btnBannerInfo,
+          btnBannerPlay, btnSettings, collapsingToolbar, fabScrollUp, imgAppLogo, imgBanner,
+          nsvHome, progressBar, rvFilter, rvHome, spinnerProvider, toolbar, tvBannerTitle, tvError);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

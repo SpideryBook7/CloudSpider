@@ -1,23 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Brand Colors -->
-    <color name="brand_primary">#0A0E17</color> <!-- Very Dark Blue/Black -->
-    <color name="brand_secondary">#151F2E</color> <!-- Lighter Dark Blue -->
-    <color name="brand_accent">#00E5FF</color> <!-- Cyan Accent -->
+    <color name="brand_primary">#000000</color> <!-- Netflix Black -->
+    <color name="brand_secondary">#121212</color> <!-- Netflix Dark Surface -->
+    <color name="brand_accent">#E50914</color> <!-- Netflix Red -->
+    
+    <!-- Material 3 / Standard Names -->
+    <color name="primary">#E50914</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="secondary">#E50914</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="surface_variant">#333333</color>
+    <color name="on_surface">#FFFFFF</color>
     
     <!-- UI Colors -->
-    <color name="background_dark">#0A0E17</color>
-    <color name="surface_dark">#151F2E</color>
-    <color name="surface_light">#1F2B3E</color>
+    <color name="background_dark">#000000</color>
+    <color name="surface_dark">#121212</color>
+    <color name="surface_light">#2B2B2B</color>
     
     <!-- Text Colors -->
     <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#B0BEC5</color>
-    <color name="text_hint">#78909C</color>
+    <color name="text_secondary">#B3B3B3</color>
+    <color name="text_hint">#808080</color>
     
     <!-- Status/Functional -->
     <color name="error">#CF6679</color>
-    <color name="success">#03DAC5</color>
+    <color name="success">#46D369</color> <!-- Netflix Green-ish -->
     <color name="warning">#FFB74D</color>
     
     <!-- Legacy Mappings for Backward Compatibility/Theme defaults -->
@@ -27,4 +35,5 @@
     <color name="teal_700">@color/brand_accent</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="header_scrim">#BF000000</color>
 </resources>

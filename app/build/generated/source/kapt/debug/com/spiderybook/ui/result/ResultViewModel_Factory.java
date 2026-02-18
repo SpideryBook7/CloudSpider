@@ -1,6 +1,7 @@
 package com.spiderybook.ui.result;
 
 import com.spiderybook.data.repository.LoadRepository;
+import com.spiderybook.data.repository.LocalRepository;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -25,20 +26,26 @@ import javax.inject.Provider;
 public final class ResultViewModel_Factory implements Factory<ResultViewModel> {
   private final Provider<LoadRepository> loadRepositoryProvider;
 
-  public ResultViewModel_Factory(Provider<LoadRepository> loadRepositoryProvider) {
+  private final Provider<LocalRepository> localRepositoryProvider;
+
+  public ResultViewModel_Factory(Provider<LoadRepository> loadRepositoryProvider,
+      Provider<LocalRepository> localRepositoryProvider) {
     this.loadRepositoryProvider = loadRepositoryProvider;
+    this.localRepositoryProvider = localRepositoryProvider;
   }
 
   @Override
   public ResultViewModel get() {
-    return newInstance(loadRepositoryProvider.get());
+    return newInstance(loadRepositoryProvider.get(), localRepositoryProvider.get());
   }
 
-  public static ResultViewModel_Factory create(Provider<LoadRepository> loadRepositoryProvider) {
-    return new ResultViewModel_Factory(loadRepositoryProvider);
+  public static ResultViewModel_Factory create(Provider<LoadRepository> loadRepositoryProvider,
+      Provider<LocalRepository> localRepositoryProvider) {
+    return new ResultViewModel_Factory(loadRepositoryProvider, localRepositoryProvider);
   }
 
-  public static ResultViewModel newInstance(LoadRepository loadRepository) {
-    return new ResultViewModel(loadRepository);
+  public static ResultViewModel newInstance(LoadRepository loadRepository,
+      LocalRepository localRepository) {
+    return new ResultViewModel(loadRepository, localRepository);
   }
 }

@@ -9,18 +9,34 @@ import androidx.lifecycle.ViewModel;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.spiderybook.data.local.AppDatabase;
+import com.spiderybook.data.local.dao.MainDao;
 import com.spiderybook.data.manager.AppDownloadManager;
 import com.spiderybook.data.repository.HomeRepository;
 import com.spiderybook.data.repository.LoadRepository;
+import com.spiderybook.data.repository.LocalRepository;
 import com.spiderybook.data.repository.SearchRepository;
+import com.spiderybook.di.DatabaseModule_ProvideDatabaseFactory;
+import com.spiderybook.di.DatabaseModule_ProvideMainDaoFactory;
 import com.spiderybook.di.PluginModule_ProvidePluginManagerFactory;
 import com.spiderybook.plugins.PluginManager;
+import com.spiderybook.plugins.providers.AnimeFlvProvider;
 import com.spiderybook.ui.MainActivity;
+import com.spiderybook.ui.browse.BrowseFragment;
+import com.spiderybook.ui.browse.BrowseViewModel;
+import com.spiderybook.ui.browse.BrowseViewModel_HiltModules;
 import com.spiderybook.ui.downloads.DownloadsFragment;
+import com.spiderybook.ui.favorites.FavoritesFragment;
+import com.spiderybook.ui.favorites.FavoritesViewModel;
+import com.spiderybook.ui.favorites.FavoritesViewModel_HiltModules;
+import com.spiderybook.ui.history.HistoryFragment;
+import com.spiderybook.ui.history.HistoryViewModel;
+import com.spiderybook.ui.history.HistoryViewModel_HiltModules;
 import com.spiderybook.ui.home.HomeFragment;
 import com.spiderybook.ui.home.HomeViewModel;
 import com.spiderybook.ui.home.HomeViewModel_HiltModules;
 import com.spiderybook.ui.player.PlayerActivity;
+import com.spiderybook.ui.player.PlayerActivity_MembersInjector;
 import com.spiderybook.ui.player.PlayerViewModel;
 import com.spiderybook.ui.player.PlayerViewModel_HiltModules;
 import com.spiderybook.ui.result.ResultFragment;
@@ -45,6 +61,7 @@ import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories_Internal
 import dagger.hilt.android.internal.managers.ActivityRetainedComponentManager_LifecycleModule_ProvideActivityRetainedLifecycleFactory;
 import dagger.hilt.android.internal.managers.SavedStateHandleHolder;
 import dagger.hilt.android.internal.modules.ApplicationContextModule;
+import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideApplicationFactory;
 import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideContextFactory;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.DoubleCheck;
@@ -334,24 +351,36 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
     }
 
     @Override
-    public void injectDownloadsFragment(DownloadsFragment arg0) {
+    public void injectBrowseFragment(BrowseFragment browseFragment) {
     }
 
     @Override
-    public void injectHomeFragment(HomeFragment arg0) {
+    public void injectDownloadsFragment(DownloadsFragment downloadsFragment) {
     }
 
     @Override
-    public void injectResultFragment(ResultFragment arg0) {
-      injectResultFragment2(arg0);
+    public void injectFavoritesFragment(FavoritesFragment favoritesFragment) {
     }
 
     @Override
-    public void injectSearchFragment(SearchFragment arg0) {
+    public void injectHistoryFragment(HistoryFragment historyFragment) {
     }
 
     @Override
-    public void injectSettingsFragment(SettingsFragment arg0) {
+    public void injectHomeFragment(HomeFragment homeFragment) {
+    }
+
+    @Override
+    public void injectResultFragment(ResultFragment resultFragment) {
+      injectResultFragment2(resultFragment);
+    }
+
+    @Override
+    public void injectSearchFragment(SearchFragment searchFragment) {
+    }
+
+    @Override
+    public void injectSettingsFragment(SettingsFragment settingsFragment) {
     }
 
     @Override
@@ -406,11 +435,12 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
     }
 
     @Override
-    public void injectMainActivity(MainActivity arg0) {
+    public void injectMainActivity(MainActivity mainActivity) {
     }
 
     @Override
-    public void injectPlayerActivity(PlayerActivity arg0) {
+    public void injectPlayerActivity(PlayerActivity playerActivity) {
+      injectPlayerActivity2(playerActivity);
     }
 
     @Override
@@ -420,7 +450,7 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
     @Override
     public Map<Class<?>, Boolean> getViewModelKeys() {
-      return LazyClassKeyMap.<Boolean>of(ImmutableMap.<String, Boolean>of(LazyClassKeyProvider.com_spiderybook_ui_home_HomeViewModel, HomeViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_spiderybook_ui_player_PlayerViewModel, PlayerViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_spiderybook_ui_result_ResultViewModel, ResultViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_spiderybook_ui_search_SearchViewModel, SearchViewModel_HiltModules.KeyModule.provide()));
+      return LazyClassKeyMap.<Boolean>of(ImmutableMap.<String, Boolean>builderWithExpectedSize(7).put(LazyClassKeyProvider.com_spiderybook_ui_browse_BrowseViewModel, BrowseViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_spiderybook_ui_favorites_FavoritesViewModel, FavoritesViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_spiderybook_ui_history_HistoryViewModel, HistoryViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_spiderybook_ui_home_HomeViewModel, HomeViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_spiderybook_ui_player_PlayerViewModel, PlayerViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_spiderybook_ui_result_ResultViewModel, ResultViewModel_HiltModules.KeyModule.provide()).put(LazyClassKeyProvider.com_spiderybook_ui_search_SearchViewModel, SearchViewModel_HiltModules.KeyModule.provide()).build());
     }
 
     @Override
@@ -438,27 +468,48 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
       return new ViewCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl);
     }
 
+    @CanIgnoreReturnValue
+    private PlayerActivity injectPlayerActivity2(PlayerActivity instance) {
+      PlayerActivity_MembersInjector.injectLocalRepository(instance, singletonCImpl.localRepositoryProvider.get());
+      return instance;
+    }
+
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_spiderybook_ui_search_SearchViewModel = "com.spiderybook.ui.search.SearchViewModel";
+      static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
+
+      static String com_spiderybook_ui_favorites_FavoritesViewModel = "com.spiderybook.ui.favorites.FavoritesViewModel";
+
+      static String com_spiderybook_ui_browse_BrowseViewModel = "com.spiderybook.ui.browse.BrowseViewModel";
 
       static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
 
+      static String com_spiderybook_ui_history_HistoryViewModel = "com.spiderybook.ui.history.HistoryViewModel";
+
       static String com_spiderybook_ui_home_HomeViewModel = "com.spiderybook.ui.home.HomeViewModel";
 
-      static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
+      static String com_spiderybook_ui_search_SearchViewModel = "com.spiderybook.ui.search.SearchViewModel";
 
       @KeepFieldType
-      SearchViewModel com_spiderybook_ui_search_SearchViewModel2;
+      PlayerViewModel com_spiderybook_ui_player_PlayerViewModel2;
+
+      @KeepFieldType
+      FavoritesViewModel com_spiderybook_ui_favorites_FavoritesViewModel2;
+
+      @KeepFieldType
+      BrowseViewModel com_spiderybook_ui_browse_BrowseViewModel2;
 
       @KeepFieldType
       ResultViewModel com_spiderybook_ui_result_ResultViewModel2;
 
       @KeepFieldType
+      HistoryViewModel com_spiderybook_ui_history_HistoryViewModel2;
+
+      @KeepFieldType
       HomeViewModel com_spiderybook_ui_home_HomeViewModel2;
 
       @KeepFieldType
-      PlayerViewModel com_spiderybook_ui_player_PlayerViewModel2;
+      SearchViewModel com_spiderybook_ui_search_SearchViewModel2;
     }
   }
 
@@ -468,6 +519,12 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
     private final ActivityRetainedCImpl activityRetainedCImpl;
 
     private final ViewModelCImpl viewModelCImpl = this;
+
+    private Provider<BrowseViewModel> browseViewModelProvider;
+
+    private Provider<FavoritesViewModel> favoritesViewModelProvider;
+
+    private Provider<HistoryViewModel> historyViewModelProvider;
 
     private Provider<HomeViewModel> homeViewModelProvider;
 
@@ -490,15 +547,18 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
     @SuppressWarnings("unchecked")
     private void initialize(final SavedStateHandle savedStateHandleParam,
         final ViewModelLifecycle viewModelLifecycleParam) {
-      this.homeViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
-      this.playerViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
-      this.resultViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
-      this.searchViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.browseViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
+      this.favoritesViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
+      this.historyViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.homeViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.playerViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
+      this.resultViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 5);
+      this.searchViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 6);
     }
 
     @Override
     public Map<Class<?>, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
-      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(ImmutableMap.<String, javax.inject.Provider<ViewModel>>of(LazyClassKeyProvider.com_spiderybook_ui_home_HomeViewModel, ((Provider) homeViewModelProvider), LazyClassKeyProvider.com_spiderybook_ui_player_PlayerViewModel, ((Provider) playerViewModelProvider), LazyClassKeyProvider.com_spiderybook_ui_result_ResultViewModel, ((Provider) resultViewModelProvider), LazyClassKeyProvider.com_spiderybook_ui_search_SearchViewModel, ((Provider) searchViewModelProvider)));
+      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(ImmutableMap.<String, javax.inject.Provider<ViewModel>>builderWithExpectedSize(7).put(LazyClassKeyProvider.com_spiderybook_ui_browse_BrowseViewModel, ((Provider) browseViewModelProvider)).put(LazyClassKeyProvider.com_spiderybook_ui_favorites_FavoritesViewModel, ((Provider) favoritesViewModelProvider)).put(LazyClassKeyProvider.com_spiderybook_ui_history_HistoryViewModel, ((Provider) historyViewModelProvider)).put(LazyClassKeyProvider.com_spiderybook_ui_home_HomeViewModel, ((Provider) homeViewModelProvider)).put(LazyClassKeyProvider.com_spiderybook_ui_player_PlayerViewModel, ((Provider) playerViewModelProvider)).put(LazyClassKeyProvider.com_spiderybook_ui_result_ResultViewModel, ((Provider) resultViewModelProvider)).put(LazyClassKeyProvider.com_spiderybook_ui_search_SearchViewModel, ((Provider) searchViewModelProvider)).build());
     }
 
     @Override
@@ -508,13 +568,28 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
+      static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
+
+      static String com_spiderybook_ui_search_SearchViewModel = "com.spiderybook.ui.search.SearchViewModel";
+
+      static String com_spiderybook_ui_history_HistoryViewModel = "com.spiderybook.ui.history.HistoryViewModel";
+
       static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
 
       static String com_spiderybook_ui_home_HomeViewModel = "com.spiderybook.ui.home.HomeViewModel";
 
-      static String com_spiderybook_ui_search_SearchViewModel = "com.spiderybook.ui.search.SearchViewModel";
+      static String com_spiderybook_ui_browse_BrowseViewModel = "com.spiderybook.ui.browse.BrowseViewModel";
 
-      static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
+      static String com_spiderybook_ui_favorites_FavoritesViewModel = "com.spiderybook.ui.favorites.FavoritesViewModel";
+
+      @KeepFieldType
+      ResultViewModel com_spiderybook_ui_result_ResultViewModel2;
+
+      @KeepFieldType
+      SearchViewModel com_spiderybook_ui_search_SearchViewModel2;
+
+      @KeepFieldType
+      HistoryViewModel com_spiderybook_ui_history_HistoryViewModel2;
 
       @KeepFieldType
       PlayerViewModel com_spiderybook_ui_player_PlayerViewModel2;
@@ -523,10 +598,10 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
       HomeViewModel com_spiderybook_ui_home_HomeViewModel2;
 
       @KeepFieldType
-      SearchViewModel com_spiderybook_ui_search_SearchViewModel2;
+      BrowseViewModel com_spiderybook_ui_browse_BrowseViewModel2;
 
       @KeepFieldType
-      ResultViewModel com_spiderybook_ui_result_ResultViewModel2;
+      FavoritesViewModel com_spiderybook_ui_favorites_FavoritesViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -550,17 +625,26 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
       @Override
       public T get() {
         switch (id) {
-          case 0: // com.spiderybook.ui.home.HomeViewModel 
+          case 0: // com.spiderybook.ui.browse.BrowseViewModel 
+          return (T) new BrowseViewModel(new AnimeFlvProvider());
+
+          case 1: // com.spiderybook.ui.favorites.FavoritesViewModel 
+          return (T) new FavoritesViewModel(singletonCImpl.localRepositoryProvider.get());
+
+          case 2: // com.spiderybook.ui.history.HistoryViewModel 
+          return (T) new HistoryViewModel(singletonCImpl.localRepositoryProvider.get());
+
+          case 3: // com.spiderybook.ui.home.HomeViewModel 
           return (T) new HomeViewModel(singletonCImpl.homeRepositoryProvider.get(), singletonCImpl.providePluginManagerProvider.get());
 
-          case 1: // com.spiderybook.ui.player.PlayerViewModel 
+          case 4: // com.spiderybook.ui.player.PlayerViewModel 
           return (T) new PlayerViewModel(singletonCImpl.loadRepositoryProvider.get());
 
-          case 2: // com.spiderybook.ui.result.ResultViewModel 
-          return (T) new ResultViewModel(singletonCImpl.loadRepositoryProvider.get());
+          case 5: // com.spiderybook.ui.result.ResultViewModel 
+          return (T) new ResultViewModel(singletonCImpl.loadRepositoryProvider.get(), singletonCImpl.localRepositoryProvider.get());
 
-          case 3: // com.spiderybook.ui.search.SearchViewModel 
-          return (T) new SearchViewModel(singletonCImpl.searchRepositoryProvider.get());
+          case 6: // com.spiderybook.ui.search.SearchViewModel 
+          return (T) new SearchViewModel(singletonCImpl.searchRepositoryProvider.get(), singletonCImpl.providePluginManagerProvider.get());
 
           default: throw new AssertionError(id);
         }
@@ -642,6 +726,12 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
     private final SingletonCImpl singletonCImpl = this;
 
+    private Provider<AppDatabase> provideDatabaseProvider;
+
+    private Provider<MainDao> provideMainDaoProvider;
+
+    private Provider<LocalRepository> localRepositoryProvider;
+
     private Provider<AppDownloadManager> appDownloadManagerProvider;
 
     private Provider<PluginManager> providePluginManagerProvider;
@@ -660,11 +750,14 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
     @SuppressWarnings("unchecked")
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
-      this.appDownloadManagerProvider = DoubleCheck.provider(new SwitchingProvider<AppDownloadManager>(singletonCImpl, 0));
-      this.providePluginManagerProvider = DoubleCheck.provider(new SwitchingProvider<PluginManager>(singletonCImpl, 2));
-      this.homeRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<HomeRepository>(singletonCImpl, 1));
-      this.loadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<LoadRepository>(singletonCImpl, 3));
-      this.searchRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<SearchRepository>(singletonCImpl, 4));
+      this.provideDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 2));
+      this.provideMainDaoProvider = DoubleCheck.provider(new SwitchingProvider<MainDao>(singletonCImpl, 1));
+      this.localRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<LocalRepository>(singletonCImpl, 0));
+      this.appDownloadManagerProvider = DoubleCheck.provider(new SwitchingProvider<AppDownloadManager>(singletonCImpl, 3));
+      this.providePluginManagerProvider = DoubleCheck.provider(new SwitchingProvider<PluginManager>(singletonCImpl, 5));
+      this.homeRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<HomeRepository>(singletonCImpl, 4));
+      this.loadRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<LoadRepository>(singletonCImpl, 6));
+      this.searchRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<SearchRepository>(singletonCImpl, 7));
     }
 
     @Override
@@ -700,19 +793,28 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
       @Override
       public T get() {
         switch (id) {
-          case 0: // com.spiderybook.data.manager.AppDownloadManager 
+          case 0: // com.spiderybook.data.repository.LocalRepository 
+          return (T) new LocalRepository(singletonCImpl.provideMainDaoProvider.get());
+
+          case 1: // com.spiderybook.data.local.dao.MainDao 
+          return (T) DatabaseModule_ProvideMainDaoFactory.provideMainDao(singletonCImpl.provideDatabaseProvider.get());
+
+          case 2: // com.spiderybook.data.local.AppDatabase 
+          return (T) DatabaseModule_ProvideDatabaseFactory.provideDatabase(ApplicationContextModule_ProvideApplicationFactory.provideApplication(singletonCImpl.applicationContextModule));
+
+          case 3: // com.spiderybook.data.manager.AppDownloadManager 
           return (T) new AppDownloadManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 1: // com.spiderybook.data.repository.HomeRepository 
+          case 4: // com.spiderybook.data.repository.HomeRepository 
           return (T) new HomeRepository(singletonCImpl.providePluginManagerProvider.get());
 
-          case 2: // com.spiderybook.plugins.PluginManager 
+          case 5: // com.spiderybook.plugins.PluginManager 
           return (T) PluginModule_ProvidePluginManagerFactory.providePluginManager();
 
-          case 3: // com.spiderybook.data.repository.LoadRepository 
+          case 6: // com.spiderybook.data.repository.LoadRepository 
           return (T) new LoadRepository(singletonCImpl.providePluginManagerProvider.get());
 
-          case 4: // com.spiderybook.data.repository.SearchRepository 
+          case 7: // com.spiderybook.data.repository.SearchRepository 
           return (T) new SearchRepository(singletonCImpl.providePluginManagerProvider.get());
 
           default: throw new AssertionError(id);

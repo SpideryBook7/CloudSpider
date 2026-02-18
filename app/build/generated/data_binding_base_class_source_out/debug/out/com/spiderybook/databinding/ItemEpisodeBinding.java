@@ -4,6 +4,8 @@ package com.spiderybook.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -20,16 +22,25 @@ public final class ItemEpisodeBinding implements ViewBinding {
   private final LinearLayout rootView;
 
   @NonNull
-  public final TextView tvEpisodeName;
+  public final ImageButton btnDownloadEpisode;
 
   @NonNull
-  public final TextView tvEpisodeNumber;
+  public final ImageView imgThumbnail;
 
-  private ItemEpisodeBinding(@NonNull LinearLayout rootView, @NonNull TextView tvEpisodeName,
-      @NonNull TextView tvEpisodeNumber) {
+  @NonNull
+  public final TextView tvDuration;
+
+  @NonNull
+  public final TextView tvEpisodeName;
+
+  private ItemEpisodeBinding(@NonNull LinearLayout rootView,
+      @NonNull ImageButton btnDownloadEpisode, @NonNull ImageView imgThumbnail,
+      @NonNull TextView tvDuration, @NonNull TextView tvEpisodeName) {
     this.rootView = rootView;
+    this.btnDownloadEpisode = btnDownloadEpisode;
+    this.imgThumbnail = imgThumbnail;
+    this.tvDuration = tvDuration;
     this.tvEpisodeName = tvEpisodeName;
-    this.tvEpisodeNumber = tvEpisodeNumber;
   }
 
   @Override
@@ -59,19 +70,32 @@ public final class ItemEpisodeBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.btn_download_episode;
+      ImageButton btnDownloadEpisode = ViewBindings.findChildViewById(rootView, id);
+      if (btnDownloadEpisode == null) {
+        break missingId;
+      }
+
+      id = R.id.img_thumbnail;
+      ImageView imgThumbnail = ViewBindings.findChildViewById(rootView, id);
+      if (imgThumbnail == null) {
+        break missingId;
+      }
+
+      id = R.id.tv_duration;
+      TextView tvDuration = ViewBindings.findChildViewById(rootView, id);
+      if (tvDuration == null) {
+        break missingId;
+      }
+
       id = R.id.tv_episode_name;
       TextView tvEpisodeName = ViewBindings.findChildViewById(rootView, id);
       if (tvEpisodeName == null) {
         break missingId;
       }
 
-      id = R.id.tv_episode_number;
-      TextView tvEpisodeNumber = ViewBindings.findChildViewById(rootView, id);
-      if (tvEpisodeNumber == null) {
-        break missingId;
-      }
-
-      return new ItemEpisodeBinding((LinearLayout) rootView, tvEpisodeName, tvEpisodeNumber);
+      return new ItemEpisodeBinding((LinearLayout) rootView, btnDownloadEpisode, imgThumbnail,
+          tvDuration, tvEpisodeName);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));
