@@ -1,0 +1,22 @@
+Copyright (c) 2025-2026 Cristian Huerta. All rights reserved.
+
+END-USER LICENSE AGREEMENT FOR SPIDERYBOOK
+
+1. GRANT OF LICENSE
+This repository and the code contained herein are the proprietary intellectual property of the author (Cristian). No permission is granted to use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the Software in any form. This is a closed-source project hosted publicly for demonstrative/academic purposes only (Thesis Project).
+
+2. RESTRICTIONS
+You may NOT:
+a) Copy, duplicate, or reproduce any part of the codebase.
+b) Modify, adapt, translate, or create derivative works based on the Software.
+c) Distribute, transmit, or publicly display the Software.
+d) Use the Software for any commercial purpose.
+e) Reverse engineer, decompile, or disassemble the Software.
+
+3. COPYRIGHT AND OWNERSHIP
+The Software, including but not limited to all source code, algorithms, UI designs, and documentation, is owned by the author and is protected by copyright laws and international treaty provisions.
+
+4. DISCLAIMER OF WARRANTY AND LIABILITY
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+This application acts solely as a client-side web scraper and indexer. It does not host, store, or distribute any copyrighted media content on its own servers. The author is not responsible for the content provided by third-party web services accessed through this software.
