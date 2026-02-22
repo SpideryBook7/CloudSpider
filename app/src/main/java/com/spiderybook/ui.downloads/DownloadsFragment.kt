@@ -31,14 +31,20 @@ class DownloadsFragment : BaseFragment<FragmentDownloadsBinding>(FragmentDownloa
             } ?: emptyList()
             
             binding.rvDownloads.layoutManager = LinearLayoutManager(context)
-            binding.rvDownloads.adapter = EpisodeAdapter(files) { episode ->
-                 // Play local file
-                 val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
-                        putExtra("data", "file://${episode.url}")
-                        putExtra("apiName", "Local")
-                 }
-                 startActivity(intent)
-            }
+            binding.rvDownloads.adapter = EpisodeAdapter(
+                items = files,
+                onClick = { episode ->
+                     // Play local file
+                     val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
+                            putExtra("data", "file://${episode.url}")
+                            putExtra("apiName", "Local")
+                     }
+                     startActivity(intent)
+                },
+                onDownloadClick = {
+                     Toast.makeText(context, "El archivo ya está descargado", Toast.LENGTH_SHORT).show()
+                }
+            )
         } else {
             Toast.makeText(context, "No downloads found", Toast.LENGTH_SHORT).show()
         }

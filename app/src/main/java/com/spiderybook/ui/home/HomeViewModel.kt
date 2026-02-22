@@ -13,7 +13,9 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
-    private val pluginManager: PluginManager
+    private val pluginManager: PluginManager,
+    private val dataStoreManager: com.spiderybook.data.local.DataStoreManager,
+    private val localRepository: com.spiderybook.data.repository.LocalRepository
 ) : BaseViewModel() {
 
     private val _selectedProvider = MutableLiveData<String>()
@@ -58,11 +60,30 @@ class HomeViewModel @Inject constructor(
     val displayedContent: LiveData<Any> = _displayedContent
     
     private var fullHomePageResponse: HomePageResponse? = null
+    private var currentHistoryList: List<com.spiderybook.data.local.entity.HistoryEntity> = emptyList()
+
+    init {
+        loadProviders()
+        observeHistory()
+    }
+    
+    private fun observeHistory() {
+        launchIO {
+            localRepository.getHistory().collect { history ->
+                currentHistoryList = history
+                // Refresh content if we are currently on the "Inicio" tab
+                if (_selectedCategory.value == "Inicio") {
+                    selectCategory("Inicio")
+                }
+            }
+        }
+    }
 
     fun loadHomePage(apiName: String) {
         if (_selectedProvider.value != apiName) {
             _selectedProvider.value = apiName
             launchIO {
+                dataStoreManager.saveString(com.spiderybook.data.local.DataStoreManager.API_URL, apiName)
                 _homePage.setLoading()
                 val result = homeRepository.getHomePage(apiName)
                 if (result != null) {
@@ -119,7 +140,35 @@ class HomeViewModel @Inject constructor(
             val specialTabs = listOf("Peliculas", "Series", "Dorama", "Kids", "Reality", "#")
             val inicioItems = data.items.filter { 
                 it.name.length > 1 && !specialTabs.contains(it.name)
+            }.toMutableList()
+            
+            // Build the "Continue Watching" row for the currently selected provider
+            val currentProvider = _selectedProvider.value
+            val providerHistory = currentHistoryList.filter { it.apiName == currentProvider }
+            
+            if (providerHistory.isNotEmpty()) {
+                val historyResponses = providerHistory.map { historyObj ->
+                    com.spiderybook.domain.model.SearchResponse(
+                        name = historyObj.name,
+                        url = historyObj.url,
+                        apiName = historyObj.apiName,
+                        type = if (historyObj.type != null) {
+                             runCatching { enumValueOf<com.spiderybook.domain.model.TvType>(historyObj.type) }.getOrNull() 
+                        } else null,
+                        posterUrl = historyObj.posterUrl,
+                        year = null,
+                        quality = null
+                    )
+                }.take(15) // Limit to top 15 recently watched to avoid large carousels
+                
+                val continueWatchingList = com.spiderybook.domain.model.HomePageList(
+                    name = "Continuar Viendo",
+                    list = historyResponses,
+                    isHorizontal = true
+                )
+                inicioItems.add(0, continueWatchingList)
             }
+            
             _displayedContent.postValue(inicioItems)
         } else {
             // Show the grid for the specific letter OR Peliculas

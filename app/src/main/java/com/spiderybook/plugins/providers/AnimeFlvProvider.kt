@@ -51,7 +51,6 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
             val animeElements = doc.select("ul.ListAnimes li")
             for (element in animeElements) {
                 val title = element.select("h3.Title").text()
-                val typeText = element.select("span.Type").text()
                 val link = element.select("article a").attr("href")
                 val imagePath = element.select("div.Image img").attr("src")
                 val imageUrl = if (imagePath.startsWith("http")) imagePath else "https://animeflv.net$imagePath"
@@ -217,16 +216,107 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
         }
     }
 
-    override suspend fun search(query: String): List<SearchResponse>? {
+    private val genreMap = mapOf(
+        "Acción" to "accion",
+        "Artes Marciales" to "artes-marciales",
+        "Aventuras" to "aventura",
+        "Carreras" to "carreras",
+        "Ciencia Ficción" to "ciencia-ficcion",
+        "Comedia" to "comedia",
+        "Demencia" to "demencia",
+        "Demonios" to "demonios",
+        "Deportes" to "deportes",
+        "Drama" to "drama",
+        "Ecchi" to "ecchi",
+        "Escolares" to "escolares",
+        "Espacial" to "espacial",
+        "Fantasía" to "fantasia",
+        "Harem" to "harem",
+        "Historico" to "historico",
+        "Infantil" to "infantil",
+        "Josei" to "josei",
+        "Juegos" to "juegos",
+        "Magia" to "magia",
+        "Mecha" to "mecha",
+        "Militar" to "militar",
+        "Misterio" to "misterio",
+        "Música" to "musica",
+        "Parodia" to "parodia",
+        "Policía" to "policia",
+        "Psicológico" to "psicologico",
+        "Recuentos de la vida" to "recuentos-de-la-vida",
+        "Romance" to "romance",
+        "Samurai" to "samurai",
+        "Seinen" to "seinen",
+        "Shoujo" to "shoujo",
+        "Shounen" to "shounen",
+        "Sobrenatural" to "sobrenatural",
+        "Superpoderes" to "superpoderes",
+        "Suspenso" to "suspenso",
+        "Terror" to "terror",
+        "Vampiros" to "vampiros",
+        "Yaoi" to "yaoi",
+        "Yuri" to "yuri"
+    )
+
+    override suspend fun getGenres(): List<String> {
+        return genreMap.keys.toList()
+    }
+
+    override suspend fun getTopSearches(): List<SearchResponse> {
         return try {
-            val url = "$mainUrl/browse?q=$query"
-            val doc = Jsoup.connect(url).get()
+            val url = "$mainUrl/browse?order=rating"
+            val doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                .timeout(10000)
+                .get()
+            val items = mutableListOf<SearchResponse>()
+            
+            // Limit to top 10 for "Top Searches"
+            val elements = doc.select("ul.ListAnimes li").take(10)
+            for (element in elements) {
+                val title = element.select("h3.Title").text()
+                val link = element.select("article a").attr("href")
+                val imagePath = element.select("div.Image img").attr("src")
+                val imageUrl = if (imagePath.startsWith("http")) imagePath else "https://animeflv.net$imagePath"
+
+                items.add(
+                    SearchResponse(
+                        name = title,
+                        url = if (link.startsWith("http")) link else "$mainUrl$link",
+                        apiName = name,
+                        type = TvType.Anime,
+                        posterUrl = imageUrl,
+                        year = null
+                    )
+                )
+            }
+            items
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    override suspend fun search(query: String, page: Int): List<SearchResponse>? {
+        return try {
+            // Check if query is an exact genre category
+            val mappedGenre = genreMap.entries.firstOrNull { it.key.equals(query, ignoreCase = true) }?.value
+            val url = if (mappedGenre != null) {
+                "$mainUrl/browse?genre%5B%5D=$mappedGenre&page=$page" // ?genre[]=slug&page=1
+            } else {
+                "$mainUrl/browse?q=$query&page=$page"
+            }
+            
+            val doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                .timeout(10000)
+                .get()
             val animeList = mutableListOf<SearchResponse>()
             
             val animeElements = doc.select("ul.ListAnimes li")
             for (element in animeElements) {
                 val title = element.select("h3.Title").text()
-                val typeText = element.select("span.Type").text()
                 val link = element.select("article a").attr("href")
                 val imagePath = element.select("div.Image img").attr("src")
                 val imageUrl = if (imagePath.startsWith("http")) imagePath else "https://animeflv.net$imagePath"
@@ -271,9 +361,6 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
             val posterUrl = if (posterPath.startsWith("http")) posterPath else "https://animeflv.net$posterPath"
             
             // Parse additional info
-            val status = doc.select("p.AnmStts span").text()
-            val type = doc.select("span.Type").first()?.text() ?: "Anime"
-            
             val genres = doc.select("nav.Nvgnrs a").map { it.text() }
 
             // Parse episodes from script
@@ -373,15 +460,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                                         .timeout(5000)
                                         .get()
                                         
-                                    val posterPath = detailsDoc.select("div.Image img").attr("src")
-                                    val posterUrl = if (posterPath.startsWith("http")) posterPath else "https://animeflv.net$posterPath"
+                                    val relPosterPath = detailsDoc.select("div.Image img").attr("src")
+                                    val relPosterUrl = if (relPosterPath.startsWith("http")) relPosterPath else "https://animeflv.net$relPosterPath"
                                     
                                     SearchResponse(
                                         name = fullTitle,
                                         url = fullUrl,
                                         apiName = name,
                                         type = TvType.Anime,
-                                        posterUrl = posterUrl,
+                                        posterUrl = relPosterUrl,
                                         year = null
                                     )
                                 } else null
@@ -479,19 +566,26 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                                          
                                          if (linkUrl.isNotEmpty()) {
                                              if (serverName.equals("stape", ignoreCase = true) || linkUrl.contains("streamtape")) {
-                                                 val extractor = com.spiderybook.plugins.extractors.StreamtapeExtractor(this)
+                                                 val extractor = com.spiderybook.plugins.extractors.StreamtapeExtractor(this@AnimeFlvProvider)
                                                  val links = extractor.extract(linkUrl)
                                                  linksToEmit.addAll(links)
                                              } else {
-                                                 linksToEmit.add(
-                                                     ExtractorLink(
-                                                         name = serverName,
-                                                         url = linkUrl,
-                                                         referer = mainUrl,
-                                                         quality = 0, // Unknown quality
-                                                         isM3u8 = linkUrl.contains(".m3u8")
+                                                 // Filter out unplayable servers so they don't break the UI
+                                                 if (!serverName.equals("SW", ignoreCase = true) && 
+                                                     !serverName.equals("Netu", ignoreCase = true) && 
+                                                     !serverName.equals("Hqq", ignoreCase = true) &&
+                                                     !serverName.equals("Mega", ignoreCase = true)) {
+                                                     
+                                                     linksToEmit.add(
+                                                         ExtractorLink(
+                                                             name = serverName,
+                                                             url = linkUrl,
+                                                             referer = mainUrl,
+                                                             quality = 0, // Unknown quality
+                                                             isM3u8 = linkUrl.contains(".m3u8")
+                                                         )
                                                      )
-                                                 )
+                                                 }
                                              }
                                          }
                                      }

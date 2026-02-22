@@ -43,7 +43,7 @@ class TestProvider @Inject constructor() : MainAPI() {
         )
     }
 
-    override suspend fun search(query: String): List<SearchResponse> {
+    override suspend fun search(query: String, page: Int): List<SearchResponse> {
         return (1..10).map {
             SearchResponse(
                 "$query Result $it",

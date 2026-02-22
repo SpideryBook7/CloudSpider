@@ -21,6 +21,7 @@ import com.spiderybook.ui.result.ResultViewModel_HiltModules;
 import com.spiderybook.ui.search.SearchFragment_GeneratedInjector;
 import com.spiderybook.ui.search.SearchViewModel_HiltModules;
 import com.spiderybook.ui.settings.SettingsFragment_GeneratedInjector;
+import com.spiderybook.ui.settings.SettingsViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
@@ -184,6 +185,7 @@ public final class SpideryBookApp_HiltComponents {
           PlayerViewModel_HiltModules.KeyModule.class,
           ResultViewModel_HiltModules.KeyModule.class,
           SearchViewModel_HiltModules.KeyModule.class,
+          SettingsViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class
       }
@@ -229,7 +231,8 @@ public final class SpideryBookApp_HiltComponents {
           HomeViewModel_HiltModules.BindsModule.class,
           PlayerViewModel_HiltModules.BindsModule.class,
           ResultViewModel_HiltModules.BindsModule.class,
-          SearchViewModel_HiltModules.BindsModule.class
+          SearchViewModel_HiltModules.BindsModule.class,
+          SettingsViewModel_HiltModules.BindsModule.class
       }
   )
   @ViewModelScoped

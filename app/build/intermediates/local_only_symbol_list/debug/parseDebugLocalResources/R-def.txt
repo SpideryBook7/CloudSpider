@@ -47,6 +47,8 @@ id btn_play
 id btn_play_custom
 id btn_settings
 id btn_sources_control
+id card_clear_cache
+id card_clear_downloads
 id collapsing_toolbar
 id fab_clear
 id fab_favorite
@@ -68,6 +70,7 @@ id nsv_home
 id player_view
 id progressBar
 id progress_bar
+id progress_watch
 id rb_dark
 id rb_light
 id rb_system
@@ -78,11 +81,14 @@ id rv_downloads
 id rv_episodes
 id rv_favorites
 id rv_filter
+id rv_genres
 id rv_history
 id rv_home
 id rv_recommendations
 id rv_related
 id rv_search_results
+id rv_top_searches
+id scroll_default_view
 id search_view
 id spinner_provider
 id toolbar
@@ -93,6 +99,7 @@ id tv_empty
 id tv_episode_name
 id tv_error
 id tv_filter
+id tv_genre_name
 id tv_header
 id tv_header_related
 id tv_metadata
@@ -115,8 +122,10 @@ layout fragment_search
 layout fragment_settings
 layout item_episode
 layout item_filter
+layout item_genre
 layout item_home_child
 layout item_home_parent
+layout item_top_search
 menu bottom_nav_menu
 navigation nav_graph
 string app_name

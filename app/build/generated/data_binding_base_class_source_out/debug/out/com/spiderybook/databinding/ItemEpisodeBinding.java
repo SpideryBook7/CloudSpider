@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +29,9 @@ public final class ItemEpisodeBinding implements ViewBinding {
   public final ImageView imgThumbnail;
 
   @NonNull
+  public final ProgressBar progressWatch;
+
+  @NonNull
   public final TextView tvDuration;
 
   @NonNull
@@ -35,10 +39,12 @@ public final class ItemEpisodeBinding implements ViewBinding {
 
   private ItemEpisodeBinding(@NonNull LinearLayout rootView,
       @NonNull ImageButton btnDownloadEpisode, @NonNull ImageView imgThumbnail,
-      @NonNull TextView tvDuration, @NonNull TextView tvEpisodeName) {
+      @NonNull ProgressBar progressWatch, @NonNull TextView tvDuration,
+      @NonNull TextView tvEpisodeName) {
     this.rootView = rootView;
     this.btnDownloadEpisode = btnDownloadEpisode;
     this.imgThumbnail = imgThumbnail;
+    this.progressWatch = progressWatch;
     this.tvDuration = tvDuration;
     this.tvEpisodeName = tvEpisodeName;
   }
@@ -82,6 +88,12 @@ public final class ItemEpisodeBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.progress_watch;
+      ProgressBar progressWatch = ViewBindings.findChildViewById(rootView, id);
+      if (progressWatch == null) {
+        break missingId;
+      }
+
       id = R.id.tv_duration;
       TextView tvDuration = ViewBindings.findChildViewById(rootView, id);
       if (tvDuration == null) {
@@ -95,7 +107,7 @@ public final class ItemEpisodeBinding implements ViewBinding {
       }
 
       return new ItemEpisodeBinding((LinearLayout) rootView, btnDownloadEpisode, imgThumbnail,
-          tvDuration, tvEpisodeName);
+          progressWatch, tvDuration, tvEpisodeName);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

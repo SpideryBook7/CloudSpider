@@ -238,6 +238,10 @@ class PlayerActivity : AppCompatActivity() {
         super.onStop()
         if (player != null && player!!.playbackState != androidx.media3.common.Player.STATE_IDLE) {
             val currentPos = player!!.currentPosition
+            var totalDuration = player!!.duration
+            if (totalDuration == androidx.media3.common.C.TIME_UNSET) {
+                totalDuration = 0L
+            }
             val data = intent.getStringExtra("data")
             val apiName = intent.getStringExtra("apiName")
             val title = intent.getStringExtra("title")
@@ -253,7 +257,8 @@ class PlayerActivity : AppCompatActivity() {
                             posterUrl = poster,
                             apiName = apiName,
                             type = type,
-                            playbackPosition = currentPos
+                            playbackPosition = currentPos,
+                            duration = totalDuration
                         )
                     )
                 }

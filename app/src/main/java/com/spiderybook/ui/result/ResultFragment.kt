@@ -22,6 +22,9 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
 
     private val viewModel: ResultViewModel by viewModels()
     @Inject lateinit var downloadManager: AppDownloadManager
+    
+    // Keep adapter reference so we can feed it watch progress updates
+    private var episodeAdapter: EpisodeAdapter? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -116,14 +119,28 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 }
             }
         }
+        
+        // Observe History for Watch Progress
+        viewModel.history.observe(viewLifecycleOwner) { historyList ->
+            val progressMap = mutableMapOf<String, Int>()
+            for (item in historyList) {
+                if (item.duration > 0 && item.playbackPosition > 0) {
+                    val percentage = ((item.playbackPosition.toDouble() / item.duration.toDouble()) * 100).toInt()
+                    // Cap at 100 just in case
+                    progressMap[item.url] = percentage.coerceAtMost(100)
+                }
+            }
+            episodeAdapter?.setWatchProgress(progressMap)
+        }
 
         viewModel.result.observe(viewLifecycleOwner) { resource ->
-            binding.progressBar.isVisible = resource is Resource.Loading
-            binding.tvError.isVisible = resource is Resource.Error
+            binding.progressBar.visibility = if (resource is Resource.Loading) View.VISIBLE else View.GONE
             
             if (resource is Resource.Success) {
                 val data = resource.data
+                
                 binding.tvTitle.text = data.name
+
                 binding.tvDescription.text = data.plot
                 binding.tvYear.text = data.year?.toString() ?: ""
                 binding.tvType.text = data.type?.name ?: "TV Series"
@@ -150,15 +167,37 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                      }
                 }
                 
-                binding.rvEpisodes.adapter = EpisodeAdapter(data.episodes) { episode ->
-                    val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
-                        putExtra("data", episode.url)
-                        putExtra("apiName", data.apiName)
-                        putExtra("title", "${data.name} - ${episode.name}")
-                        putExtra("poster", data.posterUrl)
-                        putExtra("type", data.type)
+                episodeAdapter = EpisodeAdapter(
+                    items = data.episodes,
+                    onClick = { episode ->
+                        val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
+                            putExtra("data", episode.url)
+                            putExtra("apiName", data.apiName)
+                            putExtra("title", "${data.name} - ${episode.name}")
+                            putExtra("poster", data.posterUrl)
+                            putExtra("type", data.type)
+                        }
+                        startActivity(intent)
+                    },
+                    onDownloadClick = { episode ->
+                        val cleanName = data.name.replace(Regex("[^A-Za-z0-9 ]"), "").trim()
+                        val cleanEpName = episode.name.replace(Regex("[^A-Za-z0-9 ]"), "").trim()
+                        val fileName = "${cleanName}_${cleanEpName}.mp4".replace(" ", "_")
+                        viewModel.downloadEpisode(data.apiName, episode.url, fileName, downloadManager)
                     }
-                    startActivity(intent)
+                )
+                binding.rvEpisodes.adapter = episodeAdapter
+                
+                // Immediately feed any available history safely
+                viewModel.history.value?.let { historyList ->
+                    val progressMap = mutableMapOf<String, Int>()
+                    for (item in historyList) {
+                        if (item.duration > 0 && item.playbackPosition > 0) {
+                            val percentage = ((item.playbackPosition.toDouble() / item.duration.toDouble()) * 100).toInt()
+                            progressMap[item.url] = percentage.coerceAtMost(100)
+                        }
+                    }
+                    episodeAdapter?.setWatchProgress(progressMap)
                 }
                 
                 // Recommendations Adapter (Explicit Seasons)
@@ -184,7 +223,15 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 binding.tvTabRecommendations.isVisible = data.recommendations.isNotEmpty() || data.related.isNotEmpty()
                 
             } else if (resource is Resource.Error) {
-                binding.tvError.text = resource.message
+                 Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+        
+        viewModel.downloadStatus.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Loading -> Toast.makeText(context, "Obteniendo enlaces de descarga...", Toast.LENGTH_SHORT).show()
+                is Resource.Success -> Toast.makeText(context, resource.data, Toast.LENGTH_SHORT).show()
+                is Resource.Error -> Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
             }
         }
     }

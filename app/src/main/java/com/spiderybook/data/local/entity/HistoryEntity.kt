@@ -11,5 +11,6 @@ data class HistoryEntity(
     val apiName: String,
     val type: String?,
     val timestamp: Long = System.currentTimeMillis(),
-    val playbackPosition: Long = 0
+    val playbackPosition: Long = 0,
+    val duration: Long = 0
 )

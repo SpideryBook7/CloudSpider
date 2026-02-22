@@ -9,29 +9,35 @@ import com.spiderybook.domain.model.Episode
 
 class EpisodeAdapter(
     private val items: List<Episode>,
-    private val onClick: (Episode) -> Unit
+    private val onClick: (Episode) -> Unit,
+    private val onDownloadClick: (Episode) -> Unit
 ) : RecyclerView.Adapter<EpisodeAdapter.EpisodeViewHolder>() {
+
+    private val watchProgress = mutableMapOf<String, Int>()
 
     inner class EpisodeViewHolder(private val binding: ItemEpisodeBinding) :
         RecyclerView.ViewHolder(binding.root) {
         
         fun bind(item: Episode) {
             binding.tvEpisodeName.text = item.name // Remove number prefix if needed, or keep it loosely
-            // binding.tvEpisodeNumber.text = ... (removed)
+            
+            // Handle Watch Progress
+            val progress = watchProgress[item.url] ?: 0
+            if (progress > 0) {
+                 binding.progressWatch.visibility = android.view.View.VISIBLE
+                 binding.progressWatch.progress = progress
+            } else {
+                 binding.progressWatch.visibility = android.view.View.GONE
+            }
             
             // Placeholder: Load poster as thumbnail if specific thumb is missing
-            // In a real app, episodes have their own thumbs. For now, use the poster passed to adapter or generic?
-            // The item_episode.xml has img_thumbnail. 
-            // We need to pass the main poster to this adapter if episodes don't have images.
-            // item.posterUrl might be null in Episode model? Let's check. 
-            // Assuming Episode has no image, we might want to use a placeholder or the main poster.
-            // For now, let's just set a gray background or use a placeholder resource.
              binding.imgThumbnail.load(item.posterUrl) {
                 crossfade(true)
                 placeholder(android.R.drawable.ic_menu_gallery)
             }
             
             binding.root.setOnClickListener { onClick(item) }
+            binding.btnDownloadEpisode.setOnClickListener { onDownloadClick(item) }
         }
     }
 
@@ -50,4 +56,10 @@ class EpisodeAdapter(
     }
 
     override fun getItemCount(): Int = items.size
+    
+    fun setWatchProgress(progressMap: Map<String, Int>) {
+        watchProgress.clear()
+        watchProgress.putAll(progressMap)
+        notifyDataSetChanged()
+    }
 }

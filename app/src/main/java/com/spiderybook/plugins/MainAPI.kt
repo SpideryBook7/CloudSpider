@@ -20,7 +20,11 @@ abstract class MainAPI {
     
     open suspend fun getBrowsePage(page: Int): List<SearchResponse> = emptyList()
 
-    open suspend fun search(query: String): List<SearchResponse>? = null
+    open suspend fun getGenres(): List<String> = emptyList()
+    
+    open suspend fun getTopSearches(): List<SearchResponse> = emptyList()
+
+    open suspend fun search(query: String, page: Int = 1): List<SearchResponse>? = null
     
     open suspend fun load(url: String): LoadResponse? = null
 

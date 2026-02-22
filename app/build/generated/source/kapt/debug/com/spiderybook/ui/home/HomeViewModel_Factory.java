@@ -1,6 +1,8 @@
 package com.spiderybook.ui.home;
 
+import com.spiderybook.data.local.DataStoreManager;
 import com.spiderybook.data.repository.HomeRepository;
+import com.spiderybook.data.repository.LocalRepository;
 import com.spiderybook.plugins.PluginManager;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
@@ -28,24 +30,35 @@ public final class HomeViewModel_Factory implements Factory<HomeViewModel> {
 
   private final Provider<PluginManager> pluginManagerProvider;
 
+  private final Provider<DataStoreManager> dataStoreManagerProvider;
+
+  private final Provider<LocalRepository> localRepositoryProvider;
+
   public HomeViewModel_Factory(Provider<HomeRepository> homeRepositoryProvider,
-      Provider<PluginManager> pluginManagerProvider) {
+      Provider<PluginManager> pluginManagerProvider,
+      Provider<DataStoreManager> dataStoreManagerProvider,
+      Provider<LocalRepository> localRepositoryProvider) {
     this.homeRepositoryProvider = homeRepositoryProvider;
     this.pluginManagerProvider = pluginManagerProvider;
+    this.dataStoreManagerProvider = dataStoreManagerProvider;
+    this.localRepositoryProvider = localRepositoryProvider;
   }
 
   @Override
   public HomeViewModel get() {
-    return newInstance(homeRepositoryProvider.get(), pluginManagerProvider.get());
+    return newInstance(homeRepositoryProvider.get(), pluginManagerProvider.get(), dataStoreManagerProvider.get(), localRepositoryProvider.get());
   }
 
   public static HomeViewModel_Factory create(Provider<HomeRepository> homeRepositoryProvider,
-      Provider<PluginManager> pluginManagerProvider) {
-    return new HomeViewModel_Factory(homeRepositoryProvider, pluginManagerProvider);
+      Provider<PluginManager> pluginManagerProvider,
+      Provider<DataStoreManager> dataStoreManagerProvider,
+      Provider<LocalRepository> localRepositoryProvider) {
+    return new HomeViewModel_Factory(homeRepositoryProvider, pluginManagerProvider, dataStoreManagerProvider, localRepositoryProvider);
   }
 
   public static HomeViewModel newInstance(HomeRepository homeRepository,
-      PluginManager pluginManager) {
-    return new HomeViewModel(homeRepository, pluginManager);
+      PluginManager pluginManager, DataStoreManager dataStoreManager,
+      LocalRepository localRepository) {
+    return new HomeViewModel(homeRepository, pluginManager, dataStoreManager, localRepository);
   }
 }

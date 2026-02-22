@@ -130,8 +130,70 @@ class PelisPlusProvider : MainAPI() {
         }
     }
 
-    override suspend fun search(query: String): List<SearchResponse>? {
-        return fetchSearchResponseList("$mainUrl/search/$query")
+    private val genreMap = mapOf(
+        "Acción" to "accion", "Animación" to "animacion", "Aventura" to "aventura",
+        "Bélica" to "belica", "Ciencia Ficción" to "ciencia-ficcion", "Comedia" to "comedia",
+        "Crimen" to "crimen", "Documental" to "documental", "Dorama" to "dorama",
+        "Drama" to "drama", "Familia" to "familia", "Fantasía" to "fantasia",
+        "Historia" to "historia", "Kids" to "kids", "Misterio" to "misterio",
+        "Música" to "musica", "Película de TV" to "pelicula-de-tv", "Reality" to "reality",
+        "Romance" to "romance", "Soap" to "soap", "Suspense" to "suspense",
+        "Terror" to "terror", "War & Politics" to "war-politics", "Western" to "western"
+    )
+
+    override suspend fun getGenres(): List<String> {
+        return genreMap.keys.toList()
+    }
+
+    override suspend fun getTopSearches(): List<SearchResponse> {
+        return try {
+            val doc = Jsoup.connect(mainUrl)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                .timeout(10000)
+                .get()
+            
+            val list = mutableListOf<SearchResponse>()
+            // Using "Estrenos" from the Home page as "Top Searches" for now
+            val items = doc.select("article.item").take(10)
+            
+            for (it in items) {
+                // Titles could be inside h2 (slider/others) or div.title_over span (grid items)
+                val title = it.select("h2, div.title_over span").firstOrNull()?.text().orEmpty()
+                val link = it.select("a").attr("href")
+                val poster = it.select("img").attr("data-src").ifEmpty { it.select("img").attr("src") }
+                val type = if (link.contains("/serie/") || link.contains("/episodio/")) TvType.TvSeries else TvType.Movie
+                 
+                if (title.isNotEmpty() && link.isNotEmpty()) {
+                    list.add(
+                        SearchResponse(
+                            name = title,
+                            url = link,
+                            apiName = name,
+                            type = type,
+                            posterUrl = if (poster.startsWith("http")) poster else "$mainUrl$poster",
+                            year = null
+                        )
+                    )
+                }
+            }
+            list
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    override suspend fun search(query: String, page: Int): List<SearchResponse>? {
+        val mappedGenre = genreMap.entries.firstOrNull { it.key.equals(query, ignoreCase = true) }?.value
+        val url = if (mappedGenre != null) {
+            val pagePath = if (page > 1) "/page/$page" else ""
+            "$mainUrl/genero/$mappedGenre$pagePath"
+        } else {
+            // Standard PelisPlus search with query param
+            val pageParam = if (page > 1) "?page=$page" else ""
+            "$mainUrl/search/$query$pageParam"
+        }
+        return fetchSearchResponseList(url)
     }
     
     // New Helper Function
@@ -142,10 +204,10 @@ class PelisPlusProvider : MainAPI() {
                 .timeout(10000)
                 .get()
                 
-            val items = doc.select("article.item")
+            val items = doc.select("article.item, article.item.liste.relative")
             val list = mutableListOf<SearchResponse>()
             for (it in items) {
-                val title = it.select("h2").text()
+                val title = it.select("h2, div.title_over span").firstOrNull()?.text().orEmpty()
                 val link = it.select("a").attr("href")
                 val poster = it.select("img").attr("data-src").ifEmpty { it.select("img").attr("src") }
                 

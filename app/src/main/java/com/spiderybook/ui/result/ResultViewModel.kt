@@ -29,20 +29,38 @@ class ResultViewModel @Inject constructor(
         }
     }
 
-    // Favorites Logic
+    // Download Status
+    private val _downloadStatus = MutableLiveData<Resource<String>>()
+    val downloadStatus: LiveData<Resource<String>> = _downloadStatus
+
+    fun downloadEpisode(
+        apiName: String, 
+        episodeUrl: String, 
+        fileName: String, 
+        downloadManager: com.spiderybook.data.manager.AppDownloadManager
+    ) = launchIO {
+        _downloadStatus.postValue(Resource.Loading)
+        val links = mutableListOf<com.spiderybook.plugins.MainAPI.ExtractorLink>()
+        
+        val success = loadRepository.loadLinks(apiName, episodeUrl) { link ->
+            links.add(link)
+        }
+        
+        if (success && links.isNotEmpty()) {
+            val bestLink = links.firstOrNull { it.url.contains(".mp4") } ?: links.first()
+            downloadManager.download(bestLink.url, fileName)
+            _downloadStatus.postValue(Resource.Success("Descargando: $fileName"))
+        } else {
+            _downloadStatus.postValue(Resource.Error("Error al obtener el enlace de descarga para $fileName"))
+        }
+    }
+
+    // Favorites & History Logic
     fun isFavorite(url: String) = localRepository.isFavorite(url).asLiveData()
+    val history = localRepository.getHistory().asLiveData()
 
     fun toggleFavorite(currentItem: LoadResponse?) = launchIO {
         if (currentItem == null) return@launchIO
-        
-        val url = currentItem.url
-        // Check if exists (snapshot) to toggle
-        // Ideally we rely on the UI state, but here we can check or just delete/insert based on current state
-        // For simplicity, let's just expose insert/delete and let UI decide or handle check here
-        // But since we are inside a coroutine, we can't easily peek LiveData. 
-        // Let's rely on the repository's Flow or just try to delete, if 0 deleted then insert? 
-        // No, Room delete returns unit or count.
-        // Let's just expose insert and delete.
     }
     
     fun addToFavorites(currentItem: LoadResponse) = launchIO {

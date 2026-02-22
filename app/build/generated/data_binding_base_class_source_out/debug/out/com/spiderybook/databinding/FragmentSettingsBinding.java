@@ -4,14 +4,16 @@ package com.spiderybook.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
+import com.google.android.material.card.MaterialCardView;
 import com.spiderybook.R;
 import java.lang.NullPointerException;
 import java.lang.Override;
@@ -19,7 +21,13 @@ import java.lang.String;
 
 public final class FragmentSettingsBinding implements ViewBinding {
   @NonNull
-  private final LinearLayout rootView;
+  private final NestedScrollView rootView;
+
+  @NonNull
+  public final MaterialCardView cardClearCache;
+
+  @NonNull
+  public final MaterialCardView cardClearDownloads;
 
   @NonNull
   public final RadioButton rbDark;
@@ -34,22 +42,29 @@ public final class FragmentSettingsBinding implements ViewBinding {
   public final RadioGroup rgTheme;
 
   @NonNull
+  public final Spinner spinnerProvider;
+
+  @NonNull
   public final TextView tvVersion;
 
-  private FragmentSettingsBinding(@NonNull LinearLayout rootView, @NonNull RadioButton rbDark,
-      @NonNull RadioButton rbLight, @NonNull RadioButton rbSystem, @NonNull RadioGroup rgTheme,
-      @NonNull TextView tvVersion) {
+  private FragmentSettingsBinding(@NonNull NestedScrollView rootView,
+      @NonNull MaterialCardView cardClearCache, @NonNull MaterialCardView cardClearDownloads,
+      @NonNull RadioButton rbDark, @NonNull RadioButton rbLight, @NonNull RadioButton rbSystem,
+      @NonNull RadioGroup rgTheme, @NonNull Spinner spinnerProvider, @NonNull TextView tvVersion) {
     this.rootView = rootView;
+    this.cardClearCache = cardClearCache;
+    this.cardClearDownloads = cardClearDownloads;
     this.rbDark = rbDark;
     this.rbLight = rbLight;
     this.rbSystem = rbSystem;
     this.rgTheme = rgTheme;
+    this.spinnerProvider = spinnerProvider;
     this.tvVersion = tvVersion;
   }
 
   @Override
   @NonNull
-  public LinearLayout getRoot() {
+  public NestedScrollView getRoot() {
     return rootView;
   }
 
@@ -74,6 +89,18 @@ public final class FragmentSettingsBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.card_clear_cache;
+      MaterialCardView cardClearCache = ViewBindings.findChildViewById(rootView, id);
+      if (cardClearCache == null) {
+        break missingId;
+      }
+
+      id = R.id.card_clear_downloads;
+      MaterialCardView cardClearDownloads = ViewBindings.findChildViewById(rootView, id);
+      if (cardClearDownloads == null) {
+        break missingId;
+      }
+
       id = R.id.rb_dark;
       RadioButton rbDark = ViewBindings.findChildViewById(rootView, id);
       if (rbDark == null) {
@@ -98,14 +125,20 @@ public final class FragmentSettingsBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.spinner_provider;
+      Spinner spinnerProvider = ViewBindings.findChildViewById(rootView, id);
+      if (spinnerProvider == null) {
+        break missingId;
+      }
+
       id = R.id.tv_version;
       TextView tvVersion = ViewBindings.findChildViewById(rootView, id);
       if (tvVersion == null) {
         break missingId;
       }
 
-      return new FragmentSettingsBinding((LinearLayout) rootView, rbDark, rbLight, rbSystem,
-          rgTheme, tvVersion);
+      return new FragmentSettingsBinding((NestedScrollView) rootView, cardClearCache,
+          cardClearDownloads, rbDark, rbLight, rbSystem, rgTheme, spinnerProvider, tvVersion);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

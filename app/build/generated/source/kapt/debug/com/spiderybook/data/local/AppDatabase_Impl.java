@@ -33,13 +33,13 @@ public final class AppDatabase_Impl extends AppDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `favorites` (`url` TEXT NOT NULL, `name` TEXT NOT NULL, `posterUrl` TEXT NOT NULL, `apiName` TEXT NOT NULL, `type` TEXT, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`url`))");
-        db.execSQL("CREATE TABLE IF NOT EXISTS `history` (`url` TEXT NOT NULL, `name` TEXT NOT NULL, `posterUrl` TEXT NOT NULL, `apiName` TEXT NOT NULL, `type` TEXT, `timestamp` INTEGER NOT NULL, `playbackPosition` INTEGER NOT NULL, PRIMARY KEY(`url`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `history` (`url` TEXT NOT NULL, `name` TEXT NOT NULL, `posterUrl` TEXT NOT NULL, `apiName` TEXT NOT NULL, `type` TEXT, `timestamp` INTEGER NOT NULL, `playbackPosition` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY(`url`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5f22cb0ae9e29ef6e3e58fc6a003197b')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c51711394250fd24d43c1389c1bcd450')");
       }
 
       @Override
@@ -105,7 +105,7 @@ public final class AppDatabase_Impl extends AppDatabase {
                   + " Expected:\n" + _infoFavorites + "\n"
                   + " Found:\n" + _existingFavorites);
         }
-        final HashMap<String, TableInfo.Column> _columnsHistory = new HashMap<String, TableInfo.Column>(7);
+        final HashMap<String, TableInfo.Column> _columnsHistory = new HashMap<String, TableInfo.Column>(8);
         _columnsHistory.put("url", new TableInfo.Column("url", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsHistory.put("name", new TableInfo.Column("name", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsHistory.put("posterUrl", new TableInfo.Column("posterUrl", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
@@ -113,6 +113,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         _columnsHistory.put("type", new TableInfo.Column("type", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsHistory.put("timestamp", new TableInfo.Column("timestamp", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsHistory.put("playbackPosition", new TableInfo.Column("playbackPosition", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsHistory.put("duration", new TableInfo.Column("duration", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysHistory = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesHistory = new HashSet<TableInfo.Index>(0);
         final TableInfo _infoHistory = new TableInfo("history", _columnsHistory, _foreignKeysHistory, _indicesHistory);
@@ -124,7 +125,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "5f22cb0ae9e29ef6e3e58fc6a003197b", "c2804feb2d8cc4cb2e3151a2e70765a2");
+    }, "c51711394250fd24d43c1389c1bcd450", "90a483ad02c217fcb13561e363442143");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

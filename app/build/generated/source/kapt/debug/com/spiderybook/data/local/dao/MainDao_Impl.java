@@ -90,7 +90,7 @@ public final class MainDao_Impl implements MainDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `history` (`url`,`name`,`posterUrl`,`apiName`,`type`,`timestamp`,`playbackPosition`) VALUES (?,?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `history` (`url`,`name`,`posterUrl`,`apiName`,`type`,`timestamp`,`playbackPosition`,`duration`) VALUES (?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -123,6 +123,7 @@ public final class MainDao_Impl implements MainDao {
         }
         statement.bindLong(6, entity.getTimestamp());
         statement.bindLong(7, entity.getPlaybackPosition());
+        statement.bindLong(8, entity.getDuration());
       }
     };
     this.__preparedStmtOfDeleteFavorite = new SharedSQLiteStatement(__db) {
@@ -395,6 +396,7 @@ public final class MainDao_Impl implements MainDao {
           final int _cursorIndexOfType = CursorUtil.getColumnIndexOrThrow(_cursor, "type");
           final int _cursorIndexOfTimestamp = CursorUtil.getColumnIndexOrThrow(_cursor, "timestamp");
           final int _cursorIndexOfPlaybackPosition = CursorUtil.getColumnIndexOrThrow(_cursor, "playbackPosition");
+          final int _cursorIndexOfDuration = CursorUtil.getColumnIndexOrThrow(_cursor, "duration");
           final List<HistoryEntity> _result = new ArrayList<HistoryEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final HistoryEntity _item;
@@ -432,7 +434,9 @@ public final class MainDao_Impl implements MainDao {
             _tmpTimestamp = _cursor.getLong(_cursorIndexOfTimestamp);
             final long _tmpPlaybackPosition;
             _tmpPlaybackPosition = _cursor.getLong(_cursorIndexOfPlaybackPosition);
-            _item = new HistoryEntity(_tmpUrl,_tmpName,_tmpPosterUrl,_tmpApiName,_tmpType,_tmpTimestamp,_tmpPlaybackPosition);
+            final long _tmpDuration;
+            _tmpDuration = _cursor.getLong(_cursorIndexOfDuration);
+            _item = new HistoryEntity(_tmpUrl,_tmpName,_tmpPosterUrl,_tmpApiName,_tmpType,_tmpTimestamp,_tmpPlaybackPosition,_tmpDuration);
             _result.add(_item);
           }
           return _result;
@@ -473,6 +477,7 @@ public final class MainDao_Impl implements MainDao {
           final int _cursorIndexOfType = CursorUtil.getColumnIndexOrThrow(_cursor, "type");
           final int _cursorIndexOfTimestamp = CursorUtil.getColumnIndexOrThrow(_cursor, "timestamp");
           final int _cursorIndexOfPlaybackPosition = CursorUtil.getColumnIndexOrThrow(_cursor, "playbackPosition");
+          final int _cursorIndexOfDuration = CursorUtil.getColumnIndexOrThrow(_cursor, "duration");
           final HistoryEntity _result;
           if (_cursor.moveToFirst()) {
             final String _tmpUrl;
@@ -509,7 +514,9 @@ public final class MainDao_Impl implements MainDao {
             _tmpTimestamp = _cursor.getLong(_cursorIndexOfTimestamp);
             final long _tmpPlaybackPosition;
             _tmpPlaybackPosition = _cursor.getLong(_cursorIndexOfPlaybackPosition);
-            _result = new HistoryEntity(_tmpUrl,_tmpName,_tmpPosterUrl,_tmpApiName,_tmpType,_tmpTimestamp,_tmpPlaybackPosition);
+            final long _tmpDuration;
+            _tmpDuration = _cursor.getLong(_cursorIndexOfDuration);
+            _result = new HistoryEntity(_tmpUrl,_tmpName,_tmpPosterUrl,_tmpApiName,_tmpType,_tmpTimestamp,_tmpPlaybackPosition,_tmpDuration);
           } else {
             _result = null;
           }

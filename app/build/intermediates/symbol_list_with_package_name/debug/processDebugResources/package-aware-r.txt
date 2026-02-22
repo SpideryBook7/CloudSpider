@@ -3454,6 +3454,8 @@ id cache_measures
 id callMeasure
 id cancel_action
 id cancel_button
+id card_clear_cache
+id card_clear_downloads
 id carryVelocity
 id center
 id centerCrop
@@ -3792,6 +3794,7 @@ id progressBar
 id progress_bar
 id progress_circular
 id progress_horizontal
+id progress_watch
 id radio
 id ratio
 id rb_dark
@@ -3814,11 +3817,13 @@ id rv_downloads
 id rv_episodes
 id rv_favorites
 id rv_filter
+id rv_genres
 id rv_history
 id rv_home
 id rv_recommendations
 id rv_related
 id rv_search_results
+id rv_top_searches
 id save_non_transition_alpha
 id save_overlay_view
 id sawtooth
@@ -3828,6 +3833,7 @@ id scroll
 id scrollIndicatorDown
 id scrollIndicatorUp
 id scrollView
+id scroll_default_view
 id scrollable
 id search_badge
 id search_bar
@@ -3945,6 +3951,7 @@ id tv_empty
 id tv_episode_name
 id tv_error
 id tv_filter
+id tv_genre_name
 id tv_header
 id tv_header_related
 id tv_metadata
@@ -4138,8 +4145,10 @@ layout ime_base_split_test_activity
 layout ime_secondary_split_test_activity
 layout item_episode
 layout item_filter
+layout item_genre
 layout item_home_child
 layout item_home_parent
+layout item_top_search
 layout m3_alert_dialog
 layout m3_alert_dialog_actions
 layout m3_alert_dialog_title

@@ -1,5 +1,6 @@
 package com.spiderybook.ui.search;
 
+import com.spiderybook.data.local.DataStoreManager;
 import com.spiderybook.data.repository.SearchRepository;
 import com.spiderybook.plugins.PluginManager;
 import dagger.internal.DaggerGenerated;
@@ -28,24 +29,29 @@ public final class SearchViewModel_Factory implements Factory<SearchViewModel> {
 
   private final Provider<PluginManager> pluginManagerProvider;
 
+  private final Provider<DataStoreManager> dataStoreManagerProvider;
+
   public SearchViewModel_Factory(Provider<SearchRepository> searchRepositoryProvider,
-      Provider<PluginManager> pluginManagerProvider) {
+      Provider<PluginManager> pluginManagerProvider,
+      Provider<DataStoreManager> dataStoreManagerProvider) {
     this.searchRepositoryProvider = searchRepositoryProvider;
     this.pluginManagerProvider = pluginManagerProvider;
+    this.dataStoreManagerProvider = dataStoreManagerProvider;
   }
 
   @Override
   public SearchViewModel get() {
-    return newInstance(searchRepositoryProvider.get(), pluginManagerProvider.get());
+    return newInstance(searchRepositoryProvider.get(), pluginManagerProvider.get(), dataStoreManagerProvider.get());
   }
 
   public static SearchViewModel_Factory create(Provider<SearchRepository> searchRepositoryProvider,
-      Provider<PluginManager> pluginManagerProvider) {
-    return new SearchViewModel_Factory(searchRepositoryProvider, pluginManagerProvider);
+      Provider<PluginManager> pluginManagerProvider,
+      Provider<DataStoreManager> dataStoreManagerProvider) {
+    return new SearchViewModel_Factory(searchRepositoryProvider, pluginManagerProvider, dataStoreManagerProvider);
   }
 
   public static SearchViewModel newInstance(SearchRepository searchRepository,
-      PluginManager pluginManager) {
-    return new SearchViewModel(searchRepository, pluginManager);
+      PluginManager pluginManager, DataStoreManager dataStoreManager) {
+    return new SearchViewModel(searchRepository, pluginManager, dataStoreManager);
   }
 }

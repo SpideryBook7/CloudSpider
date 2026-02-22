@@ -1,5 +1,9 @@
 [
     {
+        "merged": "com.spiderybook.app-debug-60:/layout_fragment_settings.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/fragment_settings.xml"
+    },
+    {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_item_filter.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\item_filter.xml"
     },
@@ -64,10 +68,6 @@
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\navigation\\nav_graph.xml"
     },
     {
-        "merged": "com.spiderybook.app-debug-60:/layout_fragment_result.xml.flat",
-        "source": "com.spiderybook.app-main-62:/layout/fragment_result.xml"
-    },
-    {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\drawable_logo.png.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\logo.png"
     },
@@ -100,12 +100,20 @@
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\bg_tab_selected.xml"
     },
     {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_item_genre.xml.flat",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\item_genre.xml"
+    },
+    {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_activity_player.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\activity_player.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_settings.xml.flat",
         "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\fragment_settings.xml"
+    },
+    {
+        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_item_top_search.xml.flat",
+        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\item_top_search.xml"
     },
     {
         "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_search.xml.flat",

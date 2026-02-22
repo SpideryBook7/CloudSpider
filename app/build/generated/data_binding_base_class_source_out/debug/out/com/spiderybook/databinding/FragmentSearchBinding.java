@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
@@ -25,17 +26,30 @@ public final class FragmentSearchBinding implements ViewBinding {
   public final ProgressBar progressBar;
 
   @NonNull
+  public final RecyclerView rvGenres;
+
+  @NonNull
   public final RecyclerView rvSearchResults;
+
+  @NonNull
+  public final RecyclerView rvTopSearches;
+
+  @NonNull
+  public final NestedScrollView scrollDefaultView;
 
   @NonNull
   public final SearchView searchView;
 
   private FragmentSearchBinding(@NonNull ConstraintLayout rootView,
-      @NonNull ProgressBar progressBar, @NonNull RecyclerView rvSearchResults,
-      @NonNull SearchView searchView) {
+      @NonNull ProgressBar progressBar, @NonNull RecyclerView rvGenres,
+      @NonNull RecyclerView rvSearchResults, @NonNull RecyclerView rvTopSearches,
+      @NonNull NestedScrollView scrollDefaultView, @NonNull SearchView searchView) {
     this.rootView = rootView;
     this.progressBar = progressBar;
+    this.rvGenres = rvGenres;
     this.rvSearchResults = rvSearchResults;
+    this.rvTopSearches = rvTopSearches;
+    this.scrollDefaultView = scrollDefaultView;
     this.searchView = searchView;
   }
 
@@ -72,9 +86,27 @@ public final class FragmentSearchBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.rv_genres;
+      RecyclerView rvGenres = ViewBindings.findChildViewById(rootView, id);
+      if (rvGenres == null) {
+        break missingId;
+      }
+
       id = R.id.rv_search_results;
       RecyclerView rvSearchResults = ViewBindings.findChildViewById(rootView, id);
       if (rvSearchResults == null) {
+        break missingId;
+      }
+
+      id = R.id.rv_top_searches;
+      RecyclerView rvTopSearches = ViewBindings.findChildViewById(rootView, id);
+      if (rvTopSearches == null) {
+        break missingId;
+      }
+
+      id = R.id.scroll_default_view;
+      NestedScrollView scrollDefaultView = ViewBindings.findChildViewById(rootView, id);
+      if (scrollDefaultView == null) {
         break missingId;
       }
 
@@ -84,8 +116,8 @@ public final class FragmentSearchBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentSearchBinding((ConstraintLayout) rootView, progressBar, rvSearchResults,
-          searchView);
+      return new FragmentSearchBinding((ConstraintLayout) rootView, progressBar, rvGenres,
+          rvSearchResults, rvTopSearches, scrollDefaultView, searchView);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));
