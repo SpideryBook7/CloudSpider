@@ -568,11 +568,22 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                                              if (serverName.equals("stape", ignoreCase = true) || linkUrl.contains("streamtape")) {
                                                  val extractor = com.spiderybook.plugins.extractors.StreamtapeExtractor(this@AnimeFlvProvider)
                                                  val links = extractor.extract(linkUrl)
-                                                 linksToEmit.addAll(links)
+                                                 if (links.isEmpty()) {
+                                                     linksToEmit.add(ExtractorLink(name = serverName, url = linkUrl, referer = mainUrl, quality = 0))
+                                                 } else {
+                                                     linksToEmit.addAll(links)
+                                                 }
+                                             } else if (serverName.equals("SW", ignoreCase = true) || linkUrl.contains("streamwish") || linkUrl.contains("filemoon")) {
+                                                 val extractor = com.spiderybook.plugins.extractors.StreamwishExtractor(this@AnimeFlvProvider)
+                                                 val links = extractor.extract(linkUrl)
+                                                 if (links.isEmpty()) {
+                                                     linksToEmit.add(ExtractorLink(name = serverName, url = linkUrl, referer = mainUrl, quality = 0))
+                                                 } else {
+                                                     linksToEmit.addAll(links)
+                                                 }
                                              } else {
-                                                 // Filter out unplayable servers so they don't break the UI
-                                                 if (!serverName.equals("SW", ignoreCase = true) && 
-                                                     !serverName.equals("Netu", ignoreCase = true) && 
+                                                 // Restore fallback: emit unhandled servers directly so the list isn't empty
+                                                 if (!serverName.equals("Netu", ignoreCase = true) && 
                                                      !serverName.equals("Hqq", ignoreCase = true) &&
                                                      !serverName.equals("Mega", ignoreCase = true)) {
                                                      

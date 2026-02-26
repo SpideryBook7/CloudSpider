@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -39,15 +40,14 @@ class PlayerActivity : AppCompatActivity() {
         hideSystemUi()
         
         val data = intent.getStringExtra("data")
-        val apiName = intent.getStringExtra("apiName")
-        val title = intent.getStringExtra("title")
-        val poster = intent.getStringExtra("poster")
-        val type = intent.getStringExtra("type")
+        val apiName = intent.getStringExtra("apiName") ?: "Local"
+        val title = intent.getStringExtra("title") ?: "Unknown"
+        val poster = intent.getStringExtra("poster") ?: ""
+        val type = intent.getStringExtra("type") ?: com.spiderybook.domain.model.TvType.Movie.name
         
-        if (data != null && apiName != null) {
+        if (data != null) {
             // Save/Update History
-            if (title != null && poster != null) {
-                lifecycleScope.launch {
+            lifecycleScope.launch {
                     val existing = localRepository.getHistoryItem(data)
                     var savedPosition = 0L
                     
@@ -57,7 +57,6 @@ class PlayerActivity : AppCompatActivity() {
                         startPosition = savedPosition
                         Toast.makeText(this@PlayerActivity, "Resuming from ${generatedTime(savedPosition)}", Toast.LENGTH_SHORT).show()
                     }
-                    
                     localRepository.insertHistory(
                         com.spiderybook.data.local.entity.HistoryEntity(
                             url = data,
@@ -69,16 +68,20 @@ class PlayerActivity : AppCompatActivity() {
                         )
                     )
                 }
-            }
             
-            setupObservers()
-            viewModel.loadLinks(apiName, data)
+            if (intent.getBooleanExtra("isDirectLink", false)) {
+                initializePlayer(data, "")
+            } else {
+                setupObservers()
+                viewModel.loadLinks(apiName, data)
+            }
         } else {
             Toast.makeText(this, "Error: No data", Toast.LENGTH_SHORT).show()
             finish()
         }
     }
 
+    @OptIn(UnstableApi::class)
     private fun setupObservers() {
         viewModel.links.observe(this) { resource ->
             binding.progressBar.visibility = if (resource is Resource.Loading) View.VISIBLE else View.GONE
@@ -167,27 +170,38 @@ class PlayerActivity : AppCompatActivity() {
         // Release existing player to prevent audio overlap
         releasePlayer()
 
-        val dataSourceFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
-            .setAllowCrossProtocolRedirects(true)
-            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+        // 1. Use OkHttp for robust header persistence across HTTP -> HTTPS redirects
+        val okHttpClient = okhttp3.OkHttpClient.Builder()
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .build()
+
+        val dataSourceFactory = androidx.media3.datasource.okhttp.OkHttpDataSource.Factory(okHttpClient)
+            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         
+        val headers = mutableMapOf<String, String>()
         if (!referer.isNullOrEmpty()) {
-            val headers = mutableMapOf<String, String>()
             headers["Referer"] = referer
+        }
+
+        // Terabox Anti-Leech Headers for Native Mode
+        val alistUrl = com.spiderybook.BuildConfig.ALIST_URL.replace("\"", "").trimEnd('/')
+        if (url.startsWith(alistUrl) || url.contains("terabox")) {
+            headers["Referer"] = "https://www.terabox.com/"
+            headers["Origin"] = "https://www.terabox.com/"
+        }
+
+        if (headers.isNotEmpty()) {
             dataSourceFactory.setDefaultRequestProperties(headers)
         }
 
-        player = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(
-                androidx.media3.exoplayer.source.DefaultMediaSourceFactory(dataSourceFactory)
-            )
-            .build()
+        player = ExoPlayer.Builder(this).build()
         
         binding.playerView.player = player
         
         // Manual Play/Pause Logic
-        val btnPlay = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_play_custom)
-        val btnPause = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_pause_custom)
+        val btnPlay = binding.playerView.findViewById<View>(com.spiderybook.R.id.btn_play_custom)
+        val btnPause = binding.playerView.findViewById<View>(com.spiderybook.R.id.btn_pause_custom)
         
         btnPlay?.setOnClickListener { player?.play() }
         btnPause?.setOnClickListener { player?.pause() }
@@ -219,9 +233,36 @@ class PlayerActivity : AppCompatActivity() {
             }
         })
         
+        player?.addAnalyticsListener(object : androidx.media3.exoplayer.analytics.AnalyticsListener {
+            override fun onPlayerError(eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime, error: androidx.media3.common.PlaybackException) {
+                val cause = error.cause
+                if (cause is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException) {
+                    android.util.Log.e("SpideryDebug", "Error HTTP: ${cause.responseCode}")
+                    android.util.Log.e("SpideryDebug", "Headers del servidor: ${cause.headerFields}")
+                } else {
+                    android.util.Log.e("SpideryDebug", "Error de reproducción: ${error.message}")
+                }
+            }
+        })
         
-        val mediaItem = MediaItem.fromUri(Uri.parse(url))
-        player?.setMediaItem(mediaItem)
+        val mediaItem = MediaItem.fromUri(url.toUri())
+        
+        val alistUrlFallback = com.spiderybook.BuildConfig.ALIST_URL.replace("\"", "").trimEnd('/')
+        if (url.startsWith(alistUrlFallback) || url.contains("terabox")) {
+            // Apply strict ProgressiveMediaSource as requested to bypass anti-leech detection issues
+            val mediaSource = androidx.media3.exoplayer.source.ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(mediaItem)
+            player?.setMediaSource(mediaSource)
+        } else if (url.contains("streamwish")) {
+            // Streamwish Strict HLS Extraction
+            val mediaSource = getStreamwishSource(url, dataSourceFactory)
+            player?.setMediaSource(mediaSource)
+        } else {
+            // Fallback for HLS streams (AnimeFLV, etc.)
+            val mediaSource = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(dataSourceFactory)
+                .createMediaSource(mediaItem)
+            player?.setMediaSource(mediaSource)
+        }
         
         // DEBUG: Show the URL being played
         Toast.makeText(this, "Playing: $url", Toast.LENGTH_LONG).show()
@@ -287,9 +328,33 @@ class PlayerActivity : AppCompatActivity() {
         return if (minutes > 60) {
             val hours = minutes / 60
             val remainingMinutes = minutes % 60
-            String.format("%02d:%02d:%02d", hours, remainingMinutes, remainingSeconds)
+            String.format(java.util.Locale.US, "%02d:%02d:%02d", hours, remainingMinutes, remainingSeconds)
         } else {
-            String.format("%02d:%02d", minutes, remainingSeconds)
+            String.format(java.util.Locale.US, "%02d:%02d", minutes, remainingSeconds)
         }
+    }
+
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+    private fun getStreamwishSource(url: String, dataSourceFactory: androidx.media3.datasource.okhttp.OkHttpDataSource.Factory): androidx.media3.exoplayer.source.MediaSource {
+        val headers = mutableMapOf<String, String>()
+        
+        // El disfraz que confirmamos en Linux
+        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"
+        
+        // Streamwish es muy estricto con el origen de la petición
+        headers["Referer"] = "https://streamwish.to/"
+        headers["Origin"] = "https://streamwish.to/"
+        headers["Accept-Language"] = "es-MX,es;q=0.9,en;q=0.8"
+
+        dataSourceFactory.setDefaultRequestProperties(headers)
+
+        val mediaItem = androidx.media3.common.MediaItem.Builder()
+            .setUri(url)
+            .setMimeType(androidx.media3.common.MimeTypes.APPLICATION_M3U8) // Streamwish suele usar HLS (.m3u8)
+            .build()
+
+        // Usamos HlsMediaSource porque Streamwish fragmenta el video para evitar descargas
+        return androidx.media3.exoplayer.hls.HlsMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(mediaItem)
     }
 }

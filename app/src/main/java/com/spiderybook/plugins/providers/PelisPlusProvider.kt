@@ -345,14 +345,32 @@ class PelisPlusProvider : MainAPI() {
                             if (resolvedSrc.contains("streamtape") || resolvedSrc.contains("stape")) {
                                 val extractor = com.spiderybook.plugins.extractors.StreamtapeExtractor(this)
                                 val links = extractor.extract(resolvedSrc)
-                                for (link in links) {
-                                    callback(link)
+                                if (links.isEmpty()) {
+                                    callback(ExtractorLink(name = "$serverName - 1. Web/Raw", url = resolvedSrc, referer = playerUrl, quality = 0))
+                                } else {
+                                    for (link in links) {
+                                        callback(link)
+                                    }
                                 }
                             } else if (resolvedSrc.contains("vidhide") || resolvedSrc.contains("filemoon") || resolvedSrc.contains("moonplayer")) {
                                 val extractor = com.spiderybook.plugins.extractors.VidhideExtractor(this)
                                 val links = extractor.extract(resolvedSrc)
-                                for (link in links) {
-                                    callback(link)
+                                if (links.isEmpty()) {
+                                    callback(ExtractorLink(name = "$serverName - 1. Web/Raw", url = resolvedSrc, referer = playerUrl, quality = 0))
+                                } else {
+                                    for (link in links) {
+                                        callback(link)
+                                    }
+                                }
+                            } else if (resolvedSrc.contains("streamwish") || resolvedSrc.contains("sw")) {
+                                val extractor = com.spiderybook.plugins.extractors.StreamwishExtractor(this)
+                                val links = extractor.extract(resolvedSrc)
+                                if (links.isEmpty()) {
+                                    callback(ExtractorLink(name = "$serverName - 1. Web/Raw", url = resolvedSrc, referer = playerUrl, quality = 0))
+                                } else {
+                                    for (link in links) {
+                                        callback(link)
+                                    }
                                 }
                             } else {
                                 // MULTI-OPTION STRATEGY:
