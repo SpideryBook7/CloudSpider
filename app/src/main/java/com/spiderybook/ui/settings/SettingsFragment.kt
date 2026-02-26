@@ -4,7 +4,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.viewModels
-import coil.imageLoader
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.spiderybook.databinding.FragmentSettingsBinding
 import com.spiderybook.ui.common.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,7 +22,6 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         setupProviderSelection()
         setupCacheClearing()
         setupDownloadsClearing()
-        
         // Example: load app version natively dynamically, or just let XML have it
     }
 

@@ -1,122 +1,118 @@
 [
     {
+        "merged": "com.spiderybook.app-debug-60:/layout_item_top_search.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/item_top_search.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-60:/layout_item_home_parent.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/item_home_parent.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-60:/layout_fragment_history.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/fragment_history.xml"
+    },
+    {
+        "merged": "com.spiderybook.app-debug-60:/xml_backup_rules.xml.flat",
+        "source": "com.spiderybook.app-main-62:/xml/backup_rules.xml"
+    },
+    {
         "merged": "com.spiderybook.app-debug-60:/layout_fragment_settings.xml.flat",
         "source": "com.spiderybook.app-main-62:/layout/fragment_settings.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_item_filter.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\item_filter.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_custom_player_controls.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/custom_player_controls.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\xml_data_extraction_rules.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\xml\\data_extraction_rules.xml"
+        "merged": "com.spiderybook.app-debug-60:/drawable_bg_tab_selected.xml.flat",
+        "source": "com.spiderybook.app-main-62:/drawable/bg_tab_selected.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_browse.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\fragment_browse.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_fragment_downloads.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/fragment_downloads.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_favorites.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\fragment_favorites.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_fragment_browse.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/fragment_browse.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_item_home_child.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\item_home_child.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_fragment_favorites.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/fragment_favorites.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\drawable_gradient_bottom_sheet.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\gradient_bottom_sheet.xml"
+        "merged": "com.spiderybook.app-debug-60:/drawable_border_bottom_red.xml.flat",
+        "source": "com.spiderybook.app-main-62:/drawable/border_bottom_red.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\menu_bottom_nav_menu.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\menu\\bottom_nav_menu.xml"
+        "merged": "com.spiderybook.app-debug-60:/drawable_bg_tab_unselected.xml.flat",
+        "source": "com.spiderybook.app-main-62:/drawable/bg_tab_unselected.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\drawable_ic_launcher.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\ic_launcher.xml"
+        "merged": "com.spiderybook.app-debug-60:/drawable_ic_launcher.xml.flat",
+        "source": "com.spiderybook.app-main-62:/drawable/ic_launcher.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_history.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\fragment_history.xml"
+        "merged": "com.spiderybook.app-debug-60:/menu_bottom_nav_menu.xml.flat",
+        "source": "com.spiderybook.app-main-62:/menu/bottom_nav_menu.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_item_home_parent.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\item_home_parent.xml"
+        "merged": "com.spiderybook.app-debug-60:/drawable_gradient_bottom_sheet.xml.flat",
+        "source": "com.spiderybook.app-main-62:/drawable/gradient_bottom_sheet.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_downloads.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\fragment_downloads.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_item_filter.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/item_filter.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\drawable_ic_launcher_round.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\ic_launcher_round.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_item_home_child.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/item_home_child.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\xml_backup_rules.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\xml\\backup_rules.xml"
+        "merged": "com.spiderybook.app-debug-60:/navigation_nav_graph.xml.flat",
+        "source": "com.spiderybook.app-main-62:/navigation/nav_graph.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_item_episode.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\item_episode.xml"
+        "merged": "com.spiderybook.app-debug-60:/drawable_gradient_bottom.xml.flat",
+        "source": "com.spiderybook.app-main-62:/drawable/gradient_bottom.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_result.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\fragment_result.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_fragment_result.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/fragment_result.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\navigation_nav_graph.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\navigation\\nav_graph.xml"
+        "merged": "com.spiderybook.app-debug-60:/xml_data_extraction_rules.xml.flat",
+        "source": "com.spiderybook.app-main-62:/xml/data_extraction_rules.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\drawable_logo.png.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\logo.png"
+        "merged": "com.spiderybook.app-debug-60:/layout_fragment_home.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/fragment_home.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\drawable_border_bottom_red.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\border_bottom_red.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_item_episode.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/item_episode.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\drawable_bg_tab_unselected.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\bg_tab_unselected.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_activity_main.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/activity_main.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_home.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\fragment_home.xml"
+        "merged": "com.spiderybook.app-debug-60:/drawable_logo.png.flat",
+        "source": "com.spiderybook.app-main-62:/drawable/logo.png"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\drawable_gradient_bottom.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\gradient_bottom.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_activity_player.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/activity_player.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_custom_player_controls.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\custom_player_controls.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_item_genre.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/item_genre.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_activity_main.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\activity_main.xml"
+        "merged": "com.spiderybook.app-debug-60:/layout_fragment_search.xml.flat",
+        "source": "com.spiderybook.app-main-62:/layout/fragment_search.xml"
     },
     {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\drawable_bg_tab_selected.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\drawable\\bg_tab_selected.xml"
-    },
-    {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_item_genre.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\item_genre.xml"
-    },
-    {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_activity_player.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\activity_player.xml"
-    },
-    {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_settings.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\fragment_settings.xml"
-    },
-    {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_item_top_search.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\item_top_search.xml"
-    },
-    {
-        "merged": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-debug-60:\\layout_fragment_search.xml.flat",
-        "source": "C:\\Users\\crist\\.gradle\\daemon\\8.6\\com.spiderybook.app-main-62:\\layout\\fragment_search.xml"
+        "merged": "com.spiderybook.app-debug-60:/drawable_ic_launcher_round.xml.flat",
+        "source": "com.spiderybook.app-main-62:/drawable/ic_launcher_round.xml"
     }
 ]

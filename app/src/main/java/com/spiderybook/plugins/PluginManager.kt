@@ -18,6 +18,7 @@ class PluginManager @Inject constructor() {
     init {
         register(com.spiderybook.plugins.providers.AnimeFlvProvider())
         register(com.spiderybook.plugins.providers.PelisPlusProvider())
+        register(com.spiderybook.plugins.providers.TeraboxProvider())
     }
     
     fun getAPI(name: String): MainAPI? {

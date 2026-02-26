@@ -4,24 +4,7 @@
             "outputFile": "com.spiderybook.app-mergeDebugResources-58:/values-as/values-as.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\1d9dcb9c6fa08b8a879014feb31dbeb5\\transformed\\navigation-ui-2.7.7\\res\\values-as\\values-as.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,160",
-                        "endColumns": "104,116",
-                        "endOffsets": "155,272"
-                    },
-                    "to": {
-                        "startLines": "111,112",
-                        "startColumns": "4,4",
-                        "startOffsets": "9349,9454",
-                        "endColumns": "104,116",
-                        "endOffsets": "9449,9566"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\c717a8d6bca3e4a13f8da631fb7c0f64\\transformed\\material-1.12.0\\res\\values-as\\values-as.xml",
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\e89509d673710123cbe4ecd272f579d2\\transformed\\material-1.12.0\\res\\values-as\\values-as.xml",
                     "from": {
                         "startLines": "2,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -40,7 +23,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\bcb0d51b71b3991e22732c3ab9436bea\\transformed\\appcompat-1.7.0\\res\\values-as\\values-as.xml",
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\240d0c99e351514e9bee188820ba230e\\transformed\\appcompat-1.7.0\\res\\values-as\\values-as.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -57,7 +40,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\f67e98be54868cb4c2679ace7bc85f1e\\transformed\\core-1.13.1\\res\\values-as\\values-as.xml",
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\3be38459308c5f8ec9fabea810350547\\transformed\\core-1.13.1\\res\\values-as\\values-as.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
@@ -71,6 +54,23 @@
                         "startOffsets": "3472,3573,3676,3784,3889,3993,4093,9966",
                         "endColumns": "100,102,107,104,103,99,128,100",
                         "endOffsets": "3568,3671,3779,3884,3988,4088,4217,10062"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\b448dfce45ba4f7232129593807ccefe\\transformed\\navigation-ui-2.7.7\\res\\values-as\\values-as.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,160",
+                        "endColumns": "104,116",
+                        "endOffsets": "155,272"
+                    },
+                    "to": {
+                        "startLines": "111,112",
+                        "startColumns": "4,4",
+                        "startOffsets": "9349,9454",
+                        "endColumns": "104,116",
+                        "endOffsets": "9449,9566"
                     }
                 }
             ]

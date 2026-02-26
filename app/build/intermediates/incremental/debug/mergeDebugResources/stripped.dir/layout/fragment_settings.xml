@@ -254,6 +254,8 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+
+
         <!-- About Section -->
         <LinearLayout
             android:layout_width="match_parent"
