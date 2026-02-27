@@ -27,6 +27,11 @@ class PlayerActivity : AppCompatActivity() {
     private var player: ExoPlayer? = null
     private var startPosition: Long = 0L
     
+    private lateinit var dlnaManager: com.spiderybook.utils.dlna.DLNAManager
+    private var currentMediaUrl: String? = null
+    private var currentMediaReferer: String? = null
+    private var currentMediaTitle: String? = null
+    
     private val viewModel: PlayerViewModel by viewModels()
     
     @javax.inject.Inject
@@ -44,6 +49,9 @@ class PlayerActivity : AppCompatActivity() {
         val title = intent.getStringExtra("title") ?: "Unknown"
         val poster = intent.getStringExtra("poster") ?: ""
         val type = intent.getStringExtra("type") ?: com.spiderybook.domain.model.TvType.Movie.name
+        
+        currentMediaTitle = title
+        dlnaManager = com.spiderybook.utils.dlna.DLNAManager(this)
         
         if (data != null) {
             // Save/Update History
@@ -125,6 +133,52 @@ class PlayerActivity : AppCompatActivity() {
                     }
                     binding.playerView.resizeMode = newMode
                 }
+                
+                // Cast Logic
+                val btnCast = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_cast_control)
+                btnCast?.setOnClickListener {
+                    val mediaUrl = currentMediaUrl
+                    val mediaReferer = currentMediaReferer
+                    if (mediaUrl.isNullOrEmpty()) {
+                        Toast.makeText(this@PlayerActivity, "No media to cast", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                    
+                    val dialog = androidx.appcompat.app.AlertDialog.Builder(this@PlayerActivity)
+                        .setTitle("Buscando Pantallas...")
+                        .setMessage("Escaneando la red Wi-Fi local por TVs compatibles...")
+                        .setCancelable(false)
+                        .show()
+                        
+                    lifecycleScope.launch {
+                        val devices = dlnaManager.discoverDevices(3000)
+                        dialog.dismiss()
+                        
+                        if (devices.isEmpty()) {
+                            Toast.makeText(this@PlayerActivity, "No se encontraron TVs LG/WebOS en la red", Toast.LENGTH_LONG).show()
+                            return@launch
+                        }
+                        
+                        val names = devices.map { it.name }.toTypedArray()
+                        androidx.appcompat.app.AlertDialog.Builder(this@PlayerActivity)
+                            .setTitle("Proyectar en:")
+                            .setItems(names) { _, which ->
+                                val device = devices[which]
+                                lifecycleScope.launch {
+                                    Toast.makeText(this@PlayerActivity, "Conectando con ${device.name}...", Toast.LENGTH_SHORT).show()
+                                    val success = dlnaManager.playMedia(device, mediaUrl, mediaReferer)
+                                    if (success) {
+                                        Toast.makeText(this@PlayerActivity, "¡Reproduciendo en la TV! Ya puedes cerrar la aplicación.", Toast.LENGTH_LONG).show()
+                                        player?.pause()
+                                    } else {
+                                        Toast.makeText(this@PlayerActivity, "Error al enviar el video a la TV", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            .setCancelable(true)
+                            .show()
+                    }
+                }
 
                 if (links.isNotEmpty()) {
                      // Check if player is already playing to avoid auto-restart
@@ -167,6 +221,10 @@ class PlayerActivity : AppCompatActivity() {
 
     @OptIn(UnstableApi::class)
     private fun initializePlayer(url: String, referer: String?) {
+        // Save URL for casting
+        currentMediaUrl = url
+        currentMediaReferer = referer
+        
         // Release existing player to prevent audio overlap
         releasePlayer()
 

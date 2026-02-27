@@ -4,7 +4,7 @@
             "outputFile": "com.spiderybook.app-mergeDebugResources-58:/values-small-v4/values-small-v4.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\e89509d673710123cbe4ecd272f579d2\\transformed\\material-1.12.0\\res\\values-small-v4\\values-small-v4.xml",
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\f22b81ac73cb135ba0a5f36a0114c583\\transformed\\material-1.12.0\\res\\values-small-v4\\values-small-v4.xml",
                     "from": {
                         "startLines": "2,3,4,5",
                         "startColumns": "4,4,4,4",

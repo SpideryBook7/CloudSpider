@@ -25,6 +25,9 @@ public final class CustomPlayerControlsBinding implements ViewBinding {
   public final ImageButton btnAspectRatio;
 
   @NonNull
+  public final ImageButton btnCastControl;
+
+  @NonNull
   public final ImageButton btnFullscreen;
 
   @NonNull
@@ -52,13 +55,14 @@ public final class CustomPlayerControlsBinding implements ViewBinding {
   public final ImageButton exoRew;
 
   private CustomPlayerControlsBinding(@NonNull FrameLayout rootView,
-      @NonNull ImageButton btnAspectRatio, @NonNull ImageButton btnFullscreen,
-      @NonNull ImageButton btnPauseCustom, @NonNull ImageButton btnPlayCustom,
-      @NonNull ImageButton btnSourcesControl, @NonNull TextView exoDuration,
-      @NonNull ImageButton exoFfwd, @NonNull TextView exoPosition,
+      @NonNull ImageButton btnAspectRatio, @NonNull ImageButton btnCastControl,
+      @NonNull ImageButton btnFullscreen, @NonNull ImageButton btnPauseCustom,
+      @NonNull ImageButton btnPlayCustom, @NonNull ImageButton btnSourcesControl,
+      @NonNull TextView exoDuration, @NonNull ImageButton exoFfwd, @NonNull TextView exoPosition,
       @NonNull DefaultTimeBar exoProgress, @NonNull ImageButton exoRew) {
     this.rootView = rootView;
     this.btnAspectRatio = btnAspectRatio;
+    this.btnCastControl = btnCastControl;
     this.btnFullscreen = btnFullscreen;
     this.btnPauseCustom = btnPauseCustom;
     this.btnPlayCustom = btnPlayCustom;
@@ -100,6 +104,12 @@ public final class CustomPlayerControlsBinding implements ViewBinding {
       id = R.id.btn_aspect_ratio;
       ImageButton btnAspectRatio = ViewBindings.findChildViewById(rootView, id);
       if (btnAspectRatio == null) {
+        break missingId;
+      }
+
+      id = R.id.btn_cast_control;
+      ImageButton btnCastControl = ViewBindings.findChildViewById(rootView, id);
+      if (btnCastControl == null) {
         break missingId;
       }
 
@@ -157,9 +167,9 @@ public final class CustomPlayerControlsBinding implements ViewBinding {
         break missingId;
       }
 
-      return new CustomPlayerControlsBinding((FrameLayout) rootView, btnAspectRatio, btnFullscreen,
-          btnPauseCustom, btnPlayCustom, btnSourcesControl, exoDuration, exoFfwd, exoPosition,
-          exoProgress, exoRew);
+      return new CustomPlayerControlsBinding((FrameLayout) rootView, btnAspectRatio, btnCastControl,
+          btnFullscreen, btnPauseCustom, btnPlayCustom, btnSourcesControl, exoDuration, exoFfwd,
+          exoPosition, exoProgress, exoRew);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

@@ -482,45 +482,45 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
-
-      static String com_spiderybook_ui_history_HistoryViewModel = "com.spiderybook.ui.history.HistoryViewModel";
-
       static String com_spiderybook_ui_browse_BrowseViewModel = "com.spiderybook.ui.browse.BrowseViewModel";
-
-      static String com_spiderybook_ui_settings_SettingsViewModel = "com.spiderybook.ui.settings.SettingsViewModel";
-
-      static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
-
-      static String com_spiderybook_ui_favorites_FavoritesViewModel = "com.spiderybook.ui.favorites.FavoritesViewModel";
 
       static String com_spiderybook_ui_home_HomeViewModel = "com.spiderybook.ui.home.HomeViewModel";
 
+      static String com_spiderybook_ui_history_HistoryViewModel = "com.spiderybook.ui.history.HistoryViewModel";
+
+      static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
+
+      static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
+
       static String com_spiderybook_ui_search_SearchViewModel = "com.spiderybook.ui.search.SearchViewModel";
 
-      @KeepFieldType
-      ResultViewModel com_spiderybook_ui_result_ResultViewModel2;
+      static String com_spiderybook_ui_favorites_FavoritesViewModel = "com.spiderybook.ui.favorites.FavoritesViewModel";
 
-      @KeepFieldType
-      HistoryViewModel com_spiderybook_ui_history_HistoryViewModel2;
+      static String com_spiderybook_ui_settings_SettingsViewModel = "com.spiderybook.ui.settings.SettingsViewModel";
 
       @KeepFieldType
       BrowseViewModel com_spiderybook_ui_browse_BrowseViewModel2;
 
       @KeepFieldType
-      SettingsViewModel com_spiderybook_ui_settings_SettingsViewModel2;
+      HomeViewModel com_spiderybook_ui_home_HomeViewModel2;
+
+      @KeepFieldType
+      HistoryViewModel com_spiderybook_ui_history_HistoryViewModel2;
 
       @KeepFieldType
       PlayerViewModel com_spiderybook_ui_player_PlayerViewModel2;
 
       @KeepFieldType
-      FavoritesViewModel com_spiderybook_ui_favorites_FavoritesViewModel2;
-
-      @KeepFieldType
-      HomeViewModel com_spiderybook_ui_home_HomeViewModel2;
+      ResultViewModel com_spiderybook_ui_result_ResultViewModel2;
 
       @KeepFieldType
       SearchViewModel com_spiderybook_ui_search_SearchViewModel2;
+
+      @KeepFieldType
+      FavoritesViewModel com_spiderybook_ui_favorites_FavoritesViewModel2;
+
+      @KeepFieldType
+      SettingsViewModel com_spiderybook_ui_settings_SettingsViewModel2;
     }
   }
 
@@ -582,15 +582,11 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
+      static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
+
       static String com_spiderybook_ui_favorites_FavoritesViewModel = "com.spiderybook.ui.favorites.FavoritesViewModel";
 
       static String com_spiderybook_ui_home_HomeViewModel = "com.spiderybook.ui.home.HomeViewModel";
-
-      static String com_spiderybook_ui_result_ResultViewModel = "com.spiderybook.ui.result.ResultViewModel";
-
-      static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
-
-      static String com_spiderybook_ui_browse_BrowseViewModel = "com.spiderybook.ui.browse.BrowseViewModel";
 
       static String com_spiderybook_ui_history_HistoryViewModel = "com.spiderybook.ui.history.HistoryViewModel";
 
@@ -598,20 +594,18 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
       static String com_spiderybook_ui_settings_SettingsViewModel = "com.spiderybook.ui.settings.SettingsViewModel";
 
-      @KeepFieldType
-      FavoritesViewModel com_spiderybook_ui_favorites_FavoritesViewModel2;
+      static String com_spiderybook_ui_player_PlayerViewModel = "com.spiderybook.ui.player.PlayerViewModel";
 
-      @KeepFieldType
-      HomeViewModel com_spiderybook_ui_home_HomeViewModel2;
+      static String com_spiderybook_ui_browse_BrowseViewModel = "com.spiderybook.ui.browse.BrowseViewModel";
 
       @KeepFieldType
       ResultViewModel com_spiderybook_ui_result_ResultViewModel2;
 
       @KeepFieldType
-      PlayerViewModel com_spiderybook_ui_player_PlayerViewModel2;
+      FavoritesViewModel com_spiderybook_ui_favorites_FavoritesViewModel2;
 
       @KeepFieldType
-      BrowseViewModel com_spiderybook_ui_browse_BrowseViewModel2;
+      HomeViewModel com_spiderybook_ui_home_HomeViewModel2;
 
       @KeepFieldType
       HistoryViewModel com_spiderybook_ui_history_HistoryViewModel2;
@@ -621,6 +615,12 @@ public final class DaggerSpideryBookApp_HiltComponents_SingletonC {
 
       @KeepFieldType
       SettingsViewModel com_spiderybook_ui_settings_SettingsViewModel2;
+
+      @KeepFieldType
+      PlayerViewModel com_spiderybook_ui_player_PlayerViewModel2;
+
+      @KeepFieldType
+      BrowseViewModel com_spiderybook_ui_browse_BrowseViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {

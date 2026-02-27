@@ -4,7 +4,7 @@
             "outputFile": "com.spiderybook.app-mergeDebugResources-58:/values-h550dp-port-v13/values-h550dp-port-v13.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\e89509d673710123cbe4ecd272f579d2\\transformed\\material-1.12.0\\res\\values-h550dp-port-v13\\values-h550dp-port-v13.xml",
+                    "source": "C:\\Users\\crist\\.gradle\\caches\\transforms-4\\f22b81ac73cb135ba0a5f36a0114c583\\transformed\\material-1.12.0\\res\\values-h550dp-port-v13\\values-h550dp-port-v13.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

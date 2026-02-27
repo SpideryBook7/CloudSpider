@@ -23,8 +23,9 @@ class GenericExtractor(private val mainApi: MainAPI) {
                     MainAPI.ExtractorLink(
                         name = "$serverName - 2. Direct Stream",
                         url = url,
-                        referer = referer, // Use passed referer
-                        quality = 0
+                        referer = url, // IMPORTANT: Use the embed URL itself, not the PelisPlus player URL
+                        quality = 0,
+                        isM3u8 = contentType.contains("mpegurl", ignoreCase = true)
                     )
                 )
             }
@@ -48,14 +49,14 @@ class GenericExtractor(private val mainApi: MainAPI) {
                 m3u8Regex.findAll(text).forEach { match ->
                     val link = match.groupValues[1].replace("\\/", "/")
                     if (!foundLinks.any { it.url == link }) {
-                         foundLinks.add(MainAPI.ExtractorLink("$serverName - 2. HLS", link, referer, 0))
+                         foundLinks.add(MainAPI.ExtractorLink("$serverName - 2. HLS", link, url, 0, isM3u8 = true))
                     }
                 }
 
                 mp4Regex.findAll(text).forEach { match ->
                     val link = match.groupValues[1].replace("\\/", "/")
                     if (!foundLinks.any { it.url == link }) {
-                         foundLinks.add(MainAPI.ExtractorLink("$serverName - 2. MP4", link, referer, 0))
+                         foundLinks.add(MainAPI.ExtractorLink("$serverName - 2. MP4", link, url, 0))
                     }
                 }
                 
@@ -63,7 +64,8 @@ class GenericExtractor(private val mainApi: MainAPI) {
                 fileRegex.findAll(text).forEach { match ->
                      val link = match.groupValues[1].replace("\\/", "/")
                      if ((link.contains(".mp4") || link.contains(".m3u8")) && !foundLinks.any { it.url == link }) {
-                          foundLinks.add(MainAPI.ExtractorLink("$serverName - 2. Player", link, referer, 0))
+                          val isHls = link.contains(".m3u8")
+                          foundLinks.add(MainAPI.ExtractorLink("$serverName - 2. Player", link, url, 0, isM3u8 = isHls))
                      }
                 }
             }

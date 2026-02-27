@@ -3441,6 +3441,7 @@ id bounceStart
 id btn_aspect_ratio
 id btn_banner_info
 id btn_banner_play
+id btn_cast_control
 id btn_download
 id btn_download_episode
 id btn_fullscreen

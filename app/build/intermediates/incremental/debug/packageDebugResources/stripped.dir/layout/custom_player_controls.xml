@@ -96,6 +96,18 @@
                 app:tint="@android:color/white"
                 xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
+            <!-- CAST BUTTON -->
+            <ImageButton
+                android:id="@+id/btn_cast_control"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_menu_share"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Cast to TV"
+                android:padding="12dp"
+                app:tint="@android:color/white"
+                xmlns:app="http://schemas.android.com/apk/res-auto"/>
+
             <!-- ASPECT RATIO BUTTON -->
             <ImageButton
                 android:id="@+id/btn_aspect_ratio"
