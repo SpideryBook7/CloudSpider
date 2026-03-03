@@ -18,6 +18,10 @@ import com.spiderybook.databinding.ActivityPlayerBinding
 import com.spiderybook.util.Resource
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -145,11 +149,25 @@ class PlayerActivity : AppCompatActivity() {
                     binding.playerView.resizeMode = newMode
                 }
                 
-                // Next Episode Logic
-                val btnNext = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
-                btnNext?.visibility = if (episodeUrls != null && currentIndex - 1 >= 0) View.VISIBLE else View.GONE
-                btnNext?.setOnClickListener {
+                // Floating Next Episode Logic (Fades in 2 mins before end)
+                val btnNextFloating = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
+                btnNextFloating?.setOnClickListener {
                     playNextEpisode()
+                }
+                
+                // Track Selection / Quality Dialog Logic
+                val btnQuality = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_quality_settings)
+                btnQuality?.setOnClickListener {
+                    player?.let { exoPlayer ->
+                        val trackSelectionDialogBuilder = androidx.media3.ui.TrackSelectionDialogBuilder(
+                            this@PlayerActivity,
+                            "Quality Options",
+                            exoPlayer,
+                            androidx.media3.common.C.TRACK_TYPE_VIDEO
+                        )
+                        trackSelectionDialogBuilder.setTheme(com.spiderybook.R.style.Theme_SpiderStream_Dialog)
+                        trackSelectionDialogBuilder.build().show()
+                    }
                 }
                 
                 // Cast Logic
@@ -201,19 +219,10 @@ class PlayerActivity : AppCompatActivity() {
                 if (links.isNotEmpty()) {
                      // Check if player is already playing to avoid auto-restart
                      if (player == null) {
-                        // REVERTED BEHAVIOR FOR ANIME:
-                        // Only show the selection dialog for "PelisPlus" (as requested).
-                        // For AnimeFLV and others, Auto-Play the first link (automatic behavior).
-
-                        // Actually, we have apiName in the activity scope from Intent
-                        val currentApiName = intent.getStringExtra("apiName")
-                        
-                        if (links.size > 1 && currentApiName == "PelisPlus") {
-                            showSourceSelectionDialog(links)
-                        } else {
-                            val link = links.first()
-                            initializePlayer(link.url, link.referer)
-                        }
+                        // Automatically play the first available link for all providers
+                        // The user can still switch sources manually via the 'Sources' button on the player controls
+                        val link = links.first()
+                        initializePlayer(link.url, link.referer)
                      }
                 } else {
                     Toast.makeText(this, "No links found", Toast.LENGTH_SHORT).show()
@@ -296,9 +305,13 @@ class PlayerActivity : AppCompatActivity() {
             
             override fun onPlaybackStateChanged(playbackState: Int) {
                 super.onPlaybackStateChanged(playbackState)
+                if (playbackState == androidx.media3.common.Player.STATE_READY) {
+                    startNextEpisodeTimer()
+                }
                 if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
                     btnPlay?.visibility = View.VISIBLE
                     btnPause?.visibility = View.GONE
+                    playNextEpisode()
                 }
             }
 
@@ -321,13 +334,7 @@ class PlayerActivity : AppCompatActivity() {
             }
         })
         
-        player?.addListener(object : androidx.media3.common.Player.Listener {
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
-                    playNextEpisode()
-                }
-            }
-        })
+        // Removed redundant onPlaybackStateChanged checking for STATE_ENDED
         
         val mediaItemBuilder = androidx.media3.common.MediaItem.Builder().setUri(url.toUri())
         if (url.contains(".m3u8")) {
@@ -370,6 +377,38 @@ class PlayerActivity : AppCompatActivity() {
         releasePlayer()
     }
     
+    private var nextEpisodeJob: Job? = null
+
+    private fun startNextEpisodeTimer() {
+        nextEpisodeJob?.cancel()
+        nextEpisodeJob = lifecycleScope.launch(Dispatchers.Main) {
+            val btnNextFloating = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
+            
+            // Only prepare timer if there IS a next episode available
+            if (episodeUrls != null && currentIndex - 1 >= 0 && btnNextFloating != null) {
+                while (isActive && player != null) {
+                    val duration = player!!.duration
+                    val currentPos = player!!.currentPosition
+                    
+                    if (duration > 0 && (duration - currentPos) <= 120_000L) { // 2 Minutes
+                        if (btnNextFloating.visibility == View.GONE) {
+                            btnNextFloating.alpha = 0f
+                            btnNextFloating.visibility = View.VISIBLE
+                            btnNextFloating.animate().alpha(1f).setDuration(500).start()
+                        }
+                    } else {
+                         if (btnNextFloating.visibility == View.VISIBLE) {
+                             btnNextFloating.animate().alpha(0f).setDuration(500).withEndAction {
+                                 btnNextFloating.visibility = View.GONE
+                             }.start()
+                         }
+                    }
+                    delay(1000) // Check every second
+                }
+            }
+        }
+    }
+
     private fun saveCurrentHistory() {
         if (player != null && player!!.playbackState != androidx.media3.common.Player.STATE_IDLE) {
             val currentPos = player!!.currentPosition
@@ -422,12 +461,13 @@ class PlayerActivity : AppCompatActivity() {
             viewModel.loadLinks(apiName, nextUrl)
             Toast.makeText(this@PlayerActivity, "Siguiente: $nextTitle", Toast.LENGTH_SHORT).show()
             
-            val btnNext = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
-            btnNext?.visibility = if (currentIndex - 1 >= 0) android.view.View.VISIBLE else android.view.View.GONE
+            val btnNextFloating = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
+            btnNextFloating?.visibility = android.view.View.GONE // Reset visibility for new episode
         }
     }
 
     private fun releasePlayer() {
+        nextEpisodeJob?.cancel()
         player?.release()
         player = null
     }

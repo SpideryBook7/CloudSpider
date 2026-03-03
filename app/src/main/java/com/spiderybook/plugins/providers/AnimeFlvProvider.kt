@@ -6,6 +6,8 @@ import com.spiderybook.domain.model.SearchResponse
 import com.spiderybook.domain.model.TvType
 import com.spiderybook.plugins.MainAPI
 import org.jsoup.Jsoup
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import javax.inject.Inject
 import kotlinx.coroutines.*
 
@@ -15,7 +17,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
     
     override suspend fun getMainPage(page: Int): HomePageResponse? {
         return try {
-            val doc = Jsoup.connect(mainUrl).get()
+            val client = OkHttpClient.Builder().followRedirects(true).build()
+            val request = Request.Builder().url(mainUrl)
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                .header("Accept-Language", "es-MX,es;q=0.9,en;q=0.8")
+                .build()
+            val response = client.newCall(request).execute()
+            val html = response.body?.string() ?: ""
+            response.body?.close()
+            val doc = Jsoup.parse(html)
             val items = mutableListOf<HomePageList>()
 
             // 1. Latest Episodes
@@ -111,11 +121,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                         async {
                             try {
                                 val browseUrl = "$mainUrl/browse?order=title&page=$i"
-                                // Use a common User-Agent to avoid blocking
-                                val browseDoc = Jsoup.connect(browseUrl)
-                                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-                                    .timeout(30000) // Increase timeout for massive fetch
-                                    .get()
+                                val client = OkHttpClient.Builder().followRedirects(true).build()
+                                val request = Request.Builder().url(browseUrl)
+                                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                                    .header("Accept-Language", "es-MX,es;q=0.9,en;q=0.8")
+                                    .build()
+                                val response = client.newCall(request).execute()
+                                val html = response.body?.string() ?: ""
+                                response.body?.close()
+                                val browseDoc = Jsoup.parse(html)
                                     
                                 val browseElements = browseDoc.select("ul.ListAnimes li")
                                 val pageItems = mutableListOf<SearchResponse>()
@@ -185,10 +199,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
          return try {
             val url = "$mainUrl/browse?order=title&page=$page"
             // Use a common User-Agent to avoid blocking
-            val doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-                .timeout(10000)
-                .get()
+            val client = OkHttpClient.Builder().followRedirects(true).build()
+            val request = Request.Builder().url(url)
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                .header("Accept-Language", "es-MX,es;q=0.9,en;q=0.8")
+                .build()
+            val response = client.newCall(request).execute()
+            val html = response.body?.string() ?: ""
+            response.body?.close()
+            val doc = Jsoup.parse(html)
             val items = mutableListOf<SearchResponse>()
             
             val elements = doc.select("ul.ListAnimes li")
@@ -266,10 +285,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
     override suspend fun getTopSearches(): List<SearchResponse> {
         return try {
             val url = "$mainUrl/browse?order=rating"
-            val doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-                .timeout(10000)
-                .get()
+            val client = OkHttpClient.Builder().followRedirects(true).build()
+            val request = Request.Builder().url(url)
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                .header("Accept-Language", "es-MX,es;q=0.9,en;q=0.8")
+                .build()
+            val response = client.newCall(request).execute()
+            val html = response.body?.string() ?: ""
+            response.body?.close()
+            val doc = Jsoup.parse(html)
             val items = mutableListOf<SearchResponse>()
             
             // Limit to top 10 for "Top Searches"
@@ -308,10 +332,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
                 "$mainUrl/browse?q=$query&page=$page"
             }
             
-            val doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-                .timeout(10000)
-                .get()
+            val client = OkHttpClient.Builder().followRedirects(true).build()
+            val request = Request.Builder().url(url)
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                .header("Accept-Language", "es-MX,es;q=0.9,en;q=0.8")
+                .build()
+            val response = client.newCall(request).execute()
+            val html = response.body?.string() ?: ""
+            response.body?.close()
+            val doc = Jsoup.parse(html)
             val animeList = mutableListOf<SearchResponse>()
             
             val animeElements = doc.select("ul.ListAnimes li")
@@ -341,7 +370,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
 
     override suspend fun load(url: String): com.spiderybook.domain.model.LoadResponse? {
         return try {
-            val doc = Jsoup.connect(url).get()
+            val client = OkHttpClient.Builder().followRedirects(true).build()
+            val request = Request.Builder().url(url)
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                .header("Accept-Language", "es-MX,es;q=0.9,en;q=0.8")
+                .build()
+            val response = client.newCall(request).execute()
+            val html = response.body?.string() ?: ""
+            response.body?.close()
+            val doc = Jsoup.parse(html)
 
             // Check if it's an episode page (URL contains /ver/)
             if (url.contains("/ver/")) {
@@ -455,10 +492,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
 
                                 if (titleText.isNotEmpty()) {
                                     // Fetch details page to get image
-                                    val detailsDoc = Jsoup.connect(fullUrl)
-                                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-                                        .timeout(5000)
-                                        .get()
+                                    val client = OkHttpClient.Builder().followRedirects(true).build()
+                                    val request = Request.Builder().url(fullUrl)
+                                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                                        .header("Accept-Language", "es-MX,es;q=0.9,en;q=0.8")
+                                        .build()
+                                    val response = client.newCall(request).execute()
+                                    val html = response.body?.string() ?: ""
+                                    response.body?.close()
+                                    val detailsDoc = Jsoup.parse(html)
                                         
                                     val relPosterPath = detailsDoc.select("div.Image img").attr("src")
                                     val relPosterUrl = if (relPosterPath.startsWith("http")) relPosterPath else "https://animeflv.net$relPosterPath"
@@ -534,7 +576,15 @@ class AnimeFlvProvider @Inject constructor() : MainAPI() {
 
     override suspend fun loadLinks(data: String, callback: (ExtractorLink) -> Unit): Boolean {
         return try {
-            val doc = Jsoup.connect(data).get()
+            val client = OkHttpClient.Builder().followRedirects(true).build()
+            val request = Request.Builder().url(data) // 'data' is the episode URL here
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                .header("Accept-Language", "es-MX,es;q=0.9,en;q=0.8")
+                .build()
+            val response = client.newCall(request).execute()
+            val html = response.body?.string() ?: ""
+            response.body?.close()
+            val doc = Jsoup.parse(html)
             val scripts = doc.select("script")
             
             for (script in scripts) {

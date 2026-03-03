@@ -132,20 +132,37 @@
                 app:tint="@android:color/white"
                 xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
-            <!-- NEXT EPISODE BUTTON -->
+            <!-- QUALITY/SETTINGS BUTTON (Gear Icon) -->
             <ImageButton
-                android:id="@+id/btn_next_episode"
+                android:id="@+id/btn_quality_settings"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@android:drawable/ic_media_next"
+                android:src="@android:drawable/ic_menu_preferences"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Next Episode"
+                android:contentDescription="Quality Settings"
                 android:padding="12dp"
-                android:visibility="gone"
                 app:tint="@android:color/white"
                 xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
         </LinearLayout>
     </LinearLayout>
+
+    <!-- FLOATING NEXT EPISODE BUTTON -->
+    <!-- Positioned at the bottom right, slightly above the control bar -->
+    <ImageButton
+        android:id="@+id/btn_next_episode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="80dp"
+        android:layout_marginEnd="24dp"
+        android:src="@android:drawable/ic_media_next"
+        android:background="@drawable/bg_next_episode_btn"
+        android:contentDescription="Next Episode"
+        android:padding="12dp"
+        android:visibility="gone"
+        android:elevation="4dp"
+        app:tint="@android:color/white"
+        xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
 </FrameLayout>

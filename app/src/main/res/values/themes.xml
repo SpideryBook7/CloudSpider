@@ -18,4 +18,11 @@
         <!-- Allow layout in display cutout (notch area) -->
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="p">shortEdges</item>
     </style>
+
+    <!-- Dialog Theme for ExoPlayer Track Selection -->
+    <style name="Theme_SpiderStream_Dialog" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="colorAccent">@color/brand_primary</item>
+        <item name="android:textColorAlertDialogListItem">@android:color/white</item>
+        <item name="android:background">@color/background_dark</item>
+    </style>
 </resources>

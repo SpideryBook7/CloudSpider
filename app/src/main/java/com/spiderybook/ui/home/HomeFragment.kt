@@ -78,11 +78,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             // Always expand the header
             binding.appbar.setExpanded(true, true)
         }
-        
-        // Settings Button Logic (Moved to Toolbar)
-        binding.btnSettings.setOnClickListener {
-            findNavController().navigate(com.spiderybook.R.id.nav_settings)
-        }
     }
 
     private fun setupSpinner() {
