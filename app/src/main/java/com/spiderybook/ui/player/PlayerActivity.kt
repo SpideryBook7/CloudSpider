@@ -329,20 +329,25 @@ class PlayerActivity : AppCompatActivity() {
             }
         })
         
-        val mediaItem = MediaItem.fromUri(url.toUri())
+        val mediaItemBuilder = androidx.media3.common.MediaItem.Builder().setUri(url.toUri())
+        if (url.contains(".m3u8")) {
+            mediaItemBuilder.setMimeType(androidx.media3.common.MimeTypes.APPLICATION_M3U8)
+        }
+        val mediaItem = mediaItemBuilder.build()
         
         val alistUrlFallback = com.spiderybook.BuildConfig.ALIST_URL.replace("\"", "").trimEnd('/')
-        if (url.startsWith(alistUrlFallback) || url.contains("terabox")) {
+        if ((alistUrlFallback.isNotEmpty() && url.startsWith(alistUrlFallback)) || url.contains("terabox")) {
             // Apply strict ProgressiveMediaSource as requested to bypass anti-leech detection issues
             val mediaSource = androidx.media3.exoplayer.source.ProgressiveMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(mediaItem)
             player?.setMediaSource(mediaSource)
-        } else if (url.contains("streamwish")) {
-            // Streamwish Strict HLS Extraction
-            val mediaSource = getStreamwishSource(url, dataSourceFactory)
+           // STREAMWISH (requires specific headers and referer)
+        } else if (url.contains(".m3u8") && (referer?.contains("streamwish") == true || referer?.contains("filemoon") == true || referer?.contains("hglamioz") == true || referer?.contains("playnixes") == true)) {
+            val mediaSource = getStreamwishSource(url, referer ?: "", dataSourceFactory)
             player?.setMediaSource(mediaSource)
         } else {
-            // Fallback for HLS streams (AnimeFLV, etc.)
+            // Fallback for generic streams
+            // Thanks to forced MimeTypes.APPLICATION_M3U8 above, DefaultMediaSourceFactory will reliably pick HlsMediaSource
             val mediaSource = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(dataSourceFactory)
                 .createMediaSource(mediaItem)
             player?.setMediaSource(mediaSource)
@@ -449,15 +454,18 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-    private fun getStreamwishSource(url: String, dataSourceFactory: androidx.media3.datasource.okhttp.OkHttpDataSource.Factory): androidx.media3.exoplayer.source.MediaSource {
+    private fun getStreamwishSource(url: String, referer: String, dataSourceFactory: androidx.media3.datasource.okhttp.OkHttpDataSource.Factory): androidx.media3.exoplayer.source.MediaSource {
         val headers = mutableMapOf<String, String>()
         
-        // El disfraz que confirmamos en Linux
         headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"
         
-        // Streamwish es muy estricto con el origen de la petición
-        headers["Referer"] = "https://streamwish.to/"
-        headers["Origin"] = "https://streamwish.to/"
+        // Use the dynamically extracted Referer from StreamwishExtractor
+        if (referer.isNotEmpty()) {
+            headers["Referer"] = referer
+        }
+        
+        // DO NOT set Origin header, as Streamwish CDNs (premilkyway.com) often return 403 when it's present for direct M3U8 requests
+
         headers["Accept-Language"] = "es-MX,es;q=0.9,en;q=0.8"
 
         dataSourceFactory.setDefaultRequestProperties(headers)
