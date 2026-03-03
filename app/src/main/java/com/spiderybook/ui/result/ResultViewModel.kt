@@ -63,6 +63,25 @@ class ResultViewModel @Inject constructor(
         if (currentItem == null) return@launchIO
     }
     
+    fun saveEpisodeProgress(data: LoadResponse, episode: com.spiderybook.domain.model.Episode) = launchIO {
+        localRepository.insertHistory(
+            com.spiderybook.data.local.entity.HistoryEntity(
+                url = episode.url,
+                name = "${data.name} - ${episode.name}",
+                posterUrl = data.posterUrl ?: "",
+                apiName = data.apiName,
+                type = data.type?.name,
+                playbackPosition = 100,
+                duration = 100,
+                showTitle = data.name
+            )
+        )
+    }
+    
+    fun deleteEpisodeProgress(url: String) = launchIO {
+        localRepository.deleteHistory(url)
+    }
+    
     fun addToFavorites(currentItem: LoadResponse) = launchIO {
         localRepository.insertFavorite(
             com.spiderybook.data.local.entity.FavoriteEntity(

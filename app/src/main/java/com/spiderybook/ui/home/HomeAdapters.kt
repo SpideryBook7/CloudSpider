@@ -70,6 +70,9 @@ class ParentItemAdapter(
             // Toggle visibility based on isExpanded
             binding.rvChild.visibility = if (item.isExpanded) android.view.View.VISIBLE else android.view.View.GONE
             
+            // Animate Dropdown Arrow
+            binding.ivExpandIcon.animate().rotation(if (item.isExpanded) 0f else -90f).setDuration(200).start()
+            
             // Header Click Listener
             binding.root.setOnClickListener {
                 item.isExpanded = !item.isExpanded

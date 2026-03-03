@@ -10,6 +10,7 @@ import com.spiderybook.domain.model.Episode
 class EpisodeAdapter(
     private val items: List<Episode>,
     private val onClick: (Episode) -> Unit,
+    private val onLongClick: (Episode, Boolean) -> Unit,
     private val onDownloadClick: (Episode) -> Unit
 ) : RecyclerView.Adapter<EpisodeAdapter.EpisodeViewHolder>() {
 
@@ -37,6 +38,11 @@ class EpisodeAdapter(
             }
             
             binding.root.setOnClickListener { onClick(item) }
+            val isSeen = progress >= 95
+            binding.root.setOnLongClickListener { 
+                onLongClick(item, isSeen)
+                true
+            }
             binding.btnDownloadEpisode.setOnClickListener { onDownloadClick(item) }
         }
     }

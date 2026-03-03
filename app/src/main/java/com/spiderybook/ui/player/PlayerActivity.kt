@@ -32,6 +32,12 @@ class PlayerActivity : AppCompatActivity() {
     private var currentMediaReferer: String? = null
     private var currentMediaTitle: String? = null
     
+    // Episode List support
+    private var episodeUrls: java.util.ArrayList<String>? = null
+    private var episodeNames: java.util.ArrayList<String>? = null
+    private var currentIndex: Int = -1
+    private var showName: String? = null
+    
     private val viewModel: PlayerViewModel by viewModels()
     
     @javax.inject.Inject
@@ -52,6 +58,11 @@ class PlayerActivity : AppCompatActivity() {
         
         currentMediaTitle = title
         dlnaManager = com.spiderybook.utils.dlna.DLNAManager(this)
+        
+        episodeUrls = intent.getStringArrayListExtra("episodeUrls")
+        episodeNames = intent.getStringArrayListExtra("episodeNames")
+        currentIndex = intent.getIntExtra("currentIndex", -1)
+        showName = intent.getStringExtra("showName")
         
         if (data != null) {
             // Save/Update History
@@ -132,6 +143,13 @@ class PlayerActivity : AppCompatActivity() {
                         androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
                     }
                     binding.playerView.resizeMode = newMode
+                }
+                
+                // Next Episode Logic
+                val btnNext = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
+                btnNext?.visibility = if (episodeUrls != null && currentIndex - 1 >= 0) View.VISIBLE else View.GONE
+                btnNext?.setOnClickListener {
+                    playNextEpisode()
                 }
                 
                 // Cast Logic
@@ -303,6 +321,14 @@ class PlayerActivity : AppCompatActivity() {
             }
         })
         
+        player?.addListener(object : androidx.media3.common.Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
+                    playNextEpisode()
+                }
+            }
+        })
+        
         val mediaItem = MediaItem.fromUri(url.toUri())
         
         val alistUrlFallback = com.spiderybook.BuildConfig.ALIST_URL.replace("\"", "").trimEnd('/')
@@ -335,6 +361,11 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
+        saveCurrentHistory()
+        releasePlayer()
+    }
+    
+    private fun saveCurrentHistory() {
         if (player != null && player!!.playbackState != androidx.media3.common.Player.STATE_IDLE) {
             val currentPos = player!!.currentPosition
             var totalDuration = player!!.duration
@@ -357,13 +388,38 @@ class PlayerActivity : AppCompatActivity() {
                             apiName = apiName,
                             type = type,
                             playbackPosition = currentPos,
-                            duration = totalDuration
+                            duration = totalDuration,
+                            showTitle = showName ?: ""
                         )
                     )
                 }
             }
         }
-        releasePlayer()
+    }
+
+    private fun playNextEpisode() {
+        if (episodeUrls != null && currentIndex - 1 >= 0) {
+            currentIndex--
+            val nextUrl = episodeUrls!![currentIndex]
+            val nextName = episodeNames?.getOrNull(currentIndex) ?: ""
+            val nextTitle = if (showName != null) "$showName - $nextName" else nextName
+            
+            saveCurrentHistory()
+
+            intent.putExtra("data", nextUrl)
+            intent.putExtra("title", nextTitle)
+
+            player?.stop()
+            player?.clearMediaItems()
+            binding.progressBar.visibility = android.view.View.VISIBLE
+            
+            val apiName = intent.getStringExtra("apiName") ?: ""
+            viewModel.loadLinks(apiName, nextUrl)
+            Toast.makeText(this@PlayerActivity, "Siguiente: $nextTitle", Toast.LENGTH_SHORT).show()
+            
+            val btnNext = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
+            btnNext?.visibility = if (currentIndex - 1 >= 0) android.view.View.VISIBLE else android.view.View.GONE
+        }
     }
 
     private fun releasePlayer() {
@@ -414,5 +470,14 @@ class PlayerActivity : AppCompatActivity() {
         // Usamos HlsMediaSource porque Streamwish fragmenta el video para evitar descargas
         return androidx.media3.exoplayer.hls.HlsMediaSource.Factory(dataSourceFactory)
             .createMediaSource(mediaItem)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        player?.release()
+        player = null
+        if (::dlnaManager.isInitialized) {
+            dlnaManager.stop()
+        }
     }
 }

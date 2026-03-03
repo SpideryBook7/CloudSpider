@@ -147,9 +147,13 @@ class HomeViewModel @Inject constructor(
             val providerHistory = currentHistoryList.filter { it.apiName == currentProvider }
             
             if (providerHistory.isNotEmpty()) {
-                val historyResponses = providerHistory.map { historyObj ->
+                val distinctHistory = providerHistory.distinctBy { 
+                    if (it.showTitle.isNotEmpty()) it.showTitle else it.name 
+                }
+                
+                val historyResponses = distinctHistory.map { historyObj ->
                     com.spiderybook.domain.model.SearchResponse(
-                        name = historyObj.name,
+                        name = if (historyObj.showTitle.isNotEmpty()) historyObj.showTitle else historyObj.name,
                         url = historyObj.url,
                         apiName = historyObj.apiName,
                         type = if (historyObj.type != null) {

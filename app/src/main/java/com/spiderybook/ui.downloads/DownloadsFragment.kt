@@ -41,6 +41,7 @@ class DownloadsFragment : BaseFragment<FragmentDownloadsBinding>(FragmentDownloa
                      }
                      startActivity(intent)
                 },
+                onLongClick = { _, _ -> }, // Downloaded items don't save progress
                 onDownloadClick = {
                      Toast.makeText(context, "El archivo ya está descargado", Toast.LENGTH_SHORT).show()
                 }

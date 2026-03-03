@@ -273,5 +273,15 @@ class DLNAManager(private val context: Context) {
                 false
             }
         } ?: false
-}
+    }
+    
+    fun stop() {
+        try {
+            localProxyServer?.stop()
+            localProxyServer = null
+            android.util.Log.d("SpideryDebug", "DLNA Manager gracefully stopped LocalProxyServer.")
+        } catch (e: Exception) {
+            android.util.Log.e("SpideryDebug", "Error stopping LocalProxyServer: ${e.message}")
+        }
+    }
 }

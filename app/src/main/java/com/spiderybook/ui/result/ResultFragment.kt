@@ -100,19 +100,25 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
             val fab = binding.fabFavorite
             if (isFav) {
                 fab.setImageResource(android.R.drawable.btn_star_big_on)
+                fab.imageTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light))
                 fab.contentDescription = "Remove from My List"
                 fab.setOnClickListener {
                     viewModel.removeFromFavorites(url)
                     Toast.makeText(context, "Removed from Favorites", Toast.LENGTH_SHORT).show()
+                    fab.setImageResource(android.R.drawable.btn_star_big_off)
+                    fab.imageTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white))
                 }
             } else {
                 fab.setImageResource(android.R.drawable.btn_star_big_off)
+                fab.imageTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white))
                 fab.contentDescription = "Add to My List"
                 fab.setOnClickListener {
                     val currentData = (viewModel.result.value as? Resource.Success)?.data
                     if (currentData != null) {
                         viewModel.addToFavorites(currentData)
                         Toast.makeText(context, "Added to Favorites", Toast.LENGTH_SHORT).show()
+                        fab.setImageResource(android.R.drawable.btn_star_big_on)
+                        fab.imageTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light))
                     } else {
                         Toast.makeText(context, "Wait for data to load", Toast.LENGTH_SHORT).show()
                     }
@@ -153,13 +159,20 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 // Play Button Logic
                 binding.btnPlay.setOnClickListener {
                      if (data.episodes.isNotEmpty()) {
-                         val firstEpisode = data.episodes.first()
+                         val urls = java.util.ArrayList(data.episodes.map { it.url })
+                         val names = java.util.ArrayList(data.episodes.map { it.name })
+                         val firstEpisode = data.episodes.last()
+                         
                          val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
                             putExtra("data", firstEpisode.url)
                             putExtra("apiName", data.apiName)
                             putExtra("title", "${data.name} - ${firstEpisode.name}")
                             putExtra("poster", data.posterUrl)
                             putExtra("type", data.type)
+                            putStringArrayListExtra("episodeUrls", urls)
+                            putStringArrayListExtra("episodeNames", names)
+                            putExtra("currentIndex", data.episodes.indexOf(firstEpisode))
+                            putExtra("showName", data.name)
                         }
                         startActivity(intent)
                      } else {
@@ -170,14 +183,29 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 episodeAdapter = EpisodeAdapter(
                     items = data.episodes,
                     onClick = { episode ->
+                        val urls = java.util.ArrayList(data.episodes.map { it.url })
+                        val names = java.util.ArrayList(data.episodes.map { it.name })
                         val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
                             putExtra("data", episode.url)
                             putExtra("apiName", data.apiName)
                             putExtra("title", "${data.name} - ${episode.name}")
                             putExtra("poster", data.posterUrl)
                             putExtra("type", data.type)
+                            putStringArrayListExtra("episodeUrls", urls)
+                            putStringArrayListExtra("episodeNames", names)
+                            putExtra("currentIndex", data.episodes.indexOf(episode))
+                            putExtra("showName", data.name)
                         }
                         startActivity(intent)
+                    },
+                    onLongClick = { episode, isSeen ->
+                        if (isSeen) {
+                            viewModel.deleteEpisodeProgress(episode.url)
+                            Toast.makeText(requireContext(), "Episodio desmarcado", Toast.LENGTH_SHORT).show()
+                        } else {
+                            viewModel.saveEpisodeProgress(data, episode)
+                            Toast.makeText(requireContext(), "Episodio marcado como visto", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     onDownloadClick = { episode ->
                         val cleanName = data.name.replace(Regex("[^A-Za-z0-9 ]"), "").trim()
