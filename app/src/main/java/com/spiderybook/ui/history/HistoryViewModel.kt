@@ -14,9 +14,9 @@ class HistoryViewModel @Inject constructor(
 ) : ViewModel() {
     val history = repository.getHistory().asLiveData()
 
-    fun clearHistory() {
+    fun deleteHistoryItems(urls: List<String>) {
         viewModelScope.launch {
-            repository.clearHistory()
+            repository.deleteHistoryItems(urls)
         }
     }
 }

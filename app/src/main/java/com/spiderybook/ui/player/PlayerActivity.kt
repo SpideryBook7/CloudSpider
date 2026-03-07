@@ -76,9 +76,18 @@ class PlayerActivity : AppCompatActivity() {
                     
                     if (existing != null) {
                         savedPosition = existing.playbackPosition
+                        val savedDuration = existing.duration
+                        
+                        // If within 20 seconds of the video's end, assume strictly finished. Reset to 0.
+                        if (savedDuration > 0L && (savedDuration - savedPosition) <= 20_000L) {
+                            savedPosition = 0L
+                        }
+                        
                         // Store it in a member variable to use when player initializes
                         startPosition = savedPosition
-                        Toast.makeText(this@PlayerActivity, "Resuming from ${generatedTime(savedPosition)}", Toast.LENGTH_SHORT).show()
+                        if (savedPosition > 0L) {
+                            Toast.makeText(this@PlayerActivity, "Resuming from ${generatedTime(savedPosition)}", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     localRepository.insertHistory(
                         com.spiderybook.data.local.entity.HistoryEntity(

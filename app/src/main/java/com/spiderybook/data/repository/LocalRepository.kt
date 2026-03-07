@@ -18,6 +18,8 @@ class LocalRepository @Inject constructor(
     suspend fun insertFavorite(media: FavoriteEntity) = mainDao.insertFavorite(media)
 
     suspend fun deleteFavorite(url: String) = mainDao.deleteFavorite(url)
+    
+    suspend fun deleteFavoriteItems(urls: List<String>) = mainDao.deleteFavorites(urls)
 
     fun isFavorite(url: String): Flow<Boolean> = mainDao.isFavorite(url)
 
@@ -29,6 +31,8 @@ class LocalRepository @Inject constructor(
     suspend fun insertHistory(media: HistoryEntity) = mainDao.insertHistory(media)
     
     suspend fun deleteHistory(url: String) = mainDao.deleteHistory(url)
+    
+    suspend fun deleteHistoryItems(urls: List<String>) = mainDao.deleteHistoryItems(urls)
     
     suspend fun clearHistory() = mainDao.clearHistory()
 }

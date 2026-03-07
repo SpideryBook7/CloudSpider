@@ -9,8 +9,19 @@ import com.spiderybook.databinding.ItemHomeChildBinding
 
 class FavoritesAdapter(
     private var items: List<FavoriteEntity>,
-    private val onClick: (FavoriteEntity) -> Unit
+    private val onClick: (FavoriteEntity) -> Unit,
+    private val onSelectionModeChanged: (Boolean) -> Unit
 ) : RecyclerView.Adapter<FavoritesAdapter.ViewHolder>() {
+
+    var isSelectionMode = false
+        private set
+    val selectedUrls = mutableSetOf<String>()
+
+    fun clearSelection() {
+        isSelectionMode = false
+        selectedUrls.clear()
+        notifyDataSetChanged()
+    }
 
     fun submitList(newItems: List<FavoriteEntity>) {
         items = newItems
@@ -25,7 +36,45 @@ class FavoritesAdapter(
             binding.imgPoster.load(item.posterUrl) {
                 crossfade(true)
             }
-            binding.root.setOnClickListener { onClick(item) }
+            
+            // CheckBox visibility and state
+            binding.cbSelect.visibility = if (isSelectionMode) android.view.View.VISIBLE else android.view.View.GONE
+            binding.cbSelect.isChecked = selectedUrls.contains(item.url)
+
+            binding.root.setOnClickListener { 
+                if (isSelectionMode) {
+                    toggleSelection(item.url)
+                } else {
+                    onClick(item) 
+                }
+            }
+            
+            binding.root.setOnLongClickListener {
+                if (!isSelectionMode) {
+                    isSelectionMode = true
+                    selectedUrls.add(item.url)
+                    onSelectionModeChanged(true)
+                    notifyDataSetChanged()
+                }
+                true
+            }
+        }
+        
+        private fun toggleSelection(url: String) {
+            if (selectedUrls.contains(url)) {
+                selectedUrls.remove(url)
+            } else {
+                selectedUrls.add(url)
+            }
+            
+            // If user deselected everything, leave selection mode
+            if (selectedUrls.isEmpty()) {
+                isSelectionMode = false
+                onSelectionModeChanged(false)
+                notifyDataSetChanged()
+            } else {
+                notifyItemChanged(adapterPosition)
+            }
         }
     }
 

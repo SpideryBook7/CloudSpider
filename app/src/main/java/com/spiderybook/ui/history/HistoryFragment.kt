@@ -23,19 +23,34 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(FragmentHistoryBind
     }
 
     private fun setupRecyclerView() {
-        adapter = HistoryAdapter(emptyList()) { item ->
-            val bundle = Bundle().apply {
-                putString("url", item.url)
-                putString("apiName", item.apiName)
+        adapter = HistoryAdapter(
+            items = emptyList(),
+            onClick = { item ->
+                val bundle = Bundle().apply {
+                    putString("url", item.url)
+                    putString("apiName", item.apiName)
+                }
+                findNavController().navigate(com.spiderybook.R.id.nav_result, bundle)
+            },
+            onSelectionModeChanged = { isSelecting ->
+                binding.fabDeleteSelection.isVisible = isSelecting
+                if (isSelecting) {
+                    binding.fabDeleteSelection.text = "Eliminar Selección"
+                }
             }
-            findNavController().navigate(com.spiderybook.R.id.nav_result, bundle)
-        }
+        )
         binding.rvHistory.adapter = adapter
     }
 
     private fun setupListeners() {
-        binding.fabClear.setOnClickListener {
-            viewModel.clearHistory()
+        binding.fabDeleteSelection.setOnClickListener {
+            val urlsToDelete = adapter.selectedUrls.toList()
+            if (urlsToDelete.isNotEmpty()) {
+                viewModel.deleteHistoryItems(urlsToDelete)
+                android.widget.Toast.makeText(requireContext(), "${urlsToDelete.size} eliminados", android.widget.Toast.LENGTH_SHORT).show()
+            }
+            adapter.clearSelection()
+            binding.fabDeleteSelection.isVisible = false
         }
     }
 

@@ -18,6 +18,9 @@ interface MainDao {
     @Query("DELETE FROM favorites WHERE url = :url")
     suspend fun deleteFavorite(url: String)
 
+    @Query("DELETE FROM favorites WHERE url IN (:urls)")
+    suspend fun deleteFavorites(urls: List<String>)
+
     @Query("SELECT EXISTS(SELECT * FROM favorites WHERE url = :url)")
     fun isFavorite(url: String): Flow<Boolean>
 
@@ -33,6 +36,9 @@ interface MainDao {
     
     @Query("DELETE FROM history WHERE url = :url")
     suspend fun deleteHistory(url: String)
+    
+    @Query("DELETE FROM history WHERE url IN (:urls)")
+    suspend fun deleteHistoryItems(urls: List<String>)
     
     @Query("DELETE FROM history")
     suspend fun clearHistory()
