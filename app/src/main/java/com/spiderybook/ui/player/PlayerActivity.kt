@@ -380,10 +380,16 @@ class PlayerActivity : AppCompatActivity() {
         player?.play()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Intencionalmente no llamamos a player?.play() aquí.
+        // El usuario prefiere que el video se mantenga pausado al desbloquear el teléfono.
+    }
+
     override fun onStop() {
         super.onStop()
         saveCurrentHistory()
-        releasePlayer()
+        player?.pause()
     }
     
     private var nextEpisodeJob: Job? = null
