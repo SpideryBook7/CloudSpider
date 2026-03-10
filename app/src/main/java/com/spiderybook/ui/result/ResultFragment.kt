@@ -35,15 +35,6 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
 
         setupObservers()
         viewModel.load(apiName, url)
-        
-        binding.btnDownload.setOnClickListener {
-             // For test, download the first episode or just a sample
-             // Ideally we need to extract links first. 
-             // Simplification: We download user selected episode. 
-             // But button is global for now. Let's just download sample.
-             downloadManager.download("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", "sample_video.mp4")
-             Toast.makeText(context, "Download started", Toast.LENGTH_SHORT).show()
-        }
     }
 
     override fun onResume() {
@@ -56,6 +47,13 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
         super.onPause()
         // Restore status bar
         activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+    }
+
+    override fun onDestroyView() {
+        // Clear adapter reference to avoid memory leaks
+        episodeAdapter = null
+        
+        super.onDestroyView()
     }
 
     private fun setupObservers() {
@@ -152,10 +150,18 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 binding.tvType.text = data.type?.name ?: "TV Series"
                 binding.tvMetadata.text = "98% Match" 
                 
+                // Set native poster with hardware acceleration
                 binding.imgPoster.load(data.posterUrl) {
-                    crossfade(true)
+                    allowHardware(true)
                 }
                 
+                // Only load default backdrop if TMDB won't overwrite it immediately
+                if (!data.apiName.contains("pelisplus", ignoreCase = true)) {
+                    binding.imgBackdrop.load(data.posterUrl) {
+                        allowHardware(true)
+                    }
+                    binding.imgBackdrop.alpha = 1f
+                }
                 // Play Button Logic
                 binding.btnPlay.setOnClickListener {
                      if (data.episodes.isNotEmpty()) {
@@ -252,6 +258,55 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 
             } else if (resource is Resource.Error) {
                  Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+        
+        // Observe TMDB Metadata
+        viewModel.tmdbMetadata.observe(viewLifecycleOwner) { tmdbData ->
+            if (tmdbData != null) {
+                tmdbData.getBackdropUrl()?.let { url ->
+                    binding.imgBackdrop.load(url) {
+                        allowHardware(true)
+                    }
+                    binding.imgBackdrop.animate().alpha(1f).setDuration(200).start()
+                }
+                tmdbData.getPosterUrl()?.let { url ->
+                    binding.imgPoster.load(url) {
+                        allowHardware(true)
+                    }
+                }
+                
+                // Update specific metadata if TMDB gives a better one
+                if (!tmdbData.overview.isNullOrEmpty()) {
+                    binding.tvDescription.text = tmdbData.overview
+                }
+                
+                tmdbData.voteAverage?.let { rating ->
+                    if (rating > 0.0) {
+                        binding.tvMetadata.text = "⭐ ${String.format(java.util.Locale.US, "%.1f", rating)}/10"
+                        binding.tvMetadata.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light))
+                    }
+                }
+            }
+        }
+        
+        // Setup Trailer Button Visibility and Intent
+        viewModel.youtubeTrailerKey.observe(viewLifecycleOwner) { videoId ->
+            if (!videoId.isNullOrEmpty()) {
+                binding.btnTrailer.isVisible = true
+                binding.btnTrailer.setOnClickListener {
+                    try {
+                        val intent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse("https://www.youtube.com/watch?v=$videoId")
+                        )
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "No se pudo abrir YouTube", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                binding.btnTrailer.isVisible = false
             }
         }
         

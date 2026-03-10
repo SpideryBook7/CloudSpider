@@ -13,7 +13,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ResultViewModel @Inject constructor(
     private val loadRepository: LoadRepository,
-    private val localRepository: com.spiderybook.data.repository.LocalRepository
+    private val localRepository: com.spiderybook.data.repository.LocalRepository,
+    private val tmdbRepository: com.spiderybook.data.repository.TMDBRepository
 ) : BaseViewModel() {
 
     private val _result = MutableLiveData<Resource<LoadResponse>>()
@@ -24,10 +25,41 @@ class ResultViewModel @Inject constructor(
         val data = loadRepository.load(apiName, url)
         if (data != null) {
             _result.setSuccess(data)
+            
+            // OPTIMIZATION: Only hit TMDB for explicitly supported providers to save bandwidth and CPU
+            if (apiName.contains("pelisplus", ignoreCase = true)) {
+                launchIO {
+                    val meta = tmdbRepository.getMetadata(data.name)
+                    if (meta != null) {
+                        android.util.Log.d("TMDB_DEBUG", "Found metadata for id: ${meta.id}, type: ${meta.mediaType}")
+                        _tmdbMetadata.postValue(meta)
+                        // If we found a valid media item, fetch its trailer
+                        if (meta.id != null && meta.mediaType != null) {
+                            val videoKey = tmdbRepository.getTrailerKey(meta.id, meta.mediaType)
+                            android.util.Log.d("TMDB_DEBUG", "Fetched Trailer Key: $videoKey for id: ${meta.id}")
+                            if (videoKey != null) {
+                                _youtubeTrailerKey.postValue(videoKey)
+                            }
+                        } else {
+                            android.util.Log.d("TMDB_DEBUG", "MediaType or ID is null. Cannot fetch trailer.")
+                        }
+                    } else {
+                        android.util.Log.d("TMDB_DEBUG", "No TMDB metadata found for ${data.name}")
+                    }
+                }
+            } else {
+                android.util.Log.d("TMDB_DEBUG", "Skipping TMDB fetch for unsupported provider: $apiName")
+            }
         } else {
             _result.setError("Failed to load details")
         }
     }
+
+    private val _tmdbMetadata = MutableLiveData<com.spiderybook.data.remote.dto.TMDBMediaItem?>()
+    val tmdbMetadata: LiveData<com.spiderybook.data.remote.dto.TMDBMediaItem?> = _tmdbMetadata
+
+    private val _youtubeTrailerKey = MutableLiveData<String>()
+    val youtubeTrailerKey: LiveData<String> = _youtubeTrailerKey
 
     // Download Status
     private val _downloadStatus = MutableLiveData<Resource<String>>()
