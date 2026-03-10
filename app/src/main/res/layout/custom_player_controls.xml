@@ -147,22 +147,42 @@
         </LinearLayout>
     </LinearLayout>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_skip_intro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="90dp"
+        android:layout_marginEnd="24dp"
+        android:text="Saltar Intro ⏭"
+        android:textSize="14sp"
+        android:textColor="@android:color/white"
+        android:backgroundTint="#4D000000"
+        app:cornerRadius="8dp"
+        android:visibility="gone"
+        app:strokeColor="#FFFFFF"
+        app:strokeWidth="1dp"
+        android:elevation="4dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+
     <!-- FLOATING NEXT EPISODE BUTTON -->
     <!-- Positioned at the bottom right, slightly above the control bar -->
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_next_episode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="80dp"
+        android:layout_marginBottom="140dp"
         android:layout_marginEnd="24dp"
-        android:src="@android:drawable/ic_media_next"
-        android:background="@drawable/bg_next_episode_btn"
-        android:contentDescription="Next Episode"
-        android:padding="12dp"
+        android:text="Siguiente Ep. ⏭"
+        android:textSize="14sp"
+        android:textColor="@android:color/white"
+        android:backgroundTint="#4D000000"
+        app:cornerRadius="8dp"
         android:visibility="gone"
+        app:strokeColor="#FFFFFF"
+        app:strokeWidth="1dp"
         android:elevation="4dp"
-        app:tint="@android:color/white"
-        xmlns:app="http://schemas.android.com/apk/res-auto"/>
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
 
 </FrameLayout>

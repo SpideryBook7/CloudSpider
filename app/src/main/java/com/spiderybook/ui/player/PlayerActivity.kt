@@ -157,11 +157,20 @@ class PlayerActivity : AppCompatActivity() {
                     }
                     binding.playerView.resizeMode = newMode
                 }
-                
-                // Floating Next Episode Logic (Fades in 2 mins before end)
-                val btnNextFloating = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
+                // Floating Next Episode Logic
+                val btnNextFloating = binding.playerView.findViewById<com.google.android.material.button.MaterialButton>(com.spiderybook.R.id.btn_next_episode)
                 btnNextFloating?.setOnClickListener {
                     playNextEpisode()
+                }
+                
+                // Skip Intro Logic (85 seconds scrub)
+                val btnSkipIntro = binding.playerView.findViewById<com.google.android.material.button.MaterialButton>(com.spiderybook.R.id.btn_skip_intro)
+                btnSkipIntro?.setOnClickListener {
+                    player?.let { p ->
+                        val newPosition = p.currentPosition + 85_000L
+                        p.seekTo(newPosition.coerceAtMost(p.duration))
+                        btnSkipIntro.visibility = View.GONE
+                    }
                 }
                 
                 // Track Selection / Quality Dialog Logic
@@ -226,13 +235,10 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 if (links.isNotEmpty()) {
-                     // Check if player is already playing to avoid auto-restart
-                     if (player == null) {
-                        // Automatically play the first available link for all providers
-                        // The user can still switch sources manually via the 'Sources' button on the player controls
-                        val link = links.first()
-                        initializePlayer(link.url, link.referer)
-                     }
+                     // Auto-Select the first healthy source. 
+                     // When Auto-Playing, this automatically seamlessly starts the new episode without asking.
+                     val link = links.first()
+                     initializePlayer(link.url, link.referer)
                 } else {
                     Toast.makeText(this, "No links found", Toast.LENGTH_SHORT).show()
                 }
@@ -320,7 +326,20 @@ class PlayerActivity : AppCompatActivity() {
                 if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
                     btnPlay?.visibility = View.VISIBLE
                     btnPause?.visibility = View.GONE
-                    playNextEpisode()
+                    
+                    // AutoPlay Next Episode
+                    if (episodeUrls != null && currentIndex - 1 >= 0) {
+                         Toast.makeText(this@PlayerActivity, "Siguiente episodio en 3 segundos...", Toast.LENGTH_SHORT).show()
+                         lifecycleScope.launch {
+                             delay(3000L)
+                             // Re-check state to ensure user didn't leave or explicitly pause
+                             if (player?.playbackState == androidx.media3.common.Player.STATE_ENDED) {
+                                 playNextEpisode()
+                             }
+                         }
+                    } else {
+                         playNextEpisode() // Let it default to finish()
+                    }
                 }
             }
 
@@ -397,15 +416,26 @@ class PlayerActivity : AppCompatActivity() {
     private fun startNextEpisodeTimer() {
         nextEpisodeJob?.cancel()
         nextEpisodeJob = lifecycleScope.launch(Dispatchers.Main) {
-            val btnNextFloating = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
+            val btnNextFloating = binding.playerView.findViewById<com.google.android.material.button.MaterialButton>(com.spiderybook.R.id.btn_next_episode)
+            val btnSkipIntro = binding.playerView.findViewById<com.google.android.material.button.MaterialButton>(com.spiderybook.R.id.btn_skip_intro)
             
-            // Only prepare timer if there IS a next episode available
-            if (episodeUrls != null && currentIndex - 1 >= 0 && btnNextFloating != null) {
-                while (isActive && player != null) {
-                    val duration = player!!.duration
-                    val currentPos = player!!.currentPosition
-                    
-                    if (duration > 0 && (duration - currentPos) <= 120_000L) { // 2 Minutes
+            while (isActive && player != null) {
+                val duration = player!!.duration
+                val currentPos = player!!.currentPosition
+                
+                // -- Skip Intro Button Logic --
+                // Show during the first 3 minutes (180_000 ms) while controls are visible
+                if (btnSkipIntro != null && currentPos < 180_000L && binding.playerView.isControllerFullyVisible) {
+                    if (btnSkipIntro.visibility == View.GONE) {
+                        btnSkipIntro.visibility = View.VISIBLE
+                    }
+                } else if (btnSkipIntro != null) {
+                    btnSkipIntro.visibility = View.GONE
+                }
+                
+                // -- Next Episode Button Logic --
+                if (episodeUrls != null && currentIndex - 1 >= 0 && btnNextFloating != null) {
+                    if (duration > 0 && (duration - currentPos) <= 120_000L) { // Fades in 2 Mins before ending
                         if (btnNextFloating.visibility == View.GONE) {
                             btnNextFloating.alpha = 0f
                             btnNextFloating.visibility = View.VISIBLE
@@ -418,8 +448,8 @@ class PlayerActivity : AppCompatActivity() {
                              }.start()
                          }
                     }
-                    delay(1000) // Check every second
                 }
+                delay(1000) // Check loop every second
             }
         }
     }
@@ -476,7 +506,7 @@ class PlayerActivity : AppCompatActivity() {
             viewModel.loadLinks(apiName, nextUrl)
             Toast.makeText(this@PlayerActivity, "Siguiente: $nextTitle", Toast.LENGTH_SHORT).show()
             
-            val btnNextFloating = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_next_episode)
+            val btnNextFloating = binding.playerView.findViewById<com.google.android.material.button.MaterialButton>(com.spiderybook.R.id.btn_next_episode)
             btnNextFloating?.visibility = android.view.View.GONE // Reset visibility for new episode
         }
     }
