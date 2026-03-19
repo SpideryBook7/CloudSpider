@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.spiderybook.data.local.entity.FavoriteEntity
-import com.spiderybook.databinding.ItemHomeChildBinding
+import com.spiderybook.databinding.ItemMyListBinding
 
 class FavoritesAdapter(
     private var items: List<FavoriteEntity>,
@@ -28,7 +28,7 @@ class FavoritesAdapter(
         notifyDataSetChanged()
     }
 
-    inner class ViewHolder(private val binding: ItemHomeChildBinding) :
+    inner class ViewHolder(private val binding: ItemMyListBinding) :
         RecyclerView.ViewHolder(binding.root) {
         
         fun bind(item: FavoriteEntity) {
@@ -36,6 +36,13 @@ class FavoritesAdapter(
             binding.imgPoster.load(item.posterUrl) {
                 crossfade(true)
             }
+            
+            // New My List View Bindings
+            val totalEps = if (item.totalEpisodes > 0) item.totalEpisodes.toString() else "?"
+            binding.tvEpTracker.text = "EP ${item.watchedEpisodes} / $totalEps"
+            binding.progressWatch.max = if (item.totalEpisodes > 0) item.totalEpisodes else 1
+            binding.progressWatch.progress = item.watchedEpisodes
+            binding.tvMeta.text = "${item.type ?: "Anime"} • ${item.apiName}"
             
             // CheckBox visibility and state
             binding.cbSelect.visibility = if (isSelectionMode) android.view.View.VISIBLE else android.view.View.GONE
@@ -80,7 +87,7 @@ class FavoritesAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
-            ItemHomeChildBinding.inflate(
+            ItemMyListBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
                 false

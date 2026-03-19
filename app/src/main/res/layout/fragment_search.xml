@@ -5,81 +5,134 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/search_view"
+    <!-- ====== NEW EXPLORE HEADER ====== -->
+    <LinearLayout
+        android:id="@+id/layout_explore_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/surface_dark"
-        app:iconifiedByDefault="false"
-        app:queryHint="Search for shows, movies, etc."
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+        
+        <EditText
+            android:id="@+id/et_search"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_pill_dark"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="12dp"
+            android:drawableTint="@color/text_secondary"
+            android:hint="Search movies, anime, or series"
+            android:textColorHint="@color/text_secondary"
+            android:textColor="@color/white"
+            android:paddingHorizontal="16dp"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:maxLines="1"/>
+            
+        <ImageButton
+            android:id="@+id/btn_filter_options"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/bg_pill_dark"
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            app:tint="@color/brand_accent"
+            android:contentDescription="Filter Options"/>
+    </LinearLayout>
 
-    <!-- Default Browse View (When no search active) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_filter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:nestedScrollingEnabled="false"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@+id/layout_explore_header"
+        tools:listitem="@layout/item_filter"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    <LinearLayout
+        android:id="@+id/layout_active_filters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/rv_filter">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACTIVE FILTERS:"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                android:textSize="10sp"
+                android:layout_marginEnd="8dp"/>
+            
+            <LinearLayout
+                android:id="@+id/ll_active_filters_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"/>
+            
+            <TextView
+                android:id="@+id/tv_clear_filters"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Clear all"
+                android:textColor="@color/brand_accent"
+                android:textSize="12sp"
+                android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/scroll_default_view"
+        android:id="@+id/nsv_search_results"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_view">
+        app:layout_constraintTop_toBottomOf="@+id/layout_active_filters"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Browse by Genre"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
+            android:orientation="vertical"
+            android:paddingBottom="90dp"
+            android:clipToPadding="false"
+            android:gravity="center_horizontal">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_genres"
+                android:id="@+id/rv_search_results"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 app:spanCount="3"
-                tools:listitem="@layout/item_genre"
-                tools:itemCount="6" />
+                tools:listitem="@layout/item_home_child" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Top Searches"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
+            <ImageView
+                android:id="@+id/btn_load_more"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_top_searches"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_top_search"
-                tools:itemCount="3" />
+                android:layout_marginBottom="24dp"
+                android:src="@drawable/ic_arrow_down_thin"
+                app:tint="@color/brand_accent"
+                android:alpha="0.6"
+                android:visibility="gone" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
-    <!-- Search Results View -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_search_results"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="3"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_view"
-        tools:listitem="@layout/item_home_child" />
 
     <ProgressBar
         android:id="@+id/progress_bar"

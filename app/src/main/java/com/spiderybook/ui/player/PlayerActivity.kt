@@ -295,7 +295,34 @@ class PlayerActivity : AppCompatActivity() {
             dataSourceFactory.setDefaultRequestProperties(headers)
         }
 
-        player = ExoPlayer.Builder(this).build()
+        val renderersFactory = androidx.media3.exoplayer.DefaultRenderersFactory(this)
+            .setExtensionRendererMode(androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
+            
+        player = ExoPlayer.Builder(this, renderersFactory)
+            .setAudioAttributes(
+                androidx.media3.common.AudioAttributes.Builder()
+                    .setUsage(androidx.media3.common.C.USAGE_MEDIA)
+                    .setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE)
+                    .build(),
+                /* handleAudioFocus= */ true
+            )
+            .build()
+        
+        // Log track info for diagnosis
+        player?.addListener(object : androidx.media3.common.Player.Listener {
+            override fun onTracksChanged(tracks: androidx.media3.common.Tracks) {
+                var audioCount = 0; var videoCount = 0
+                for (group in tracks.groups) {
+                    for (i in 0 until group.length) {
+                        val format = group.getTrackFormat(i)
+                        if (format.sampleMimeType?.startsWith("audio") == true) { audioCount++ }
+                        if (format.sampleMimeType?.startsWith("video") == true) { videoCount++ }
+                        android.util.Log.d("SpideryDebug", "Track[$i] mime=${format.sampleMimeType} selected=${group.isTrackSelected(i)}")
+                    }
+                }
+                android.util.Log.d("SpideryDebug", "Total tracks: video=$videoCount audio=$audioCount")
+            }
+        })
         
         binding.playerView.player = player
         
@@ -372,17 +399,26 @@ class PlayerActivity : AppCompatActivity() {
         
         val alistUrlFallback = com.spiderybook.BuildConfig.ALIST_URL.replace("\"", "").trimEnd('/')
         if ((alistUrlFallback.isNotEmpty() && url.startsWith(alistUrlFallback)) || url.contains("terabox")) {
-            // Apply strict ProgressiveMediaSource as requested to bypass anti-leech detection issues
+            android.util.Log.d("SpideryDebug", "Terabox URL: $url")
+            // ProgressiveMediaSource: fuerza descarga progresiva MP4/MKV con todos los tracks
             val mediaSource = androidx.media3.exoplayer.source.ProgressiveMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(mediaItem)
             player?.setMediaSource(mediaSource)
-           // STREAMWISH (requires specific headers and referer)
-        } else if (url.contains(".m3u8") && (referer?.contains("streamwish") == true || referer?.contains("filemoon") == true || referer?.contains("hglamioz") == true || referer?.contains("playnixes") == true)) {
-            val mediaSource = getStreamwishSource(url, referer ?: "", dataSourceFactory)
+        } else if (url.contains(".m3u8") && (
+                referer?.contains("streamwish") == true ||
+                referer?.contains("embedwish") == true ||
+                referer?.contains("filemoon") == true ||
+                referer?.contains("hglamioz") == true ||
+                referer?.contains("playnixes") == true ||
+                referer?.contains("vidhide") == true ||
+                referer?.contains("vidhideplus") == true ||
+                referer?.contains("vhide") == true
+            )) {
+            // HLS streams that require Referer on segment requests — use explicit HlsMediaSource
+            val mediaSource = getHlsSource(url, referer ?: "", dataSourceFactory)
             player?.setMediaSource(mediaSource)
         } else {
             // Fallback for generic streams
-            // Thanks to forced MimeTypes.APPLICATION_M3U8 above, DefaultMediaSourceFactory will reliably pick HlsMediaSource
             val mediaSource = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(dataSourceFactory)
                 .createMediaSource(mediaItem)
             player?.setMediaSource(mediaSource)
@@ -561,6 +597,28 @@ class PlayerActivity : AppCompatActivity() {
             .build()
 
         // Usamos HlsMediaSource porque Streamwish fragmenta el video para evitar descargas
+        return androidx.media3.exoplayer.hls.HlsMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(mediaItem)
+    }
+
+    /**
+     * Generic HLS source factory for any server requiring Referer on segment requests.
+     * This ensures ExoPlayer sends the Referer with EVERY .ts segment request, not just the .m3u8.
+     */
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+    private fun getHlsSource(url: String, referer: String, dataSourceFactory: androidx.media3.datasource.okhttp.OkHttpDataSource.Factory): androidx.media3.exoplayer.source.MediaSource {
+        val headers = mutableMapOf<String, String>()
+        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+        if (referer.isNotEmpty()) {
+            headers["Referer"] = referer
+        }
+        dataSourceFactory.setDefaultRequestProperties(headers)
+
+        val mediaItem = androidx.media3.common.MediaItem.Builder()
+            .setUri(url)
+            .setMimeType(androidx.media3.common.MimeTypes.APPLICATION_M3U8)
+            .build()
+
         return androidx.media3.exoplayer.hls.HlsMediaSource.Factory(dataSourceFactory)
             .createMediaSource(mediaItem)
     }

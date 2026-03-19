@@ -93,37 +93,6 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
 
         val url = arguments?.getString("url") ?: return
         
-        // ... (Favorites Observer) ...
-        viewModel.isFavorite(url).observe(viewLifecycleOwner) { isFav ->
-            val fab = binding.fabFavorite
-            if (isFav) {
-                fab.setImageResource(android.R.drawable.btn_star_big_on)
-                fab.imageTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light))
-                fab.contentDescription = "Remove from My List"
-                fab.setOnClickListener {
-                    viewModel.removeFromFavorites(url)
-                    Toast.makeText(context, "Removed from Favorites", Toast.LENGTH_SHORT).show()
-                    fab.setImageResource(android.R.drawable.btn_star_big_off)
-                    fab.imageTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white))
-                }
-            } else {
-                fab.setImageResource(android.R.drawable.btn_star_big_off)
-                fab.imageTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white))
-                fab.contentDescription = "Add to My List"
-                fab.setOnClickListener {
-                    val currentData = (viewModel.result.value as? Resource.Success)?.data
-                    if (currentData != null) {
-                        viewModel.addToFavorites(currentData)
-                        Toast.makeText(context, "Added to Favorites", Toast.LENGTH_SHORT).show()
-                        fab.setImageResource(android.R.drawable.btn_star_big_on)
-                        fab.imageTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light))
-                    } else {
-                        Toast.makeText(context, "Wait for data to load", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
-        
         // Observe History for Watch Progress
         viewModel.history.observe(viewLifecycleOwner) { historyList ->
             val progressMap = mutableMapOf<String, Int>()
@@ -150,18 +119,44 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 binding.tvType.text = data.type?.name ?: "TV Series"
                 binding.tvMetadata.text = "98% Match" 
                 
-                // Set native poster with hardware acceleration
-                binding.imgPoster.load(data.posterUrl) {
+                // Set Categories from tags
+                val categories = data.tags?.joinToString(", ") ?: "Action, Adventure, Fantasy"
+                binding.tvCategories.text = categories
+                
+                // Load backdrop poster
+                binding.imgBackdrop.load(data.posterUrl) {
                     allowHardware(true)
                 }
+                binding.imgBackdrop.alpha = 1f
                 
-                // Only load default backdrop if TMDB won't overwrite it immediately
-                if (!data.apiName.contains("pelisplus", ignoreCase = true)) {
-                    binding.imgBackdrop.load(data.posterUrl) {
-                        allowHardware(true)
+                // Favorites Observer (Moved here to use data.name)
+                viewModel.isFavorite(url, data.name).observe(viewLifecycleOwner) { isFav ->
+                    val btnFav = binding.btnFavorite
+                    if (isFav) {
+                        btnFav.setIconResource(android.R.drawable.btn_star_big_on)
+                        btnFav.iconTint = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light))
+                        btnFav.text = "Added"
+                        btnFav.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), com.spiderybook.R.color.text_secondary))
+                        btnFav.backgroundTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), com.spiderybook.R.color.surface_dark))
+                        btnFav.contentDescription = "Remove from My List"
+                        btnFav.setOnClickListener {
+                            viewModel.removeFromFavorites(url, data.name)
+                            Toast.makeText(context, "Removed from Favorites", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        btnFav.setIconResource(android.R.drawable.ic_menu_add)
+                        btnFav.iconTint = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white))
+                        btnFav.text = "My List"
+                        btnFav.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white))
+                        btnFav.backgroundTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), com.spiderybook.R.color.surface_light))
+                        btnFav.contentDescription = "Add to My List"
+                        btnFav.setOnClickListener {
+                            viewModel.addToFavorites(url, data)
+                            Toast.makeText(context, "Added to Favorites", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    binding.imgBackdrop.alpha = 1f
                 }
+                
                 // Play Button Logic
                 binding.btnPlay.setOnClickListener {
                      if (data.episodes.isNotEmpty()) {
@@ -264,16 +259,13 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
         // Observe TMDB Metadata
         viewModel.tmdbMetadata.observe(viewLifecycleOwner) { tmdbData ->
             if (tmdbData != null) {
-                tmdbData.getBackdropUrl()?.let { url ->
+                // Determine best high-res image available
+                val bestImageUrl = tmdbData.getBackdropUrl() ?: tmdbData.getPosterUrl()
+                bestImageUrl?.let { url ->
                     binding.imgBackdrop.load(url) {
                         allowHardware(true)
                     }
                     binding.imgBackdrop.animate().alpha(1f).setDuration(200).start()
-                }
-                tmdbData.getPosterUrl()?.let { url ->
-                    binding.imgPoster.load(url) {
-                        allowHardware(true)
-                    }
                 }
                 
                 // Update specific metadata if TMDB gives a better one

@@ -13,6 +13,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
+    private val loadRepository: com.spiderybook.data.repository.LoadRepository,
     private val pluginManager: PluginManager,
     private val dataStoreManager: com.spiderybook.data.local.DataStoreManager,
     private val localRepository: com.spiderybook.data.repository.LocalRepository
@@ -48,6 +49,17 @@ class HomeViewModel @Inject constructor(
 
     private val _featuredItem = MutableLiveData<com.spiderybook.domain.model.SearchResponse?>()
     val featuredItem: LiveData<com.spiderybook.domain.model.SearchResponse?> = _featuredItem
+
+    private val _featuredIsFavorite = MutableLiveData<Boolean>()
+    val featuredIsFavorite: LiveData<Boolean> = _featuredIsFavorite
+    private var favoriteJob: kotlinx.coroutines.Job? = null
+    
+    private val _playFirstEpisodeEvent = MutableLiveData<com.spiderybook.domain.model.LoadResponse?>()
+    val playFirstEpisodeEvent: LiveData<com.spiderybook.domain.model.LoadResponse?> = _playFirstEpisodeEvent
+
+    fun clearPlayFirstEpisodeEvent() {
+        _playFirstEpisodeEvent.value = null
+    }
 
     private val _filterCategories = MutableLiveData<List<String>>()
     val filterCategories: LiveData<List<String>> = _filterCategories
@@ -88,6 +100,14 @@ class HomeViewModel @Inject constructor(
                 val result = homeRepository.getHomePage(apiName)
                 if (result != null) {
                     fullHomePageResponse = result
+                    
+                    // Default Trending rows to collapsed (showing only 3)
+                    result.items.forEach { 
+                        if (it.name == "Últimos Episodios" || it.name == "Últimos Animes" || it.name == "Trending Now") {
+                            it.isExpanded = false
+                        }
+                    }
+                    
                     _homePage.setSuccess(result)
                     
                     // Process Categories
@@ -112,12 +132,16 @@ class HomeViewModel @Inject constructor(
                     if (result.items.isNotEmpty()) {
                         val firstList = result.items.first().list
                         if (firstList.isNotEmpty()) {
-                            _featuredItem.postValue(firstList.random())
+                            val featured = firstList.random()
+                            _featuredItem.postValue(featured)
+                            checkIfFeaturedIsFavorite(featured)
                         } else {
                             _featuredItem.postValue(null)
+                            checkIfFeaturedIsFavorite(null)
                         }
                     } else {
                         _featuredItem.postValue(null)
+                        checkIfFeaturedIsFavorite(null)
                     }
                     
                     // Load default category
@@ -152,6 +176,20 @@ class HomeViewModel @Inject constructor(
                 }
                 
                 val historyResponses = distinctHistory.map { historyObj ->
+                    val calculatedProgress = if (historyObj.duration > 0) {
+                        (historyObj.playbackPosition.toFloat() / historyObj.duration.toFloat()).coerceIn(0f, 1f)
+                    } else 0f
+                    
+                    val timeString = if (historyObj.duration > 0) {
+                        " (${formatTime(historyObj.playbackPosition)} / ${formatTime(historyObj.duration)})"
+                    } else ""
+                    
+                    val sub = if (historyObj.showTitle.isNotEmpty() && historyObj.name != historyObj.showTitle) {
+                        historyObj.name.replace(historyObj.showTitle, "").trim(' ', '-', ':') + timeString
+                    } else {
+                        "Episodio" + timeString // generic fallback if we don't have a distinct show title
+                    }
+
                     com.spiderybook.domain.model.SearchResponse(
                         name = if (historyObj.showTitle.isNotEmpty()) historyObj.showTitle else historyObj.name,
                         url = historyObj.url,
@@ -161,7 +199,9 @@ class HomeViewModel @Inject constructor(
                         } else null,
                         posterUrl = historyObj.posterUrl,
                         year = null,
-                        quality = null
+                        quality = null,
+                        progress = calculatedProgress,
+                        subtitle = sub
                     )
                 }.take(15) // Limit to top 15 recently watched to avoid large carousels
                 
@@ -211,6 +251,60 @@ class HomeViewModel @Inject constructor(
                     _homePage.setError("No results found")
                 }
             }
+        }
+    }
+
+    private fun formatTime(millis: Long): String {
+        val totalSeconds = millis / 1000
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        val seconds = totalSeconds % 60
+        return if (hours > 0) {
+            String.format("%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format("%02d:%02d", minutes, seconds)
+        }
+    }
+    
+    private fun checkIfFeaturedIsFavorite(featured: com.spiderybook.domain.model.SearchResponse?) {
+        favoriteJob?.cancel()
+        if (featured == null) {
+            _featuredIsFavorite.postValue(false)
+            return
+        }
+        favoriteJob = launchIO {
+            localRepository.isFavorite(featured.url, featured.name).collect { isFav ->
+                _featuredIsFavorite.postValue(isFav)
+            }
+        }
+    }
+    
+    fun toggleFeaturedFavorite() = launchIO {
+        val featured = _featuredItem.value ?: return@launchIO
+        val isFav = _featuredIsFavorite.value ?: false
+        if (isFav) {
+            localRepository.deleteFavorite(featured.url, featured.name)
+        } else {
+            localRepository.insertFavorite(
+                com.spiderybook.data.local.entity.FavoriteEntity(
+                    url = featured.url,
+                    name = featured.name,
+                    posterUrl = featured.posterUrl ?: "",
+                    apiName = featured.apiName,
+                    type = featured.type?.name
+                )
+            )
+        }
+    }
+    
+    fun playFeaturedItem() = launchIO {
+        val featured = _featuredItem.value ?: return@launchIO
+        _homePage.setLoading() // Show some loading state while fetching detailed episodes
+        val data = loadRepository.load(featured.apiName, featured.url)
+        _homePage.setSuccess(fullHomePageResponse!!) // Restore home page state
+        
+        if (data != null && data.episodes.isNotEmpty()) {
+            _playFirstEpisodeEvent.postValue(data)
         }
     }
 }

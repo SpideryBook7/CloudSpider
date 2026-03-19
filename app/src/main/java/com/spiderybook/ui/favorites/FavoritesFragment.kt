@@ -52,6 +52,38 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(FragmentFavorit
             adapter.clearSelection()
             binding.fabDeleteSelection.isVisible = false
         }
+        
+        binding.btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
+        
+        binding.btnSearch.setOnClickListener {
+            findNavController().navigate(com.spiderybook.R.id.nav_search)
+        }
+        
+        binding.tabWatching.setOnClickListener { selectTab(binding.tabWatching, "Watching") }
+        binding.tabWantToWatch.setOnClickListener { selectTab(binding.tabWantToWatch, "Want to Watch") }
+        binding.tabCompleted.setOnClickListener { selectTab(binding.tabCompleted, "Completed") }
+        
+        // Select the first tab explicitly on start to ensure visual match with ViewModel default
+        selectTab(binding.tabWatching, "Watching")
+    }
+
+    private fun selectTab(activeTab: android.widget.TextView, status: String) {
+        val allTabs = listOf(binding.tabWatching, binding.tabWantToWatch, binding.tabCompleted)
+        val accentColor = androidx.core.content.ContextCompat.getColor(requireContext(), com.spiderybook.R.color.brand_accent)
+        val whiteColor = androidx.core.content.ContextCompat.getColor(requireContext(), com.spiderybook.R.color.white)
+        
+        allTabs.forEach { tab ->
+            if (tab == activeTab) {
+                tab.setBackgroundResource(com.spiderybook.R.drawable.bg_pill_accent)
+                tab.setTextColor(whiteColor)
+            } else {
+                tab.setBackgroundResource(android.R.color.transparent)
+                tab.setTextColor(accentColor)
+            }
+        }
+        viewModel.setTab(status)
     }
 
     private fun setupObservers() {

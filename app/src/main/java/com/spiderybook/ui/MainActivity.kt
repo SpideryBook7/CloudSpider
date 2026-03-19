@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
             // Hide BottomNav on non-top-level destinations
             navController.addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
-                    R.id.nav_home, R.id.nav_search, R.id.nav_favorites, R.id.nav_history, R.id.nav_settings -> {
+                    R.id.nav_home, R.id.nav_search, R.id.nav_favorites, R.id.nav_downloads, R.id.nav_settings -> {
                         binding.bottomNav.visibility = android.view.View.VISIBLE
                     }
                     else -> {

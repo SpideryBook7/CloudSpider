@@ -3,13 +3,16 @@ package com.spiderybook.ui.search
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.widget.SearchView
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.spiderybook.databinding.FragmentSearchBinding
 import com.spiderybook.ui.common.BaseFragment
 import com.spiderybook.ui.home.ChildItemAdapter
+import com.spiderybook.ui.home.FilterAdapter
+import com.spiderybook.ui.home.GridSpacingItemDecoration
 import com.spiderybook.util.Resource
 import com.spiderybook.domain.model.SearchResponse
 import coil.load
@@ -20,10 +23,12 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(FragmentSearchBinding
 
     private val viewModel: SearchViewModel by viewModels()
     private lateinit var searchResultsAdapter: ChildItemAdapter
+    private lateinit var filterAdapter: FilterAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerViews()
+        setupFilterRecyclerView()
         setupSearchView()
         setupObservers()
     }
@@ -33,26 +38,96 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(FragmentSearchBinding
         searchResultsAdapter = ChildItemAdapter(emptyList()) { item ->
             navigateToDetails(item)
         }
-        binding.rvSearchResults.adapter = searchResultsAdapter
+        binding.rvSearchResults.apply {
+            adapter = searchResultsAdapter
+            addItemDecoration(GridSpacingItemDecoration(3, resources.getDimensionPixelSize(com.spiderybook.R.dimen.grid_spacing), true))
+        }
         
-        binding.rvSearchResults.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if (dy > 0) {
-                    val layoutManager = recyclerView.layoutManager as androidx.recyclerview.widget.GridLayoutManager
-                    val visibleItemCount = layoutManager.childCount
-                    val totalItemCount = layoutManager.itemCount
-                    val pastVisibleItems = layoutManager.findFirstVisibleItemPosition()
+        binding.nsvSearchResults.setOnScrollChangeListener { v: androidx.core.widget.NestedScrollView, _, scrollY, _, oldScrollY ->
+            if (scrollY > oldScrollY && !v.canScrollVertically(1)) {
+                // User scrolled to the bottom
+                triggerLoadMore()
+            }
+        }
+        
+        binding.btnLoadMore.setOnClickListener {
+            triggerLoadMore()
+        }
+    }
+    
+    private fun triggerLoadMore() {
+        val currentQuery = binding.etSearch.text.toString()
+        if (currentQuery.isNotEmpty()) {
+            Toast.makeText(requireContext(), "Loading next page...", Toast.LENGTH_SHORT).show()
+            viewModel.search(null, currentQuery, isLoadMore = true)
+        } else {
+            val categories = viewModel.selectedCategories.value
+            if (!categories.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Loading next page...", Toast.LENGTH_SHORT).show()
+                viewModel.search(null, categories.joinToString(","), isLoadMore = true)
+            }
+        }
+    }
 
-                    if ((visibleItemCount + pastVisibleItems) >= totalItemCount - 6) { // Load more when 6 items away
-                        val currentQuery = binding.searchView.query.toString()
-                        if (currentQuery.isNotEmpty()) {
-                            viewModel.search(null, currentQuery, isLoadMore = true)
-                        }
-                    }
+    private fun setupFilterRecyclerView() {
+        filterAdapter = FilterAdapter { category, view ->
+            viewModel.selectCategory(category)
+            if (category == "All") {
+                showGenreDropdown(view)
+            } else {
+                binding.etSearch.setText("")
+                val categories = viewModel.selectedCategories.value
+                if (!categories.isNullOrEmpty()) {
+                    viewModel.search(null, categories.joinToString(","))
+                } else {
+                    viewModel.topSearches.value?.let { searchResultsAdapter.updateList(it) }
+                    binding.btnLoadMore.isVisible = false
                 }
             }
-        })
+        }
+        binding.rvFilter.apply {
+            adapter = filterAdapter
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false)
+        }
+        
+        // Handle mocked "Clear all"
+        binding.tvClearFilters.setOnClickListener {
+            viewModel.selectCategory("All")
+            filterAdapter.setSelection("All")
+            binding.etSearch.setText("")
+            viewModel.topSearches.value?.let { searchResultsAdapter.updateList(it) }
+            binding.btnLoadMore.isVisible = false
+            Toast.makeText(requireContext(), "Filters cleared", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showGenreDropdown(anchor: android.view.View) {
+        val genres = viewModel.genres.value ?: return
+        if (genres.isEmpty()) return
+        
+        val popup = android.widget.PopupMenu(requireContext(), anchor)
+        genres.forEachIndexed { index, genre ->
+            popup.menu.add(0, index, 0, genre)
+        }
+        
+        filterAdapter.setDropdownOpen(true)
+        
+        popup.setOnMenuItemClickListener { menuItem ->
+            val selectedGenre = genres[menuItem.itemId]
+            binding.etSearch.setText("")
+            viewModel.selectCategory(selectedGenre)
+            filterAdapter.setSelection(selectedGenre)
+            
+            val categories = viewModel.selectedCategories.value
+            if (!categories.isNullOrEmpty()) {
+                viewModel.search(null, categories.joinToString(","))
+            }
+            true
+        }
+        popup.setOnDismissListener {
+            filterAdapter.setDropdownOpen(false)
+        }
+        popup.show()
     }
 
     private fun navigateToDetails(item: SearchResponse) {
@@ -64,108 +139,119 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(FragmentSearchBinding
     }
 
     private fun setupSearchView() {
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (!query.isNullOrEmpty()) {
-                    binding.searchView.clearFocus() // Hide keyboard
+        binding.etSearch.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                val query = v.text.toString().trim()
+                if (query.isNotEmpty()) {
                     viewModel.search(null, query)
                 }
-                return true
+                
+                // Hide keyboard
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                
+                true
+            } else {
+                false
             }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText.isNullOrEmpty()) {
-                    showDefaultView(true)
-                }
-                return true
+        }
+        
+        binding.btnFilterOptions.setOnClickListener {
+            val isNowVisible = !binding.rvFilter.isVisible
+            binding.rvFilter.isVisible = isNowVisible
+            
+            // Only show active filters if the filters section is open AND a filter is actually selected
+            if (isNowVisible && !viewModel.selectedCategories.value.isNullOrEmpty()) {
+                binding.layoutActiveFilters.isVisible = true
+            } else {
+                binding.layoutActiveFilters.isVisible = false
             }
-        })
-    }
-
-    private fun showDefaultView(show: Boolean) {
-        binding.scrollDefaultView.isVisible = show
-        binding.rvSearchResults.isVisible = !show
+        }
     }
 
     private fun setupObservers() {
+        viewModel.filterCategories.observe(viewLifecycleOwner) { categories ->
+            filterAdapter.submitList(categories)
+        }
+
+        viewModel.selectedCategories.observe(viewLifecycleOwner) { categories ->
+            if (categories.isNotEmpty()) {
+                if (binding.rvFilter.isVisible) {
+                    binding.layoutActiveFilters.isVisible = true
+                }
+                binding.llActiveFiltersContainer.removeAllViews()
+                
+                categories.forEach { category ->
+                    val tv = android.widget.TextView(requireContext()).apply {
+                        text = category
+                        gravity = android.view.Gravity.CENTER
+                        setPadding(32, 0, 32, 0)
+                        setTextColor(androidx.core.content.ContextCompat.getColor(context, com.spiderybook.R.color.brand_accent))
+                        textSize = 12f
+                        android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.BOLD)
+                        setBackgroundResource(com.spiderybook.R.drawable.bg_pill_dark)
+                        setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.ic_menu_close_clear_cancel, 0)
+                        compoundDrawablePadding = 8
+                        compoundDrawables[2]?.setTint(androidx.core.content.ContextCompat.getColor(context, com.spiderybook.R.color.brand_accent))
+                        layoutParams = android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                            (32 * resources.displayMetrics.density).toInt()
+                        ).apply {
+                            marginEnd = 16
+                        }
+                        
+                        setOnClickListener {
+                            viewModel.removeCategory(category)
+                            if (viewModel.selectedCategories.value.isNullOrEmpty()) {
+                                filterAdapter.setSelection("All")
+                                binding.etSearch.setText("")
+                                viewModel.topSearches.value?.let { searchResultsAdapter.updateList(it) }
+                                binding.btnLoadMore.isVisible = false
+                            } else {
+                                // Trigger a new search with the remaining categories
+                                viewModel.search(null, viewModel.selectedCategories.value!!.joinToString(","))
+                            }
+                        }
+                    }
+                    binding.llActiveFiltersContainer.addView(tv)
+                }
+            } else {
+                binding.layoutActiveFilters.isVisible = false
+                binding.llActiveFiltersContainer.removeAllViews()
+            }
+        }
+
         viewModel.searchResults.observe(viewLifecycleOwner) { resource ->
             binding.progressBar.isVisible = resource is Resource.Loading
             
             when (resource) {
                 is Resource.Loading -> {
-                    showDefaultView(false)
                     // Do not clear the adapter here to avoid flickering during "Load More"
                 }
                 is Resource.Success -> {
-                    showDefaultView(false)
                     val data = resource.data
                     if (data.isEmpty()) {
+                        binding.btnLoadMore.isVisible = false
                         Toast.makeText(requireContext(), "No results found", Toast.LENGTH_SHORT).show()
+                    } else {
+                        binding.btnLoadMore.isVisible = true
                     }
                     searchResultsAdapter.updateList(data)
                 }
                 is Resource.Error -> {
-                    showDefaultView(false)
+                    binding.btnLoadMore.isVisible = false
                     searchResultsAdapter.updateList(emptyList())
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
-        viewModel.genres.observe(viewLifecycleOwner) { genres ->
-            // Use a simple adapter for genres
-            setupGenreAdapter(genres)
-        }
-
         viewModel.topSearches.observe(viewLifecycleOwner) { items ->
-            setupTopSearchesAdapter(items)
+            // Populate grid with Top Searches by default if no search query
+            if (binding.etSearch.text.isEmpty()) {
+                searchResultsAdapter.updateList(items)
+                binding.btnLoadMore.isVisible = false
+            }
         }
     }
-
-    private fun setupGenreAdapter(genres: List<String>) {
-        binding.rvGenres.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<GenreViewHolder>() {
-            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): GenreViewHolder {
-                val b = com.spiderybook.databinding.ItemGenreBinding.inflate(
-                    android.view.LayoutInflater.from(parent.context), parent, false
-                )
-                return GenreViewHolder(b)
-            }
-            override fun onBindViewHolder(holder: GenreViewHolder, position: Int) {
-                val genre = genres[position]
-                holder.binding.tvGenreName.text = genre
-                holder.binding.root.setOnClickListener {
-                    // Start search for the selected genre
-                    binding.searchView.setQuery(genre, true)
-                }
-            }
-            override fun getItemCount(): Int = genres.size
-        }
-    }
-
-    private fun setupTopSearchesAdapter(items: List<SearchResponse>) {
-        binding.rvTopSearches.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<TopSearchViewHolder>() {
-            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): TopSearchViewHolder {
-                val b = com.spiderybook.databinding.ItemTopSearchBinding.inflate(
-                    android.view.LayoutInflater.from(parent.context), parent, false
-                )
-                return TopSearchViewHolder(b)
-            }
-            override fun onBindViewHolder(holder: TopSearchViewHolder, position: Int) {
-                val item = items[position]
-                holder.binding.tvTitle.text = item.name
-                holder.binding.tvMetadata.text = "${item.type?.name ?: "Unknown"} • ${item.year ?: "N/A"}"
-                holder.binding.imgPoster.load(item.posterUrl) {
-                    placeholder(com.spiderybook.R.color.surface_variant)
-                }
-                holder.binding.root.setOnClickListener { navigateToDetails(item) }
-            }
-            override fun getItemCount(): Int = items.size
-        }
-    }
-
-    class GenreViewHolder(val binding: com.spiderybook.databinding.ItemGenreBinding) : 
-        androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root)
-        
-    class TopSearchViewHolder(val binding: com.spiderybook.databinding.ItemTopSearchBinding) : 
-        androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root)
 }

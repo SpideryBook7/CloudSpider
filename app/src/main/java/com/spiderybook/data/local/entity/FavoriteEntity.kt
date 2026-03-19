@@ -10,5 +10,8 @@ data class FavoriteEntity(
     val posterUrl: String,
     val apiName: String,
     val type: String?, // TvType name
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val status: String = "Want to Watch", // "Watching", "Want to Watch", "Completed"
+    val watchedEpisodes: Int = 0,
+    val totalEpisodes: Int = 0
 )

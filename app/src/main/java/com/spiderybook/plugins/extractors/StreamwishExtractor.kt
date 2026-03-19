@@ -1,83 +1,55 @@
 package com.spiderybook.plugins.extractors
 
 import com.spiderybook.plugins.MainAPI
-import com.spiderybook.util.PackedDecoder
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.net.URI
 
-class StreamwishExtractor(private val mainApi: MainAPI) {
+class StreamwishExtractor(private val mainApi: MainAPI, private val client: OkHttpClient = OkHttpClient()) {
 
-    suspend fun extract(url: String): List<MainAPI.ExtractorLink> {
+    suspend fun extract(url: String, refererHeader: String = "https://awish.pro/"): List<MainAPI.ExtractorLink> {
         return try {
-            // AnimeFLV often returns 'streamwish.to' links which now just serve an empty JS redirect.
-            // By replacing the host with an active mirror (like hglamioz.com), we skip the JS execution requirement and go straight to the video data.
-            var finalUrl = url
-            if (finalUrl.contains("streamwish.to")) {
-                finalUrl = finalUrl.replace("streamwish.to", "hglamioz.com")
-            }
+            val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            val referer = "https://www4.animeflv.net/"
+            
+            // Forzamos el mirror embedwish.com (Bypass de Cloudflare natural, ignora bloqueos de awish.pro)
+            val mirrorUrl = url.replace("streamwish.to", "embedwish.com")
+                               .replace("awish.pro", "embedwish.com")
+                               .replace("hglamioz.com", "embedwish.com")
 
-            // Dynamically get the base URL for the referer (e.g., https://hglamioz.com/)
-            val uri = URI(finalUrl)
-            val host = uri.host
-            val scheme = uri.scheme
-            val baseUrl = "$scheme://$host/"
-
-            val client = OkHttpClient.Builder()
-                .followRedirects(true)
-                .followSslRedirects(true)
+            val req1 = Request.Builder()
+                .url(mirrorUrl)
+                .header("User-Agent", userAgent)
+                .header("Referer", referer)
                 .build()
 
-            val request = Request.Builder()
-                .url(finalUrl)
-                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
-                .header("Referer", baseUrl)
-                .header("Accept-Language", "es-MX,es;q=0.9,en;q=0.8")
-                .build()
+            val response1 = client.newCall(req1).execute()
+            val html = response1.body?.string() ?: ""
+            response1.close()
 
-            val response = client.newCall(request).execute()
-            val html = response.body?.string() ?: ""
-            response.body?.close()
-                
-            var m3u8Url: String? = null
-            // Streamwish embeds usually use JWPlayer or similar HTML5 players where the source is injected into a JS object
-            // Use a robust regex to find any m3u8 link including its query parameters (which act as CDN access tokens)
-            val regex = Regex("https?://[^\"'\\s]+\\.m3u8[^\"'\\s]*", RegexOption.IGNORE_CASE)
+            // Desempaquetar JS
+            val unpackedHtml = unpackJs(html)
             
-            // 1. Try to find the m3u8 link inside obfuscated Javascript (eval(function(p,a,c,k,e,d)...))
-            // We search the entire HTML string directly because the unpacked/packed JS might be scattered
-            val packedMatch = Regex("eval\\s*\\(\\s*function\\s*\\(p,a,c,k,e,d\\).*?\\{.*?\\}\\s*\\('(.*?)'\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*'(.*?)'\\.split\\('\\|'\\)", RegexOption.DOT_MATCHES_ALL).find(html)
+            // Buscar el link del video .m3u8 (La estructura cambió a var links = { "hls2": "https://..." })
+            var videoUrl: String? = null
+            val m3u8Regex = "[\"'](http[s]?://[^\"']+\\.m3u8[^\"']*)[\"']".toRegex()
+            val matchObj = m3u8Regex.find(unpackedHtml)
             
-            if (packedMatch != null) {
-                val unpacked = PackedDecoder.decode(html)
-                if (unpacked != null) {
-                    val match = regex.find(unpacked)
-                    if (match != null) {
-                        m3u8Url = match.value
-                    }
+            if (matchObj != null) {
+                videoUrl = matchObj.groupValues[1]
+            } else {
+                val backupRegex = "[\"'](/[^\"']+\\.m3u8[^\"']*)[\"']".toRegex()
+                val backupMatch = backupRegex.find(unpackedHtml)
+                if (backupMatch != null) {
+                    videoUrl = "https://embedwish.com" + backupMatch.groupValues[1]
                 }
             }
-            
-            // 2. Fallback to searching the raw HTML if it wasn't packed or extraction failed
-            if (m3u8Url == null) {
-                val match = regex.find(html)
-                if (match != null) {
-                    m3u8Url = match.value
-                } else {
-                    // 3. Fallback: Search for specifically JWPlayer 'file:' or 'sources:' configuration
-                    val fileMatch = Regex("file\\s*:\\s*[\"'](https?://[^\"']+\\.m3u8.*?)[\"']", RegexOption.IGNORE_CASE).find(html)
-                    if (fileMatch != null) {
-                        m3u8Url = fileMatch.groupValues[1]
-                    }
-                }
-            }
-            
-            if (m3u8Url != null) {
+
+            if (videoUrl != null) {
                 listOf(
                     MainAPI.ExtractorLink(
                         name = "Streamwish",
-                        url = m3u8Url,
-                        referer = baseUrl, // strict referer matching host
+                        url = videoUrl,
+                        referer = "https://embedwish.com/", // REFERER GLOBAL: Vital para evitar el 404 en ExoPlayer
                         quality = 0,
                         isM3u8 = true
                     )
@@ -89,5 +61,36 @@ class StreamwishExtractor(private val mainApi: MainAPI) {
             e.printStackTrace()
             emptyList()
         }
+    }
+
+    private fun unpackJs(packed: String): String {
+        val re = """return\s+p\}\('(.*)',\s*(\d+),\s*(\d+),\s*'(.*?)'\.split\('\|'\)""".toRegex()
+        val match = re.find(packed) ?: return packed
+        
+        var p = match.groupValues[1]
+        val a = match.groupValues[2].toInt()
+        val c = match.groupValues[3].toInt()
+        val kArray = match.groupValues[4].split("|")
+
+        for (i in c - 1 downTo 0) {
+            val word = if (i < kArray.size && kArray[i].isNotEmpty()) kArray[i] else intToBaseString(i, a)
+            if (word.isNotEmpty()) {
+                val searchRegex = "\\b${intToBaseString(i, a)}\\b".toRegex()
+                p = p.replace(searchRegex, word)
+            }
+        }
+        return p
+    }
+
+    private fun intToBaseString(i: Int, radix: Int): String {
+        val chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        if (i == 0) return "0"
+        var num = i
+        var result = ""
+        while (num > 0) {
+            result = chars[num % radix] + result
+            num /= radix
+        }
+        return result
     }
 }

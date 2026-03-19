@@ -15,14 +15,14 @@ interface MainDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFavorite(media: FavoriteEntity)
 
-    @Query("DELETE FROM favorites WHERE url = :url")
-    suspend fun deleteFavorite(url: String)
+    @Query("DELETE FROM favorites WHERE url = :url OR name = :name")
+    suspend fun deleteFavorite(url: String, name: String)
 
     @Query("DELETE FROM favorites WHERE url IN (:urls)")
     suspend fun deleteFavorites(urls: List<String>)
 
-    @Query("SELECT EXISTS(SELECT * FROM favorites WHERE url = :url)")
-    fun isFavorite(url: String): Flow<Boolean>
+    @Query("SELECT EXISTS(SELECT * FROM favorites WHERE url = :url OR name = :name)")
+    fun isFavorite(url: String, name: String): Flow<Boolean>
 
     // --- History ---
     @Query("SELECT * FROM history ORDER BY timestamp DESC")

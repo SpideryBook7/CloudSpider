@@ -1,70 +1,64 @@
 package com.spiderybook.plugins.extractors
 
 import com.spiderybook.plugins.MainAPI
-import org.jsoup.Jsoup
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
-class StreamtapeExtractor(private val mainApi: MainAPI) {
+class StreamtapeExtractor(private val mainApi: MainAPI, private val client: OkHttpClient = OkHttpClient()) {
 
-    suspend fun extract(url: String): List<MainAPI.ExtractorLink> {
+    suspend fun extract(url: String, refererHeader: String = "https://streamtape.com/"): List<MainAPI.ExtractorLink> {
         return try {
-            val doc = Jsoup.connect(url).get()
-            val scripts = doc.select("script")
+            val request = Request.Builder()
+                .url(url)
+                .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36")
+                .header("Referer", "https://www4.animeflv.net/")
+                .build()
             
-            var videoUrl: String? = null
+            val response = client.newCall(request).execute()
+            val html = response.body?.string() ?: ""
+            response.close()
             
-            for (script in scripts) {
-                val html = script.html()
-                if (html.contains("document.getElementById('robotlink')")) {
-                    // Pattern: document.getElementById('robotlink').innerHTML = '...' + (...)
-                    // Usually: document.getElementById('robotlink').innerHTML = '//streamtape.co'+ ('xcdm/get_video...').substring(2).substring(1);
-                    
-                    // Regex to capture the parts
-                    // 1. Base URL (e.g. //streamtape.co)
-                    // 2. The string part inside parens
-                    // 3. The substring operations
-                    
-                    val regex = "document\\.getElementById\\('robotlink'\\)\\.innerHTML\\s*=\\s*['\"](.*?)['\"]\\s*\\+\\s*''\\+\\s*\\(['\"](.*?)['\"]\\)(.*);".toRegex()
-                    // Adjust regex based on varying patterns. The example showed:
-                    // .innerHTML = '//streamtape.co'+ ('xcdm/get_video...').substring(2).substring(1);
-                    
-                    val simpleRegex = "document\\.getElementById\\('robotlink'\\)\\.innerHTML\\s*=\\s*['\"](.*?)['\"]\\s*\\+\\s*\\(['\"](.*?)['\"]\\)(.*);".toRegex()
-                    
-                    val match = simpleRegex.find(html)
-                    if (match != null) {
-                        val baseUrl = match.groupValues[1]
-                        var tokenPart = match.groupValues[2]
-                        val operations = match.groupValues[3]
-                        
-                        // Parse substring operations: .substring(2).substring(1)
-                        val substringRegex = "\\.substring\\((\\d+)\\)".toRegex()
-                        val subMatches = substringRegex.findAll(operations)
-                        
-                        for (subMatch in subMatches) {
-                            val index = subMatch.groupValues[1].toInt()
-                            if (index < tokenPart.length) {
-                                tokenPart = tokenPart.substring(index)
-                            }
+            // Buscar la línea mágica de Streamtape
+            // Ejemplo: document.getElementById('robotlink').innerHTML = '//streamtape.com/g'+ ('xcdet_video?id=...').substring(2).substring(1);
+            val magicRegex = "document\\.getElementById\\('robotlink'\\)\\.innerHTML\\s*=\\s*(.*?);".toRegex()
+            val match = magicRegex.find(html)
+
+            if (match != null) {
+                val code = match.groupValues[1]
+                
+                val domainMatch = "'([^']+)'".toRegex().find(code)
+                val tokenMatch = "\\+\\s*\\('([^']+)'\\)".toRegex().find(code)
+                val substrings = "\\.substring\\((\\d+)\\)".toRegex().findAll(code)
+
+                if (domainMatch != null && tokenMatch != null) {
+                    val domainUrl = domainMatch.groupValues[1]
+                    var token = tokenMatch.groupValues[1]
+
+                    for (subMatch in substrings) {
+                        val index = subMatch.groupValues[1].toInt()
+                        if (index <= token.length) {
+                            token = token.substring(index)
                         }
-                        
-                        val finalUrl = if (baseUrl.startsWith("//")) "https:$baseUrl$tokenPart" else "$baseUrl$tokenPart"
-                        videoUrl = finalUrl
                     }
-                    break
+
+                    var finalVideoUrl = domainUrl + token
+                    if (finalVideoUrl.startsWith("//")) {
+                        finalVideoUrl = "https:$finalVideoUrl"
+                    }
+                    
+                    return listOf(
+                        MainAPI.ExtractorLink(
+                            name = "Streamtape",
+                            url = finalVideoUrl,
+                            referer = refererHeader,
+                            quality = 0,
+                            isM3u8 = false
+                        )
+                    )
                 }
             }
             
-            if (videoUrl != null) {
-                listOf(
-                    MainAPI.ExtractorLink(
-                        name = "Streamtape",
-                        url = videoUrl,
-                        referer = url,
-                        quality = 0
-                    )
-                )
-            } else {
-                emptyList()
-            }
+            return emptyList()
         } catch (e: Exception) {
             e.printStackTrace()
             emptyList()

@@ -19,7 +19,9 @@ data class SearchResponse(
     val type: TvType? = null,
     val posterUrl: String? = null,
     val year: Int? = null,
-    val quality: String? = null
+    val quality: String? = null,
+    val progress: Float? = null,
+    val subtitle: String? = null
 )
 
 data class LoadResponse(

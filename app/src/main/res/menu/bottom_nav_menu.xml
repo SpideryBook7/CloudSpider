@@ -2,29 +2,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_home"
-        android:icon="@android:drawable/ic_menu_rotate" 
+        android:icon="@drawable/selector_nav_home" 
         android:title="Home" /> 
-        <!-- Using rotate as placeholder for Home if specific home icon missing, usually compatible -->
-    
-
 
     <item
         android:id="@+id/nav_search"
-        android:icon="@android:drawable/ic_menu_search"
-        android:title="Search" />
+        android:icon="@drawable/selector_nav_explore"
+        android:title="Explore" />
 
     <item
         android:id="@+id/nav_favorites"
-        android:icon="@android:drawable/btn_star"
-        android:title="Favorites" />
+        android:icon="@drawable/selector_nav_my_list"
+        android:title="My List" />
 
     <item
-        android:id="@+id/nav_history"
-        android:icon="@android:drawable/ic_menu_recent_history"
-        android:title="History" />
+        android:id="@+id/nav_downloads"
+        android:icon="@drawable/selector_nav_offline"
+        android:title="Offline" />
         
     <item
         android:id="@+id/nav_settings"
-        android:icon="@android:drawable/ic_menu_preferences"
-        android:title="Ajustes" />
+        android:icon="@drawable/selector_nav_profile"
+        android:title="Profile" />
 </menu>

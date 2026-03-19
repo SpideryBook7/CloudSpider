@@ -28,6 +28,30 @@ class SearchViewModel @Inject constructor(
     private val _genres = MutableLiveData<List<String>>()
     val genres: LiveData<List<String>> = _genres
 
+    private val _filterCategories = MutableLiveData<List<String>>(listOf("All", "Anime", "Movies", "Series"))
+    val filterCategories: LiveData<List<String>> = _filterCategories
+
+    private val _selectedCategories = MutableLiveData<List<String>>(emptyList())
+    val selectedCategories: LiveData<List<String>> = _selectedCategories
+
+    fun selectCategory(category: String) {
+        val currentList = _selectedCategories.value?.toMutableList() ?: mutableListOf()
+        if (category == "All") {
+            currentList.clear()
+        } else {
+            if (!currentList.contains(category)) {
+                currentList.add(category)
+            }
+        }
+        _selectedCategories.value = currentList
+    }
+
+    fun removeCategory(category: String) {
+        val currentList = _selectedCategories.value?.toMutableList() ?: mutableListOf()
+        currentList.remove(category)
+        _selectedCategories.value = currentList
+    }
+
     init {
         loadDefaultContent()
     }
@@ -62,14 +86,20 @@ class SearchViewModel @Inject constructor(
 
     // If apiName is null/empty, use the currently active provider
     fun search(apiName: String?, query: String, isLoadMore: Boolean = false) = launchIO {
+        android.util.Log.d("SearchVM", "Search triggered: query='$query', isLoadMore=$isLoadMore, currentPage=$currentPage, isSearching=$isSearching, currentQuery='$currentQuery'")
         if (isLoadMore) {
-            if (isSearching || query != currentQuery) return@launchIO
+            if (isSearching || query != currentQuery) {
+                android.util.Log.d("SearchVM", "LoadMore aborted: isSearching=$isSearching, query_match=${query == currentQuery}")
+                return@launchIO
+            }
             currentPage++
+            android.util.Log.d("SearchVM", "Incrementing page to $currentPage")
         } else {
             currentPage = 1
             currentQuery = query
             accumulatedResults.clear()
             _searchResults.postValue(Resource.Loading)
+            android.util.Log.d("SearchVM", "Starting fresh search for '$query'")
         }
         
         isSearching = true
@@ -83,15 +113,19 @@ class SearchViewModel @Inject constructor(
         if (targetApiName == null) {
              _searchResults.postValue(Resource.Error("No providers available"))
              isSearching = false
+             android.util.Log.e("SearchVM", "Abort: targetApiName is null")
              return@launchIO
         }
 
+        android.util.Log.d("SearchVM", "Fetching results from repository for page $currentPage")
         val results = searchRepository.search(targetApiName, currentQuery, currentPage)
         
         if (results != null && results.isNotEmpty()) {
+            android.util.Log.d("SearchVM", "Received ${results.size} items from API")
             accumulatedResults.addAll(results)
             _searchResults.postValue(Resource.Success(accumulatedResults.toList()))
         } else {
+            android.util.Log.d("SearchVM", "No results returned from API")
             if (!isLoadMore) {
                 _searchResults.postValue(Resource.Error("No results found"))
             }
@@ -99,5 +133,6 @@ class SearchViewModel @Inject constructor(
         }
         
         isSearching = false
+        android.util.Log.d("SearchVM", "Search cycle complete. isSearching set to false.")
     }
 }

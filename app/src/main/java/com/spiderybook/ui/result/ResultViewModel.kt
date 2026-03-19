@@ -26,29 +26,25 @@ class ResultViewModel @Inject constructor(
         if (data != null) {
             _result.setSuccess(data)
             
-            // OPTIMIZATION: Only hit TMDB for explicitly supported providers to save bandwidth and CPU
-            if (apiName.contains("pelisplus", ignoreCase = true)) {
-                launchIO {
-                    val meta = tmdbRepository.getMetadata(data.name)
-                    if (meta != null) {
-                        android.util.Log.d("TMDB_DEBUG", "Found metadata for id: ${meta.id}, type: ${meta.mediaType}")
-                        _tmdbMetadata.postValue(meta)
-                        // If we found a valid media item, fetch its trailer
-                        if (meta.id != null && meta.mediaType != null) {
-                            val videoKey = tmdbRepository.getTrailerKey(meta.id, meta.mediaType)
-                            android.util.Log.d("TMDB_DEBUG", "Fetched Trailer Key: $videoKey for id: ${meta.id}")
-                            if (videoKey != null) {
-                                _youtubeTrailerKey.postValue(videoKey)
-                            }
-                        } else {
-                            android.util.Log.d("TMDB_DEBUG", "MediaType or ID is null. Cannot fetch trailer.")
+            // TMDB Metadata loading for rich UI covers and ratings (Enabled for all providers)
+            launchIO {
+                val meta = tmdbRepository.getMetadata(data.name)
+                if (meta != null) {
+                    android.util.Log.d("TMDB_DEBUG", "Found metadata for id: ${meta.id}, type: ${meta.mediaType}")
+                    _tmdbMetadata.postValue(meta)
+                    // If we found a valid media item, fetch its trailer
+                    if (meta.id != null && meta.mediaType != null) {
+                        val videoKey = tmdbRepository.getTrailerKey(meta.id, meta.mediaType)
+                        android.util.Log.d("TMDB_DEBUG", "Fetched Trailer Key: $videoKey for id: ${meta.id}")
+                        if (videoKey != null) {
+                            _youtubeTrailerKey.postValue(videoKey)
                         }
                     } else {
-                        android.util.Log.d("TMDB_DEBUG", "No TMDB metadata found for ${data.name}")
+                        android.util.Log.d("TMDB_DEBUG", "MediaType or ID is null. Cannot fetch trailer.")
                     }
+                } else {
+                    android.util.Log.d("TMDB_DEBUG", "No TMDB metadata found for ${data.name}")
                 }
-            } else {
-                android.util.Log.d("TMDB_DEBUG", "Skipping TMDB fetch for unsupported provider: $apiName")
             }
         } else {
             _result.setError("Failed to load details")
@@ -88,7 +84,7 @@ class ResultViewModel @Inject constructor(
     }
 
     // Favorites & History Logic
-    fun isFavorite(url: String) = localRepository.isFavorite(url).asLiveData()
+    fun isFavorite(url: String, name: String) = localRepository.isFavorite(url, name).asLiveData()
     val history = localRepository.getHistory().asLiveData()
 
     fun toggleFavorite(currentItem: LoadResponse?) = launchIO {
@@ -114,10 +110,10 @@ class ResultViewModel @Inject constructor(
         localRepository.deleteHistory(url)
     }
     
-    fun addToFavorites(currentItem: LoadResponse) = launchIO {
+    fun addToFavorites(originalUrl: String, currentItem: LoadResponse) = launchIO {
         localRepository.insertFavorite(
             com.spiderybook.data.local.entity.FavoriteEntity(
-                url = currentItem.url,
+                url = originalUrl,
                 name = currentItem.name,
                 posterUrl = currentItem.posterUrl ?: "",
                 apiName = currentItem.apiName,
@@ -126,7 +122,7 @@ class ResultViewModel @Inject constructor(
         )
     }
     
-    fun removeFromFavorites(url: String) = launchIO {
-        localRepository.deleteFavorite(url)
+    fun removeFromFavorites(url: String, name: String) = launchIO {
+        localRepository.deleteFavorite(url, name)
     }
 }

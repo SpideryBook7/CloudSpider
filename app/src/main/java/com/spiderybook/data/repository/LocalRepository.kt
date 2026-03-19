@@ -17,11 +17,11 @@ class LocalRepository @Inject constructor(
 
     suspend fun insertFavorite(media: FavoriteEntity) = mainDao.insertFavorite(media)
 
-    suspend fun deleteFavorite(url: String) = mainDao.deleteFavorite(url)
+    suspend fun deleteFavorite(url: String, name: String) = mainDao.deleteFavorite(url, name)
     
     suspend fun deleteFavoriteItems(urls: List<String>) = mainDao.deleteFavorites(urls)
 
-    fun isFavorite(url: String): Flow<Boolean> = mainDao.isFavorite(url)
+    fun isFavorite(url: String, name: String): Flow<Boolean> = mainDao.isFavorite(url, name)
 
     // History
     fun getHistory(): Flow<List<HistoryEntity>> = mainDao.getHistory()

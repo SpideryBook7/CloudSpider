@@ -1,10 +1,12 @@
 package com.spiderybook.plugins
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PluginManager @Inject constructor() {
+class PluginManager @Inject constructor(@ApplicationContext private val context: Context) {
     
     private val _apis = mutableListOf<MainAPI>()
     val apis: List<MainAPI> get() = _apis.toList()
@@ -16,7 +18,7 @@ class PluginManager @Inject constructor() {
     }
     
     init {
-        register(com.spiderybook.plugins.providers.AnimeFlvProvider())
+        register(com.spiderybook.plugins.providers.AnimeFlvProvider(context))
         register(com.spiderybook.plugins.providers.PelisPlusProvider())
         register(com.spiderybook.plugins.providers.TeraboxProvider())
     }

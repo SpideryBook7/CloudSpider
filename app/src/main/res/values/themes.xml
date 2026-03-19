@@ -25,4 +25,21 @@
         <item name="android:textColorAlertDialogListItem">@android:color/white</item>
         <item name="android:background">@color/background_dark</item>
     </style>
+
+    <!-- Custom Bottom Navigation Active Indicator Style -->
+    <style name="Widget.Custom.BottomNavigationView.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@android:color/transparent</item>
+    </style>
+
+    <!-- Circular Image Style for Profile Avatars -->
+    <style name="CircleImageView" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Rounded Corners for Posters -->
+    <style name="RoundedCorners" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
 </resources>

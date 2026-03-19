@@ -14,7 +14,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 import androidx.navigation.fragment.findNavController
 import coil.load
-import com.spiderybook.util.hideKeyboard
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::inflate) {
@@ -46,11 +47,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.rvHome.apply {
             adapter = parentAdapter
             layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+            addItemDecoration(GridSpacingItemDecoration(3, resources.getDimensionPixelSize(com.spiderybook.R.dimen.grid_spacing), true))
         }
     }
     
     private fun setupFilterRecyclerView() {
-        filterAdapter = FilterAdapter { category ->
+        filterAdapter = FilterAdapter { category, _ ->
             viewModel.selectCategory(category)
         }
         binding.rvFilter.apply {
@@ -123,12 +125,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                     binding.rvHome.adapter = childAdapter
                     childAdapter.updateList(items)
                 } else if (content.isEmpty()) {
-                     // Empty list handling
-                     // Check selected category to decide layout? Or just clear adapter?
-                     // Defaulting to grid/child adapter for empty letter results
-                     binding.rvHome.adapter = childAdapter // or parent depending on context
+                     binding.rvHome.adapter = childAdapter 
                      childAdapter.updateList(emptyList())
                 }
+            }
+        }
+        
+        viewModel.selectedCategory.observe(viewLifecycleOwner) { category ->
+            val isExploreMode = category != "Inicio"
+            binding.spinnerProvider.isVisible = !isExploreMode
+            
+            if (viewModel.featuredItem.value != null) {
+                binding.appbar.setExpanded(true, true)
             }
         }
         
@@ -141,11 +149,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                  binding.tvBannerTitle.text = featured.name
                  
                  binding.btnBannerPlay.setOnClickListener {
-                     navigateToDetails(featured.url, featured.apiName, featured.name, featured.posterUrl, featured.type?.name)
+                     viewModel.playFeaturedItem()
                  }
                  
                  binding.btnBannerInfo.setOnClickListener {
-                     navigateToDetails(featured.url, featured.apiName, featured.name, featured.posterUrl, featured.type?.name)
+                     viewModel.toggleFeaturedFavorite()
                  }
              } else {
                  binding.appbar.setExpanded(false, false)
@@ -165,6 +173,39 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                 if (position >= 0 && binding.spinnerProvider.selectedItemPosition != position) {
                     binding.spinnerProvider.setSelection(position, false)
                 }
+            }
+        }
+        
+        viewModel.featuredIsFavorite.observe(viewLifecycleOwner) { isFav ->
+            val btnInfo = binding.btnBannerInfo
+            if (isFav) {
+                btnInfo.setIconResource(android.R.drawable.btn_star_big_on)
+                btnInfo.iconTint = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light))
+            } else {
+                btnInfo.setIconResource(android.R.drawable.ic_input_add)
+                btnInfo.iconTint = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.white))
+            }
+        }
+
+        viewModel.playFirstEpisodeEvent.observe(viewLifecycleOwner) { data ->
+            if (data != null && data.episodes.isNotEmpty()) {
+                val urls = java.util.ArrayList(data.episodes.map { it.url })
+                val names = java.util.ArrayList(data.episodes.map { it.name })
+                val firstEpisode = data.episodes.last()
+                
+                val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
+                    putExtra("data", firstEpisode.url)
+                    putExtra("apiName", data.apiName)
+                    putExtra("title", "${data.name} - ${firstEpisode.name}")
+                    putExtra("poster", data.posterUrl)
+                    putExtra("type", data.type)
+                    putStringArrayListExtra("episodeUrls", urls)
+                    putStringArrayListExtra("episodeNames", names)
+                    putExtra("currentIndex", data.episodes.indexOf(firstEpisode))
+                    putExtra("showName", data.name)
+                }
+                startActivity(intent)
+                viewModel.clearPlayFirstEpisodeEvent()
             }
         }
         

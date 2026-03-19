@@ -41,26 +41,26 @@ class VidhideExtractor(private val mainApi: MainAPI) {
                             val bestUrl = candidates.firstOrNull { it.startsWith("http") } 
                                        ?: candidates.firstOrNull()
                                        
-                            if (bestUrl != null && (bestUrl.contains(".m3u8") || bestUrl.contains(".txt"))) { // sometimes they obscure extensions
+                            if (bestUrl != null && (bestUrl.contains(".m3u8") || bestUrl.contains(".txt"))) {
                                 videoUrl = if (bestUrl.startsWith("http")) {
                                     bestUrl
                                 } else {
-                                    // Relative URL resolution
                                     val uri = java.net.URI(url)
                                     val scheme = uri.scheme ?: "https"
-                                    val host = uri.host ?: "vidhideplus.com" // Fallback only if host is null
+                                    val host = uri.host ?: "vidhideplus.com"
                                     "$scheme://$host$bestUrl" 
                                 }
                             }
                         }
 
                         if (videoUrl == null) {
-                            val robustM3u8Regex = Regex("https?://[^\"'\\s]+\\.m3u8", RegexOption.IGNORE_CASE)
-                            val match = robustM3u8Regex.find(unpacked)
-                            if (match != null) {
-                                videoUrl = match.value.replace("\\/", "/")
+                            // Strategy 2: Broad scan for any absolute https://...m3u8
+                            val robustM3u8Regex = Regex("[\"'](https?://[^\"'\\s]+\\.m3u8[^\"']*)[\"']", RegexOption.IGNORE_CASE)
+                            val m3u8Match = robustM3u8Regex.find(unpacked)
+                            if (m3u8Match != null) {
+                                videoUrl = m3u8Match.groupValues[1].replace("\\/", "/")
                             } else {
-                                // Try relative path fallback
+                                // Strategy 3: Relative path fallback
                                 val relativeRegex = Regex("[\"'](/[^\"'\\s]+\\.m3u8.*?)[\"']")
                                 val relMatch = relativeRegex.find(unpacked)
                                 if (relMatch != null) {
@@ -78,20 +78,21 @@ class VidhideExtractor(private val mainApi: MainAPI) {
             }
 
             if (videoUrl != null) {
-                // Formatting fix for relative url if needed (e.g. from Strategy 2 or fallback)
+                // Resolve relative URL if needed
                 if (videoUrl.startsWith("/")) {
-                     val uri = java.net.URI(url)
-                     val scheme = uri.scheme ?: "https"
-                     val host = uri.host ?: "vidhideplus.com"
-                     videoUrl = "$scheme://$host$videoUrl"
+                    val uri = java.net.URI(url)
+                    val scheme = uri.scheme ?: "https"
+                    val host = uri.host ?: "vidhideplus.com"
+                    videoUrl = "$scheme://$host$videoUrl"
                 }
 
                 listOf(
                     MainAPI.ExtractorLink(
                         name = "Vidhide",
                         url = videoUrl,
-                        referer = url, // IMPORTANT: The player needs the Embed URL as Referer
-                        quality = 0 
+                        referer = url, // El embed URL como Referer — requerido por el CDN
+                        quality = 0,
+                        isM3u8 = true  // CRÍTICO: sin esto ExoPlayer no reproduce HLS correctamente
                     )
                 )
             } else {
