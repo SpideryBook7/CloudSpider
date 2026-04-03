@@ -57,10 +57,6 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(FragmentFavorit
             findNavController().navigateUp()
         }
         
-        binding.btnSearch.setOnClickListener {
-            findNavController().navigate(com.spiderybook.R.id.nav_search)
-        }
-        
         binding.tabWatching.setOnClickListener { selectTab(binding.tabWatching, "Watching") }
         binding.tabWantToWatch.setOnClickListener { selectTab(binding.tabWantToWatch, "Want to Watch") }
         binding.tabCompleted.setOnClickListener { selectTab(binding.tabCompleted, "Completed") }

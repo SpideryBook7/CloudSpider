@@ -41,6 +41,17 @@ class PlayerActivity : AppCompatActivity() {
     private var episodeNames: java.util.ArrayList<String>? = null
     private var currentIndex: Int = -1
     private var showName: String? = null
+    private lateinit var episodeAdapter: PlayerEpisodeAdapter
+    private var isEpisodesPanelOpen = false
+    
+    // Gestures
+    private lateinit var audioManager: android.media.AudioManager
+    private var maxVolume = 0
+    private var currentBrightness = 0.5f
+    private var currentVolumeFloat = 0f
+    private var isLocked = false
+    private lateinit var gestureDetector: android.view.GestureDetector
+    private var isScrolling = false
     
     private val viewModel: PlayerViewModel by viewModels()
     
@@ -68,6 +79,22 @@ class PlayerActivity : AppCompatActivity() {
         currentIndex = intent.getIntExtra("currentIndex", -1)
         showName = intent.getStringExtra("showName")
         
+        audioManager = getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager
+        maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+        setupGestures()
+        setupEpisodesPanel()
+        
+        // Initialize Control Context
+        val localShowName = showName
+        val safeShowName = localShowName ?: title
+        val parsedSubtitle = if (localShowName != null && title.contains(localShowName, ignoreCase = true)) {
+            title.replace(localShowName, "", ignoreCase = true).removePrefix(" - ").removePrefix("- ").trim()
+        } else {
+            title
+        }
+        
+        binding.playerView.findViewById<android.widget.TextView>(com.spiderybook.R.id.tv_player_title)?.text = safeShowName
+        binding.playerView.findViewById<android.widget.TextView>(com.spiderybook.R.id.tv_player_subtitle)?.text = parsedSubtitle.ifEmpty { "Playing" }        
         if (data != null) {
             // Save/Update History
             lifecycleScope.launch {
@@ -122,7 +149,7 @@ class PlayerActivity : AppCompatActivity() {
                 val links = resource.data
                 
                 // Find the integrated button inside the PlayerView controls
-                val btnSources = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_sources_control)
+                val btnSources = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_sources_control)
                 
                 if (btnSources != null) {
                     // Show button only if multiple links exist
@@ -135,7 +162,7 @@ class PlayerActivity : AppCompatActivity() {
                 }
                 
                 // Fullscreen (Rotation) Logic
-                val btnFullscreen = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_fullscreen)
+                val btnFullscreen = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_fullscreen)
                 btnFullscreen?.setOnClickListener {
                     requestedOrientation = if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
                         android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -144,15 +171,67 @@ class PlayerActivity : AppCompatActivity() {
                     }
                 }
                 
-                // Aspect Ratio Logic (Toggle: Original <-> Stretch)
-                val btnAspectRatio = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_aspect_ratio)
+                // Back Logic
+                val btnBack = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_back)
+                btnBack?.setOnClickListener { finish() }
+                
+                // Lock Logic
+                val btnLock = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_lock)
+                val tvLock = binding.playerView.findViewById<android.widget.TextView>(com.spiderybook.R.id.tv_lock)
+                val topBar = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.layout_top_bar)
+                val btnEpisodes = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_episodes)
+                btnEpisodes?.setOnClickListener { showEpisodesPanel() }
+                
+                val btnSpeed = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_speed)
+                val exoProgress = binding.playerView.findViewById<android.view.View>(androidx.media3.ui.R.id.exo_progress)
+                val btnNextEpisode = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_next_episode)
+                
+                btnLock?.setOnClickListener {
+                    isLocked = !isLocked
+                    if (isLocked) {
+                        btnLock.setColorFilter(android.graphics.Color.parseColor("#B366FF")) // Purple
+                        tvLock?.setTextColor(android.graphics.Color.parseColor("#B366FF"))
+                        Toast.makeText(this@PlayerActivity, "Pantalla Bloqueada", Toast.LENGTH_SHORT).show()
+                        
+                        // Hide everything except the lock button so it natively auto-fades with ExoPlayer
+                        binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_play_custom)?.visibility = View.INVISIBLE
+                        binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_pause_custom)?.visibility = View.INVISIBLE
+                        binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_rewind_custom)?.visibility = View.INVISIBLE
+                        binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_forward_custom)?.visibility = View.INVISIBLE
+                        topBar?.visibility = View.INVISIBLE
+                        btnEpisodes?.visibility = View.INVISIBLE
+                        btnSpeed?.visibility = View.INVISIBLE
+                        exoProgress?.visibility = View.INVISIBLE
+                        btnNextEpisode?.visibility = View.INVISIBLE
+                        
+                    } else {
+                        btnLock.setColorFilter(android.graphics.Color.parseColor("#808080")) // Grey
+                        tvLock?.setTextColor(android.graphics.Color.parseColor("#808080"))
+                        Toast.makeText(this@PlayerActivity, "Pantalla Desbloqueada", Toast.LENGTH_SHORT).show()
+                        
+                        // Show everything
+                        val isPlaying = player?.isPlaying == true
+                        binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_play_custom)?.visibility = if(!isPlaying) View.VISIBLE else View.GONE
+                        binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_pause_custom)?.visibility = if(isPlaying) View.VISIBLE else View.GONE
+                        binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_rewind_custom)?.visibility = View.VISIBLE
+                        binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_forward_custom)?.visibility = View.VISIBLE
+                        topBar?.visibility = View.VISIBLE
+                        btnEpisodes?.visibility = View.VISIBLE
+                        btnSpeed?.visibility = View.VISIBLE
+                        exoProgress?.visibility = View.VISIBLE
+                        // Note: btnNextEpisode logic is handled automatically elsewhere
+                    }
+                }
+                
+                // Aspect Ratio Logic restored to the unified UI
+                val btnAspectRatio = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_aspect_ratio)
                 btnAspectRatio?.setOnClickListener {
                     val currentMode = binding.playerView.resizeMode
                     val newMode = if (currentMode == androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL) {
-                        Toast.makeText(this, "Original (Fit)", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PlayerActivity, "Original (Fit)", Toast.LENGTH_SHORT).show()
                         androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
                     } else {
-                        Toast.makeText(this, "Stretch to Fill", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PlayerActivity, "Stretch to Fill", Toast.LENGTH_SHORT).show()
                         androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
                     }
                     binding.playerView.resizeMode = newMode
@@ -174,7 +253,7 @@ class PlayerActivity : AppCompatActivity() {
                 }
                 
                 // Track Selection / Quality Dialog Logic
-                val btnQuality = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_quality_settings)
+                val btnQuality = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_quality_settings)
                 btnQuality?.setOnClickListener {
                     player?.let { exoPlayer ->
                         val trackSelectionDialogBuilder = androidx.media3.ui.TrackSelectionDialogBuilder(
@@ -189,7 +268,7 @@ class PlayerActivity : AppCompatActivity() {
                 }
                 
                 // Cast Logic
-                val btnCast = binding.playerView.findViewById<android.widget.ImageButton>(com.spiderybook.R.id.btn_cast_control)
+                val btnCast = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_cast_control)
                 btnCast?.setOnClickListener {
                     val mediaUrl = currentMediaUrl
                     val mediaReferer = currentMediaReferer
@@ -235,10 +314,10 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 if (links.isNotEmpty()) {
-                     // Auto-Select the first healthy source. 
-                     // When Auto-Playing, this automatically seamlessly starts the new episode without asking.
-                     val link = links.first()
-                     initializePlayer(link.url, link.referer)
+                     // Auto-Select the highest quality source.
+                     // Prioritize MP4 > Generic > M3U8, but always pick the highest explicit quality first
+                     val bestLink = links.sortedByDescending { it.quality }.firstOrNull { it.url.contains(".mp4") && !it.isM3u8 } ?: links.sortedByDescending { it.quality }.firstOrNull { !it.isM3u8 } ?: links.sortedByDescending { it.quality }.first()
+                     initializePlayer(bestLink.url, bestLink.referer)
                 } else {
                     Toast.makeText(this, "No links found", Toast.LENGTH_SHORT).show()
                 }
@@ -257,7 +336,6 @@ class PlayerActivity : AppCompatActivity() {
                 initializePlayer(link.url, link.referer)
             }
             .setCancelable(true)
-            .setOnCancelListener { finish() } // Finish if user cancels selection
             .show()
     }
 
@@ -277,7 +355,7 @@ class PlayerActivity : AppCompatActivity() {
             .build()
 
         val dataSourceFactory = androidx.media3.datasource.okhttp.OkHttpDataSource.Factory(okHttpClient)
-            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
         
         val headers = mutableMapOf<String, String>()
         if (!referer.isNullOrEmpty()) {
@@ -326,16 +404,31 @@ class PlayerActivity : AppCompatActivity() {
         
         binding.playerView.player = player
         
-        // Manual Play/Pause Logic
+        // Manual Play/Pause & Seek Logic
         val btnPlay = binding.playerView.findViewById<View>(com.spiderybook.R.id.btn_play_custom)
         val btnPause = binding.playerView.findViewById<View>(com.spiderybook.R.id.btn_pause_custom)
+        val btnRew = binding.playerView.findViewById<View>(com.spiderybook.R.id.btn_rewind_custom)
+        val btnFfw = binding.playerView.findViewById<View>(com.spiderybook.R.id.btn_forward_custom)
         
         btnPlay?.setOnClickListener { player?.play() }
         btnPause?.setOnClickListener { player?.pause() }
+        
+        btnRew?.setOnClickListener { 
+            player?.let { p ->
+                p.seekTo((p.currentPosition - 10_000L).coerceAtLeast(0L))
+            }
+        }
+        
+        btnFfw?.setOnClickListener { 
+            player?.let { p ->
+                p.seekTo((p.currentPosition + 10_000L).coerceAtMost(p.duration))
+            }
+        }
 
         // Add listener for state changes
         player?.addListener(object : androidx.media3.common.Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (isLocked) return // Prevent Play logic from overwriting INVISIBLE locks
                 if (isPlaying) {
                     btnPlay?.visibility = View.GONE
                     btnPause?.visibility = View.VISIBLE
@@ -524,7 +617,17 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun playNextEpisode() {
         if (episodeUrls != null && currentIndex - 1 >= 0) {
-            currentIndex--
+            playEpisodeAt(currentIndex - 1)
+        }
+    }
+
+    private fun playEpisodeAt(index: Int) {
+        if (episodeUrls != null && index >= 0 && index < episodeUrls!!.size) {
+            currentIndex = index
+            if (::episodeAdapter.isInitialized) {
+                episodeAdapter.updateCurrentIndex(currentIndex)
+            }
+            
             val nextUrl = episodeUrls!![currentIndex]
             val nextName = episodeNames?.getOrNull(currentIndex) ?: ""
             val nextTitle = if (showName != null) "$showName - $nextName" else nextName
@@ -533,6 +636,7 @@ class PlayerActivity : AppCompatActivity() {
 
             intent.putExtra("data", nextUrl)
             intent.putExtra("title", nextTitle)
+            intent.putExtra("currentIndex", currentIndex)
 
             player?.stop()
             player?.clearMediaItems()
@@ -540,11 +644,57 @@ class PlayerActivity : AppCompatActivity() {
             
             val apiName = intent.getStringExtra("apiName") ?: ""
             viewModel.loadLinks(apiName, nextUrl)
-            Toast.makeText(this@PlayerActivity, "Siguiente: $nextTitle", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@PlayerActivity, "Reproduciendo: $nextTitle", Toast.LENGTH_SHORT).show()
             
             val btnNextFloating = binding.playerView.findViewById<com.google.android.material.button.MaterialButton>(com.spiderybook.R.id.btn_next_episode)
-            btnNextFloating?.visibility = android.view.View.GONE // Reset visibility for new episode
+            btnNextFloating?.visibility = android.view.View.GONE
+            
+            val localShowName = showName
+            val safeShowName = localShowName ?: nextTitle
+            val parsedSubtitle = if (localShowName != null && nextTitle.contains(localShowName, ignoreCase = true)) {
+                nextTitle.replace(localShowName, "", ignoreCase = true).removePrefix(" - ").removePrefix("- ").trim()
+            } else {
+                nextTitle
+            }
+            binding.playerView.findViewById<android.widget.TextView>(com.spiderybook.R.id.tv_player_title)?.text = safeShowName
+            binding.playerView.findViewById<android.widget.TextView>(com.spiderybook.R.id.tv_player_subtitle)?.text = parsedSubtitle.ifEmpty { "Playing" }
         }
+    }
+
+    private fun setupEpisodesPanel() {
+        val rv = findViewById<androidx.recyclerview.widget.RecyclerView>(com.spiderybook.R.id.rv_player_episodes)
+        val tvTitle = findViewById<android.widget.TextView>(com.spiderybook.R.id.tv_episodes_panel_title)
+        
+        tvTitle?.text = (currentMediaTitle?.take(30) ?: "") + (if ((currentMediaTitle?.length ?: 0) > 30) "..." else "")
+        
+        val eNames = episodeNames ?: emptyList()
+        val pUrl = intent.getStringExtra("poster") ?: ""
+        episodeAdapter = PlayerEpisodeAdapter(eNames, pUrl, currentIndex) { clickedIndex ->
+            playEpisodeAt(clickedIndex)
+            hideEpisodesPanel()
+        }
+        
+        rv?.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        rv?.adapter = episodeAdapter
+    }
+    
+    private fun showEpisodesPanel() {
+        val panel = findViewById<androidx.constraintlayout.widget.ConstraintLayout>(com.spiderybook.R.id.layout_episodes_panel)
+        panel?.visibility = View.VISIBLE
+        panel?.translationX = 320f * resources.displayMetrics.density
+        panel?.animate()?.translationX(0f)?.setDuration(250)?.start()
+        isEpisodesPanelOpen = true
+        
+        val rv = findViewById<androidx.recyclerview.widget.RecyclerView>(com.spiderybook.R.id.rv_player_episodes)
+        rv?.scrollToPosition(currentIndex.coerceAtLeast(0))
+    }
+    
+    private fun hideEpisodesPanel() {
+        val panel = findViewById<androidx.constraintlayout.widget.ConstraintLayout>(com.spiderybook.R.id.layout_episodes_panel)
+        panel?.animate()?.translationX(panel.width.toFloat())?.setDuration(250)?.withEndAction {
+            panel.visibility = View.GONE
+            isEpisodesPanelOpen = false
+        }?.start()
     }
 
     private fun releasePlayer() {
@@ -578,7 +728,7 @@ class PlayerActivity : AppCompatActivity() {
     private fun getStreamwishSource(url: String, referer: String, dataSourceFactory: androidx.media3.datasource.okhttp.OkHttpDataSource.Factory): androidx.media3.exoplayer.source.MediaSource {
         val headers = mutableMapOf<String, String>()
         
-        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"
+        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
         
         // Use the dynamically extracted Referer from StreamwishExtractor
         if (referer.isNotEmpty()) {
@@ -630,5 +780,185 @@ class PlayerActivity : AppCompatActivity() {
         if (::dlnaManager.isInitialized) {
             dlnaManager.stop()
         }
+    }
+
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+    private fun setupGestures() {
+        val layoutBrightness = binding.layoutBrightness
+        val layoutVolume = binding.layoutVolume
+        val progressBrightness = binding.progressBrightness
+        val progressVolume = binding.progressVolume
+        
+        var scrollType = 0 // 1: Brightness, 2: Volume
+        
+        val gestureListener = object : android.view.GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: android.view.MotionEvent): Boolean {
+                if (isLocked) return true
+                if (!isScrolling) {
+                    currentVolumeFloat = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()
+                }
+                isScrolling = false
+                scrollType = 0
+                return true
+            }
+
+            override fun onScroll(
+                 e1: android.view.MotionEvent?,
+                 e2: android.view.MotionEvent,
+                 distanceX: Float,
+                 distanceY: Float
+             ): Boolean {
+                 if (isLocked || e1 == null) return false
+
+                 val deltaY = e1.y - e2.y
+                 val deltaX = e1.x - e2.x
+
+                 if (kotlin.math.abs(deltaY) > kotlin.math.abs(deltaX)) {
+                     // Vertical scroll
+                     if (!isScrolling) {
+                         isScrolling = true
+                         val screenWidth = resources.displayMetrics.widthPixels
+                         if (e1.x < screenWidth / 2) {
+                             scrollType = 1 // Brightness (Left half)
+                             layoutBrightness.visibility = View.VISIBLE
+                             layoutVolume.visibility = View.GONE
+                             
+                             // Initial brightness
+                             var lparams = window.attributes
+                             if (lparams.screenBrightness < 0) {
+                                 // System brightness
+                                 val resolver = contentResolver
+                                 try {
+                                     val bright = android.provider.Settings.System.getInt(resolver, android.provider.Settings.System.SCREEN_BRIGHTNESS)
+                                     currentBrightness = bright / 255f
+                                 } catch (e: Exception) {
+                                     currentBrightness = 0.5f
+                                 }
+                             } else {
+                                 currentBrightness = lparams.screenBrightness
+                             }
+                             progressBrightness.progress = (currentBrightness * 100).toInt()
+                             
+                         } else {
+                             scrollType = 2 // Volume (Right half)
+                             layoutVolume.visibility = View.VISIBLE
+                             layoutBrightness.visibility = View.GONE
+                             
+                             val currVol = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+                             progressVolume.progress = ((currVol.toFloat() / maxVolume) * 100).toInt()
+                         }
+                     }
+                     
+                     // Handle scroll movement - Use distanceY (frame delta) not deltaY (absolute delta)
+                     val height = resources.displayMetrics.heightPixels
+                     if (scrollType == 1) { // Brightness
+                         val step = (distanceY / height) * 1.5f 
+                         currentBrightness += step
+                         currentBrightness = currentBrightness.coerceIn(0f, 1f)
+                         
+                         val lparams = window.attributes
+                         lparams.screenBrightness = currentBrightness
+                         window.attributes = lparams
+                         
+                         progressBrightness.progress = (currentBrightness * 100).toInt()
+                         
+                     } else if (scrollType == 2) { // Volume
+                         val step = (distanceY / height) * maxVolume * 1.5f 
+                         currentVolumeFloat += step
+                         val newVol = currentVolumeFloat.toInt().coerceIn(0, maxVolume)
+                         
+                         audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, newVol, 0)
+                         progressVolume.progress = ((newVol.toFloat() / maxVolume) * 100).toInt()
+                         
+                         // Update volume icon based on level
+                         val imgVolume = binding.imgVolumeIcon
+                         if (newVol == 0) {
+                             imgVolume.setImageResource(android.R.drawable.ic_lock_silent_mode)
+                         } else {
+                             imgVolume.setImageResource(android.R.drawable.ic_lock_silent_mode_off)
+                         }
+                     }
+                     return true
+                 }
+                 return false
+             }
+             
+            override fun onSingleTapConfirmed(e: android.view.MotionEvent): Boolean {
+                if (isLocked) {
+                    if (!binding.playerView.isControllerFullyVisible) {
+                        binding.playerView.showController()
+                    } else {
+                        binding.playerView.hideController()
+                    }
+                    return true
+                }
+                
+                // If not locked, let ExoPlayer handle taps naturally. Return false to ignore.
+                return false
+            }
+        }
+        
+        gestureDetector = android.view.GestureDetector(this, gestureListener)
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (isEpisodesPanelOpen) {
+            val panel = findViewById<androidx.constraintlayout.widget.ConstraintLayout>(com.spiderybook.R.id.layout_episodes_panel)
+            if (panel != null) {
+                val rect = android.graphics.Rect()
+                panel.getGlobalVisibleRect(rect)
+                if (!rect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                    if (ev.action == android.view.MotionEvent.ACTION_DOWN) {
+                        hideEpisodesPanel()
+                    }
+                    return true // block touch outside
+                } else {
+                    // Tap is inside episodes panel. Do NOT process gestureDetector
+                    // so we don't accidentally trigger volume sliders.
+                    return super.dispatchTouchEvent(ev)
+                }
+            }
+        }
+        
+        if (::gestureDetector.isInitialized) {
+            gestureDetector.onTouchEvent(ev)
+        }
+        
+        val isUpOrCancel = ev.action == android.view.MotionEvent.ACTION_UP || ev.action == android.view.MotionEvent.ACTION_CANCEL
+        
+        if (isScrolling) {
+            if (isUpOrCancel) {
+                // User released finger. Fade out sliders
+                lifecycleScope.launch {
+                    delay(600) // Keep visible for a split second
+                    binding.layoutBrightness.animate().alpha(0f).setDuration(300).withEndAction {
+                        binding.layoutBrightness.visibility = View.GONE
+                        binding.layoutBrightness.alpha = 1f
+                    }.start()
+                    binding.layoutVolume.animate().alpha(0f).setDuration(300).withEndAction {
+                        binding.layoutVolume.visibility = View.GONE
+                        binding.layoutVolume.alpha = 1f
+                    }.start()
+                }
+                isScrolling = false
+            }
+            return true // Consume all touch events while scrolling to prevent clicks from leaking
+        }
+        
+        if (isLocked) {
+             val layoutLock = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.layout_lock)
+             val btnLock = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_lock)
+             
+             if (layoutLock != null && binding.playerView.isControllerFullyVisible) {
+                 val rect = android.graphics.Rect()
+                 btnLock?.getGlobalVisibleRect(rect)
+                 if (rect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                     return super.dispatchTouchEvent(ev) // Allow clicking unlock
+                 }
+             }
+             return true // block everywhere else
+        }
+
+        return super.dispatchTouchEvent(ev)
     }
 }

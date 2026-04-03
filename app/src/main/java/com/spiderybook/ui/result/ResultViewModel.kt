@@ -75,8 +75,8 @@ class ResultViewModel @Inject constructor(
         }
         
         if (success && links.isNotEmpty()) {
-            val bestLink = links.firstOrNull { it.url.contains(".mp4") } ?: links.first()
-            downloadManager.download(bestLink.url, fileName)
+            val bestLink = links.firstOrNull { it.url.contains(".mp4") && !it.isM3u8 } ?: links.firstOrNull { !it.isM3u8 } ?: links.first()
+            downloadManager.download(bestLink.url, fileName, bestLink.referer)
             _downloadStatus.postValue(Resource.Success("Descargando: $fileName"))
         } else {
             _downloadStatus.postValue(Resource.Error("Error al obtener el enlace de descarga para $fileName"))
@@ -104,6 +104,40 @@ class ResultViewModel @Inject constructor(
                 showTitle = data.name
             )
         )
+        
+        // Auto-update Favorites Status
+        val favorite = localRepository.getFavoriteItem(data.url)
+        if (favorite != null) {
+            val realEpisodes = data.episodes.filter { it.url != "next_episode" }.reversed()
+            val totalEps = realEpisodes.size
+            
+            // Find true chronological index for this episode to handle 'Episode 0' anomalies uniformly
+            val chronologicalIndex = Math.max(1, realEpisodes.indexOf(episode) + 1)
+            val maxWatched = Math.max(favorite.watchedEpisodes, chronologicalIndex)
+            
+            // If the user has watched the maximum number of episodes, mark as Completed, otherwise Watching. Do not mark as Completed if the anime is still airing (next_episode exists).
+            val newStatus = when {
+                totalEps > 0 && maxWatched >= totalEps && !data.episodes.any { it.url == "next_episode" } -> "Completed"
+                maxWatched > 0 -> "Watching"
+                else -> "Want to Watch"
+            }
+            
+            localRepository.insertFavorite(
+                favorite.copy(
+                    watchedEpisodes = maxWatched,
+                    totalEpisodes = totalEps,
+                    status = newStatus
+                )
+            )
+        }
+    }
+    
+    fun markAllEpisodesAsSeen(data: LoadResponse) = launchIO {
+        val realEpisodes = data.episodes.filter { it.url != "next_episode" }
+        if (realEpisodes.isNotEmpty()) {
+            val highestEpisode = realEpisodes.maxByOrNull { it.episode ?: 0 } ?: realEpisodes.first()
+            saveEpisodeProgress(data, highestEpisode)
+        }
     }
     
     fun deleteEpisodeProgress(url: String) = launchIO {
@@ -117,7 +151,8 @@ class ResultViewModel @Inject constructor(
                 name = currentItem.name,
                 posterUrl = currentItem.posterUrl ?: "",
                 apiName = currentItem.apiName,
-                type = currentItem.type?.name
+                type = currentItem.type?.name,
+                totalEpisodes = currentItem.episodes.count { it.url != "next_episode" }
             )
         )
     }

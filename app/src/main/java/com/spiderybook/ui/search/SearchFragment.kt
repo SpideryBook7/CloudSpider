@@ -31,6 +31,11 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(FragmentSearchBinding
         setupFilterRecyclerView()
         setupSearchView()
         setupObservers()
+        
+        // Trigger initial empty search if no query is set
+        if (binding.etSearch.text.isNullOrEmpty()) {
+             viewModel.search(null, "")
+        }
     }
 
     private fun setupRecyclerViews() {
@@ -80,8 +85,13 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(FragmentSearchBinding
                 if (!categories.isNullOrEmpty()) {
                     viewModel.search(null, categories.joinToString(","))
                 } else {
-                    viewModel.topSearches.value?.let { searchResultsAdapter.updateList(it) }
-                    binding.btnLoadMore.isVisible = false
+                    val topHits = viewModel.topSearches.value
+                    if (!topHits.isNullOrEmpty()) {
+                        searchResultsAdapter.updateList(topHits)
+                        binding.btnLoadMore.isVisible = false
+                    } else {
+                        viewModel.search(null, "")
+                    }
                 }
             }
         }
@@ -95,8 +105,13 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(FragmentSearchBinding
             viewModel.selectCategory("All")
             filterAdapter.setSelection("All")
             binding.etSearch.setText("")
-            viewModel.topSearches.value?.let { searchResultsAdapter.updateList(it) }
-            binding.btnLoadMore.isVisible = false
+            val topHits = viewModel.topSearches.value
+            if (!topHits.isNullOrEmpty()) {
+                searchResultsAdapter.updateList(topHits)
+                binding.btnLoadMore.isVisible = false
+            } else {
+                viewModel.search(null, "")
+            }
             Toast.makeText(requireContext(), "Filters cleared", Toast.LENGTH_SHORT).show()
         }
     }
@@ -205,8 +220,13 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(FragmentSearchBinding
                             if (viewModel.selectedCategories.value.isNullOrEmpty()) {
                                 filterAdapter.setSelection("All")
                                 binding.etSearch.setText("")
-                                viewModel.topSearches.value?.let { searchResultsAdapter.updateList(it) }
-                                binding.btnLoadMore.isVisible = false
+                                val topHits = viewModel.topSearches.value
+                                if (!topHits.isNullOrEmpty()) {
+                                    searchResultsAdapter.updateList(topHits)
+                                    binding.btnLoadMore.isVisible = false
+                                } else {
+                                    viewModel.search(null, "")
+                                }
                             } else {
                                 // Trigger a new search with the remaining categories
                                 viewModel.search(null, viewModel.selectedCategories.value!!.joinToString(","))

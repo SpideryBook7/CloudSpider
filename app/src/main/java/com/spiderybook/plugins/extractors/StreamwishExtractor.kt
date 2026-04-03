@@ -67,30 +67,34 @@ class StreamwishExtractor(private val mainApi: MainAPI, private val client: OkHt
         val re = """return\s+p\}\('(.*)',\s*(\d+),\s*(\d+),\s*'(.*?)'\.split\('\|'\)""".toRegex()
         val match = re.find(packed) ?: return packed
         
-        var p = match.groupValues[1]
+        val p = match.groupValues[1]
         val a = match.groupValues[2].toInt()
         val c = match.groupValues[3].toInt()
         val kArray = match.groupValues[4].split("|")
 
-        for (i in c - 1 downTo 0) {
-            val word = if (i < kArray.size && kArray[i].isNotEmpty()) kArray[i] else intToBaseString(i, a)
-            if (word.isNotEmpty()) {
-                val searchRegex = "\\b${intToBaseString(i, a)}\\b".toRegex()
-                p = p.replace(searchRegex, word)
+        // Optimize: One-pass regex replace to avoid CPU UI freezing!
+        val replacerRegex = "\\b[a-zA-Z0-9]+\\b".toRegex()
+        return replacerRegex.replace(p) { matchResult ->
+            val wordBase = matchResult.value
+            val index = baseStringToInt(wordBase, a)
+            if (index < c && index < kArray.size && kArray[index].isNotEmpty()) {
+                kArray[index]
+            } else {
+                wordBase
             }
         }
-        return p
     }
 
-    private fun intToBaseString(i: Int, radix: Int): String {
+    private fun baseStringToInt(str: String, radix: Int): Int {
         val chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        if (i == 0) return "0"
-        var num = i
-        var result = ""
-        while (num > 0) {
-            result = chars[num % radix] + result
-            num /= radix
+        var num = 0
+        for (char in str) {
+            val v = chars.indexOf(char)
+            if (v < 0) return 0 // Ignore invalid chars
+            num = num * radix + v
         }
-        return result
+        return num
     }
+
+    // Function removed because it is explicitly not needed given the inverse mapping logic above
 }

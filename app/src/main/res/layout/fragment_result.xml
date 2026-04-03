@@ -194,6 +194,17 @@
                 app:iconGravity="textStart"
                 app:iconTint="@color/text_secondary" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_mark_seen"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Marcar todo como visto"
+                android:textColor="@color/success"
+                app:icon="@android:drawable/ic_menu_agenda"
+                app:iconGravity="textStart"
+                app:iconTint="@color/success" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

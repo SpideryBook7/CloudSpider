@@ -9,7 +9,7 @@ class VidhideExtractor(private val mainApi: MainAPI) {
     suspend fun extract(url: String): List<MainAPI.ExtractorLink> {
         return try {
             val doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
                 .get()
             
             val scripts = doc.select("script")

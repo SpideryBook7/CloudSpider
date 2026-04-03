@@ -12,6 +12,9 @@ interface MainDao {
     @Query("SELECT * FROM favorites ORDER BY timestamp DESC")
     fun getFavorites(): Flow<List<FavoriteEntity>>
 
+    @Query("SELECT * FROM favorites WHERE url = :url LIMIT 1")
+    suspend fun getFavoriteItem(url: String): FavoriteEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFavorite(media: FavoriteEntity)
 

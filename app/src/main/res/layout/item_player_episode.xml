@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_episode"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="12dp"
+    android:paddingHorizontal="16dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="?android:attr/selectableItemBackground">
+
+    <View
+        android:id="@+id/indicator_active"
+        android:layout_width="3dp"
+        android:layout_height="0dp"
+        android:background="#B366FF"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_thumb"
+        android:layout_width="80dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="12dp"
+        app:cardCornerRadius="4dp"
+        app:cardBackgroundColor="#262626"
+        app:strokeWidth="0dp"
+        app:layout_constraintStart_toEndOf="@id/indicator_active"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_thumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <View
+            android:id="@+id/view_dimmer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80000000"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/iv_play_active"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            app:srcCompat="@drawable/ic_play_arrow_custom"
+            app:tint="#B366FF"
+            android:visibility="gone" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tv_episode_number"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:textColor="@color/white"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        tools:text="EPISODE 1"
+        app:layout_constraintStart_toEndOf="@id/card_thumb"
+        app:layout_constraintEnd_toStartOf="@id/tv_badge_live"
+        app:layout_constraintTop_toTopOf="@id/card_thumb"
+        app:layout_constraintBottom_toTopOf="@id/tv_episode_title"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/tv_badge_live"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="LIVE"
+        android:textSize="8sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:background="@drawable/bg_pill_accent"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="2dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_episode_number"
+        app:layout_constraintBottom_toBottomOf="@id/tv_episode_number" />
+
+    <TextView
+        android:id="@+id/tv_episode_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="2dp"
+        android:textColor="#A0A0A0"
+        android:textSize="10sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        tools:text="Ghost in the Machine"
+        app:layout_constraintStart_toEndOf="@id/card_thumb"
+        app:layout_constraintEnd_toStartOf="@id/iv_play_outline"
+        app:layout_constraintTop_toBottomOf="@id/tv_episode_number"
+        app:layout_constraintBottom_toBottomOf="@id/card_thumb" />
+
+    <ImageView
+        android:id="@+id/iv_play_outline"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        app:srcCompat="@drawable/ic_play_arrow_custom"
+        app:tint="#A0A0A0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/card_thumb"
+        app:layout_constraintBottom_toBottomOf="@id/card_thumb" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

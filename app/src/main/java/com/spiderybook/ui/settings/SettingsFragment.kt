@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import android.widget.EditText
+import android.widget.LinearLayout
 import com.spiderybook.databinding.FragmentSettingsBinding
 import com.spiderybook.ui.common.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,7 +24,42 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         setupProviderSelection()
         setupCacheClearing()
         setupDownloadsClearing()
-        // Example: load app version natively dynamically, or just let XML have it
+        setupBackupSection()
+    }
+
+    private val exportBackupLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        uri?.let {
+            requireContext().contentResolver.openOutputStream(it)?.let { outputStream ->
+                viewModel.exportDatabase(outputStream)
+            }
+        }
+    }
+
+    private val importBackupLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            requireContext().contentResolver.openInputStream(it)?.let { inputStream ->
+                viewModel.importDatabase(inputStream)
+            }
+        }
+    }
+
+    private fun setupBackupSection() {
+        // Observe Toast Messages
+        viewModel.toastMessage.observe(viewLifecycleOwner) { message ->
+            if (message.isNotEmpty()) {
+                com.google.android.material.snackbar.Snackbar.make(binding.root, message, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show()
+                viewModel.clearToastMessage()
+            }
+        }
+
+        binding.btnBackupExport.setOnClickListener {
+            val dateString = java.text.SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", java.util.Locale.getDefault()).format(java.util.Date())
+            exportBackupLauncher.launch("SpideryBook_Backup_$dateString.json")
+        }
+
+        binding.btnBackupImport.setOnClickListener {
+            importBackupLauncher.launch(arrayOf("application/json", "*/*"))
+        }
     }
 
     private fun setupThemeSelection() {

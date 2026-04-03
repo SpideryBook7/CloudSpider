@@ -14,6 +14,8 @@ class LocalRepository @Inject constructor(
 
     // Favorites
     fun getFavorites(): Flow<List<FavoriteEntity>> = mainDao.getFavorites()
+    
+    suspend fun getFavoriteItem(url: String): FavoriteEntity? = mainDao.getFavoriteItem(url)
 
     suspend fun insertFavorite(media: FavoriteEntity) = mainDao.insertFavorite(media)
 

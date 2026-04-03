@@ -123,7 +123,7 @@ class AnimeFlvProvider @Inject constructor(@ApplicationContext private val conte
                 if (yearList.isNotEmpty()) items.add(HomePageList("Tendencias $currentYear", yearList, isHorizontal = true))
                 
                 val moviesList = moviesDeferred.await()
-                if (moviesList.isNotEmpty()) items.add(HomePageList("Películas", moviesList, isHorizontal = false, isExpanded = false))
+                if (moviesList.isNotEmpty()) items.add(HomePageList("Películas", moviesList, isHorizontal = false, isExpanded = true))
             }
 
             // 3. El Catálogo Completo A-Z (Tu especialidad)
@@ -166,13 +166,25 @@ class AnimeFlvProvider @Inject constructor(@ApplicationContext private val conte
             
             // Script de episodios
             val script = doc.select("script").firstOrNull { it.html().contains("var episodes =") }?.html() ?: ""
-            val animeId = "var anime_info = \\[\"(\\d+)\"".toRegex().find(script)?.groupValues?.get(1) ?: ""
+            // Parse anime_info array to get the 4th element (next episode date) if it exists
+            val animeInfoRegex = "var anime_info = \\[(.*?)\\];".toRegex().find(script)?.groupValues?.get(1) ?: ""
+            val animeInfoParts = animeInfoRegex.split(",").map { it.trim().replace("\"", "") }
+            val animeId = animeInfoParts.getOrNull(0) ?: ""
+            val nextEpisodeDate = if (animeInfoParts.size >= 4) animeInfoParts[3] else ""
+            
             val animeSlug = url.substringAfterLast("/")
             
             val episodes = mutableListOf<Episode>()
+            
             "\\[(\\d+),\\d+\\]".toRegex().findAll(script).forEach { match ->
                 val num = match.groupValues[1]
                 episodes.add(Episode("Episodio $num", "$mainUrl/ver/$animeSlug-$num", 1, num.toInt(), "https://cdn.animeflv.net/screenshots/$animeId/$num/th_3.jpg"))
+            }
+            
+            // If the anime is actively broadcasting, add the next episode notice to the top
+            if (nextEpisodeDate.isNotEmpty() && nextEpisodeDate != "false" && nextEpisodeDate != "null") {
+                val nextNum = if (episodes.isNotEmpty()) (episodes.first().episode ?: 0) + 1 else 1
+                episodes.add(0, Episode("Próximo Episodio: $nextEpisodeDate", "next_episode", 1, nextNum, "https://i.imgur.com/K5a1a1J.png"))
             }
 
             // Recomendaciones (Tus Secuelas/Precuelas)
@@ -199,5 +211,28 @@ class AnimeFlvProvider @Inject constructor(@ApplicationContext private val conte
         } catch (e: Exception) { emptyList() }
     }
 
-    override suspend fun search(query: String, page: Int): List<SearchResponse>? = fetchSearchResponseList("$mainUrl/browse?q=$query&page=$page")
+    override suspend fun getGenres(): List<String> {
+        return listOf(
+            "Accion", "Artes Marciales", "Aventuras", "Carreras", "Ciencia Ficcion", 
+            "Comedia", "Demencia", "Demonios", "Deportes", "Drama", "Ecchi", 
+            "Escolares", "Espacial", "Fantasia", "Harem", "Historico", "Infantil", 
+            "Josei", "Juegos", "Magia", "Mecha", "Militar", "Misterio", "Musica", 
+            "Parodia", "Policial", "Psicologico", "Recuentos de la vida", "Romance", 
+            "Samurai", "Seinen", "Shoujo", "Shounen", "Sobrenatural", "Superpoderes", 
+            "Suspenso", "Terror", "Vampiros", "Yaoi", "Yuri"
+        )
+    }
+
+    override suspend fun search(query: String, page: Int): List<SearchResponse>? {
+        val genresList = getGenres().map { it.lowercase() }
+        val queryLower = query.lowercase().trim()
+        
+        // If the query perfectly matches a known genre, search by genre parameter
+        return if (genresList.contains(queryLower)) {
+            val genreSlug = queryLower.replace(" ", "-")
+            fetchSearchResponseList("$mainUrl/browse?genre=$genreSlug&page=$page")
+        } else {
+            fetchSearchResponseList("$mainUrl/browse?q=$query&page=$page")
+        }
+    }
 }

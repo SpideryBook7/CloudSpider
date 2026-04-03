@@ -24,6 +24,75 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- BRIGHTNESS SLIDER OVERLAY (LEFT) -->
+    <LinearLayout
+        android:id="@+id/layout_brightness"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="32dp"
+        android:background="@drawable/bg_circle_dark_glass"
+        android:paddingVertical="16dp"
+        android:paddingHorizontal="10dp"
+        tools:visibility="visible">
 
+        <ProgressBar
+            android:id="@+id/progress_brightness"
+            android:layout_width="4dp"
+            android:layout_height="120dp"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:progressDrawable="@drawable/bg_vertical_progress"
+            android:max="100" 
+            tools:progress="65"/>
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="12dp"
+            android:src="@android:drawable/ic_dialog_info" 
+            app:tint="@color/text_secondary" />
+    </LinearLayout>
+
+    <!-- VOLUME SLIDER OVERLAY (RIGHT) -->
+    <LinearLayout
+        android:id="@+id/layout_volume"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/bg_circle_dark_glass"
+        android:paddingVertical="16dp"
+        android:paddingHorizontal="10dp"
+        tools:visibility="visible">
+
+        <ProgressBar
+            android:id="@+id/progress_volume"
+            android:layout_width="4dp"
+            android:layout_height="120dp"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:progressDrawable="@drawable/bg_vertical_progress"
+            android:max="100" 
+            tools:progress="45"/>
+
+        <ImageView
+            android:id="@+id/img_volume_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="12dp"
+            android:src="@android:drawable/ic_lock_silent_mode_off"
+            app:tint="@color/text_secondary" />
+    </LinearLayout>
+
+    <include layout="@layout/layout_player_episodes" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

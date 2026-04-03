@@ -159,10 +159,11 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 
                 // Play Button Logic
                 binding.btnPlay.setOnClickListener {
-                     if (data.episodes.isNotEmpty()) {
-                         val urls = java.util.ArrayList(data.episodes.map { it.url })
-                         val names = java.util.ArrayList(data.episodes.map { it.name })
-                         val firstEpisode = data.episodes.last()
+                     val realEpisodes = data.episodes.filter { it.url != "next_episode" }
+                     if (realEpisodes.isNotEmpty()) {
+                         val urls = java.util.ArrayList(realEpisodes.map { it.url })
+                         val names = java.util.ArrayList(realEpisodes.map { it.name })
+                         val firstEpisode = realEpisodes.last()
                          
                          val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
                             putExtra("data", firstEpisode.url)
@@ -172,7 +173,7 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                             putExtra("type", data.type)
                             putStringArrayListExtra("episodeUrls", urls)
                             putStringArrayListExtra("episodeNames", names)
-                            putExtra("currentIndex", data.episodes.indexOf(firstEpisode))
+                            putExtra("currentIndex", realEpisodes.indexOf(firstEpisode))
                             putExtra("showName", data.name)
                         }
                         startActivity(intent)
@@ -181,11 +182,21 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                      }
                 }
                 
+                binding.btnMarkSeen.setOnClickListener {
+                    viewModel.markAllEpisodesAsSeen(data)
+                    Toast.makeText(context, "Progreso actualizado \uD83C\uDF89", Toast.LENGTH_SHORT).show()
+                }
+                
                 episodeAdapter = EpisodeAdapter(
                     items = data.episodes,
                     onClick = { episode ->
-                        val urls = java.util.ArrayList(data.episodes.map { it.url })
-                        val names = java.util.ArrayList(data.episodes.map { it.name })
+                        if (episode.url == "next_episode") {
+                            Toast.makeText(requireContext(), "Aún no se estrena este episodio \uD83D\uDE05", Toast.LENGTH_SHORT).show()
+                            return@EpisodeAdapter
+                        }
+                        val realEpisodes = data.episodes.filter { it.url != "next_episode" }
+                        val urls = java.util.ArrayList(realEpisodes.map { it.url })
+                        val names = java.util.ArrayList(realEpisodes.map { it.name })
                         val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
                             putExtra("data", episode.url)
                             putExtra("apiName", data.apiName)
@@ -194,7 +205,7 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                             putExtra("type", data.type)
                             putStringArrayListExtra("episodeUrls", urls)
                             putStringArrayListExtra("episodeNames", names)
-                            putExtra("currentIndex", data.episodes.indexOf(episode))
+                            putExtra("currentIndex", realEpisodes.indexOf(episode))
                             putExtra("showName", data.name)
                         }
                         startActivity(intent)
