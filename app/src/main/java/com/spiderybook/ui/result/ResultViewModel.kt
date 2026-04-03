@@ -75,9 +75,24 @@ class ResultViewModel @Inject constructor(
         }
         
         if (success && links.isNotEmpty()) {
-            val bestLink = links.firstOrNull { it.url.contains(".mp4") && !it.isM3u8 } ?: links.firstOrNull { !it.isM3u8 } ?: links.first()
-            downloadManager.download(bestLink.url, fileName, bestLink.referer)
-            _downloadStatus.postValue(Resource.Success("Descargando: $fileName"))
+            val validMediaLinks = links.filter { !it.name.contains("Web/Raw") }
+            
+            val bestLink = validMediaLinks.firstOrNull { it.url.contains(".mp4") && !it.isM3u8 } 
+                ?: validMediaLinks.firstOrNull { !it.isM3u8 } 
+                ?: validMediaLinks.firstOrNull()
+
+            when {
+                bestLink == null -> {
+                    _downloadStatus.postValue(Resource.Error("No se encontraron enlaces de video extraíbles para $fileName"))
+                }
+                bestLink.isM3u8 -> {
+                    _downloadStatus.postValue(Resource.Error("Servidor con formato cerrado (M3U8). ¡Selecciona opciones como Streamtape o reproductores directos!"))
+                }
+                else -> {
+                    downloadManager.download(bestLink.url, fileName, bestLink.referer)
+                    _downloadStatus.postValue(Resource.Success("Iniciando descarga: $fileName en Alta Calidad"))
+                }
+            }
         } else {
             _downloadStatus.postValue(Resource.Error("Error al obtener el enlace de descarga para $fileName"))
         }

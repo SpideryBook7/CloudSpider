@@ -29,6 +29,8 @@ class StreamwishExtractor(private val mainApi: MainAPI, private val client: OkHt
             // Desempaquetar JS
             val unpackedHtml = unpackJs(html)
             
+            val results = mutableListOf<MainAPI.ExtractorLink>()
+            
             // Buscar el link del video .m3u8 (La estructura cambió a var links = { "hls2": "https://..." })
             var videoUrl: String? = null
             val m3u8Regex = "[\"'](http[s]?://[^\"']+\\.m3u8[^\"']*)[\"']".toRegex()
@@ -45,21 +47,38 @@ class StreamwishExtractor(private val mainApi: MainAPI, private val client: OkHt
             }
 
             if (videoUrl != null) {
-                listOf(
+                results.add(
                     MainAPI.ExtractorLink(
                         name = "Streamwish",
                         url = videoUrl,
-                        referer = "https://embedwish.com/", // REFERER GLOBAL: Vital para evitar el 404 en ExoPlayer
+                        referer = "https://embedwish.com/",
                         quality = 0,
                         isM3u8 = true
                     )
                 )
-            } else {
-                emptyList()
             }
+            
+            // NEW: Search for MP4 fallback for Native Android DownloadManager
+            val mp4Regex = "[\"'](http[s]?://[^\"'\\s]+\\.mp4[^\"'\\s]*)[\"']".toRegex(RegexOption.IGNORE_CASE)
+            mp4Regex.findAll(unpackedHtml).forEach { mp4Match ->
+                val mp4Url = mp4Match.groupValues[1]
+                if (!results.any { it.url == mp4Url }) {
+                    results.add(
+                        MainAPI.ExtractorLink(
+                            name = "Streamwish (MP4)",
+                            url = mp4Url,
+                            referer = "https://embedwish.com/",
+                            quality = 0,
+                            isM3u8 = false
+                        )
+                    )
+                }
+            }
+
+            return results
         } catch (e: Exception) {
             e.printStackTrace()
-            emptyList()
+            return emptyList()
         }
     }
 

@@ -77,6 +77,8 @@ class VidhideExtractor(private val mainApi: MainAPI) {
                 }
             }
 
+            val results = mutableListOf<MainAPI.ExtractorLink>()
+            
             if (videoUrl != null) {
                 // Resolve relative URL if needed
                 if (videoUrl.startsWith("/")) {
@@ -86,21 +88,49 @@ class VidhideExtractor(private val mainApi: MainAPI) {
                     videoUrl = "$scheme://$host$videoUrl"
                 }
 
-                listOf(
+                results.add(
                     MainAPI.ExtractorLink(
                         name = "Vidhide",
                         url = videoUrl,
-                        referer = url, // El embed URL como Referer — requerido por el CDN
+                        referer = url, 
                         quality = 0,
-                        isM3u8 = true  // CRÍTICO: sin esto ExoPlayer no reproduce HLS correctamente
+                        isM3u8 = true
                     )
                 )
-            } else {
-                emptyList()
             }
+            
+            // NEW: Hunt for MP4 fallback inside scripts for OS DownloadManager
+            for (script in scripts) {
+                val html = script.html()
+                val mp4FallbackRegex = "[\"'](http[s]?://[^\"'\\s]+\\.mp4[^\"'\\s]*)[\"']".toRegex(RegexOption.IGNORE_CASE)
+                
+                // Scan both raw script and unpacked if it exists
+                val contentToScan = if (html.contains("eval(function(p,a,c,k,e,d)")) {
+                    PackedDecoder.decode(html) ?: html
+                } else {
+                    html
+                }
+                
+                mp4FallbackRegex.findAll(contentToScan).forEach { mp4Match ->
+                    val mp4Url = mp4Match.groupValues[1].replace("\\/", "/")
+                    if (!results.any { it.url == mp4Url }) {
+                        results.add(
+                            MainAPI.ExtractorLink(
+                                name = "Vidhide (MP4)",
+                                url = mp4Url,
+                                referer = url,
+                                quality = 0,
+                                isM3u8 = false
+                            )
+                        )
+                    }
+                }
+            }
+
+            return results
         } catch (e: Exception) {
             e.printStackTrace()
-            emptyList()
+            return emptyList()
         }
     }
 }
