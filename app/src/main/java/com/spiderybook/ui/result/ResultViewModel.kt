@@ -61,12 +61,14 @@ class ResultViewModel @Inject constructor(
     private val _downloadStatus = MutableLiveData<Resource<String>>()
     val downloadStatus: LiveData<Resource<String>> = _downloadStatus
 
-    fun downloadEpisode(
-        apiName: String, 
-        episodeUrl: String, 
-        fileName: String, 
-        downloadManager: com.spiderybook.data.manager.AppDownloadManager
-    ) = launchIO {
+    private val _downloadLinksDialog = MutableLiveData<Pair<String, List<com.spiderybook.plugins.MainAPI.ExtractorLink>>?>()
+    val downloadLinksDialog: LiveData<Pair<String, List<com.spiderybook.plugins.MainAPI.ExtractorLink>>?> = _downloadLinksDialog
+
+    fun clearDownloadDialog() {
+        _downloadLinksDialog.value = null
+    }
+
+    fun requestDownloadLinks(apiName: String, episodeUrl: String, fileName: String) = launchIO {
         _downloadStatus.postValue(Resource.Loading)
         val links = mutableListOf<com.spiderybook.plugins.MainAPI.ExtractorLink>()
         
@@ -76,25 +78,33 @@ class ResultViewModel @Inject constructor(
         
         if (success && links.isNotEmpty()) {
             val validMediaLinks = links.filter { !it.name.contains("Web/Raw") }
-            
-            val bestLink = validMediaLinks.firstOrNull { it.url.contains(".mp4") && !it.isM3u8 } 
-                ?: validMediaLinks.firstOrNull { !it.isM3u8 } 
-                ?: validMediaLinks.firstOrNull()
-
-            when {
-                bestLink == null -> {
-                    _downloadStatus.postValue(Resource.Error("No se encontraron enlaces de video extraíbles para $fileName"))
-                }
-                bestLink.isM3u8 -> {
-                    _downloadStatus.postValue(Resource.Error("Servidor con formato cerrado (M3U8). ¡Selecciona opciones como Streamtape o reproductores directos!"))
-                }
-                else -> {
-                    downloadManager.download(bestLink.url, fileName, bestLink.referer)
-                    _downloadStatus.postValue(Resource.Success("Iniciando descarga: $fileName en Alta Calidad"))
-                }
+            if (validMediaLinks.isNotEmpty()) {
+                _downloadStatus.postValue(Resource.Success("Selecciona la calidad o servidor..."))
+                _downloadLinksDialog.postValue(Pair(fileName, validMediaLinks))
+            } else {
+                _downloadStatus.postValue(Resource.Error("No se encontraron enlaces extraíbles (HLS/MP4) para $fileName"))
             }
         } else {
-            _downloadStatus.postValue(Resource.Error("Error al obtener el enlace de descarga para $fileName"))
+            _downloadStatus.postValue(Resource.Error("Error al obtener los enlaces de $fileName"))
+        }
+    }
+
+    fun executeDownload(link: com.spiderybook.plugins.MainAPI.ExtractorLink, fileName: String, context: android.content.Context, downloadManager: com.spiderybook.data.manager.AppDownloadManager) {
+        if (link.isM3u8) {
+            _downloadStatus.postValue(Resource.Success("Iniciando motor HLS (M3U8) para: $fileName"))
+            val intent = android.content.Intent(context, com.spiderybook.services.HlsDownloadService::class.java).apply {
+                putExtra("url", link.url)
+                putExtra("fileName", fileName)
+                putExtra("referer", link.referer)
+            }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        } else {
+            downloadManager.download(link.url, fileName, link.referer)
+            _downloadStatus.postValue(Resource.Success("Iniciando descarga fluida nativa para: $fileName"))
         }
     }
 

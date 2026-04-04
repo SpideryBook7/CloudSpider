@@ -223,7 +223,7 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                         val cleanName = data.name.replace(Regex("[^A-Za-z0-9 ]"), "").trim()
                         val cleanEpName = episode.name.replace(Regex("[^A-Za-z0-9 ]"), "").trim()
                         val fileName = "${cleanName}_${cleanEpName}.mp4".replace(" ", "_")
-                        viewModel.downloadEpisode(data.apiName, episode.url, fileName, downloadManager)
+                        viewModel.requestDownloadLinks(data.apiName, episode.url, fileName)
                     }
                 )
                 binding.rvEpisodes.adapter = episodeAdapter
@@ -318,6 +318,85 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 is Resource.Loading -> Toast.makeText(context, "Obteniendo enlaces de descarga...", Toast.LENGTH_SHORT).show()
                 is Resource.Success -> Toast.makeText(context, resource.data, Toast.LENGTH_SHORT).show()
                 is Resource.Error -> Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+        
+        viewModel.downloadLinksDialog.observe(viewLifecycleOwner) { pair ->
+            if (pair != null) {
+                val fileName = pair.first
+                var links = pair.second
+                
+                // Filter specifically for Vidhide or HLS as requested, unless it eliminates everything
+                val premiumLinks = links.filter { link -> 
+                    val n = link.name.lowercase()
+                    n.contains("vidhide") || n.contains("hls") || link.isM3u8
+                }
+                if (premiumLinks.isNotEmpty()) {
+                    links = premiumLinks
+                }
+
+                val bottomSheetDialog = com.google.android.material.bottomsheet.BottomSheetDialog(requireContext())
+                val container = android.widget.LinearLayout(requireContext()).apply {
+                    orientation = android.widget.LinearLayout.VERTICAL
+                    setPadding(50, 50, 50, 50)
+                    setBackgroundColor(androidx.core.content.ContextCompat.getColor(context, com.spiderybook.R.color.surface_dark))
+                }
+                
+                val title = android.widget.TextView(requireContext()).apply {
+                    text = "Selecciona Calidad (Premium)"
+                    textSize = 18f
+                    setTypeface(null, android.graphics.Typeface.BOLD)
+                    setTextColor(androidx.core.content.ContextCompat.getColor(context, android.R.color.white))
+                    setPadding(0, 0, 0, 40)
+                }
+                container.addView(title)
+                
+                links.forEach { link ->
+                    val btn = com.google.android.material.button.MaterialButton(requireContext()).apply {
+                        val quality = when {
+                            link.name.contains("1080") -> "1080p HQ"
+                            link.name.contains("720") -> "720p HD"
+                            link.name.contains("480") -> "480p SD"
+                            link.isM3u8 -> "Max Q (Adaptable)"
+                            else -> "Alta Calidad"
+                        }
+                        
+                        // Extract server base name
+                        val serverName = when {
+                            link.name.lowercase().contains("vidhide") -> "Vidhide"
+                            link.name.lowercase().contains("streamwish") -> "Streamwish"
+                            else -> link.name.split(" ").firstOrNull() ?: "Extractor"
+                        }
+                        
+                        text = "$serverName - $quality"
+                        isAllCaps = false
+                        setTextColor(androidx.core.content.ContextCompat.getColor(context, android.R.color.white))
+                        backgroundTintList = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(context, com.spiderybook.R.color.surface_light))
+                        
+                        setOnClickListener {
+                            viewModel.executeDownload(link, fileName, requireContext(), downloadManager)
+                            bottomSheetDialog.dismiss()
+                        }
+                    }
+                    val params = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT, 
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    params.setMargins(0, 0, 0, 20)
+                    container.addView(btn, params)
+                }
+                
+                bottomSheetDialog.setContentView(container)
+                bottomSheetDialog.setOnDismissListener { viewModel.clearDownloadDialog() }
+                
+                // Request Notification Permission on Android 13+ before showing if needed to prevent invisible backgrounds
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    if (androidx.core.content.ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+                    }
+                }
+                
+                bottomSheetDialog.show()
             }
         }
     }

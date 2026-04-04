@@ -34,9 +34,16 @@ class DownloadsFragment : BaseFragment<FragmentDownloadsBinding>(FragmentDownloa
 
     private fun setupActiveDownloads() {
         activeAdapter = ActiveDownloadAdapter(emptyList()) { item ->
-            val dm = requireContext().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            dm.remove(item.id)
-            Toast.makeText(context, "Descarga cancelada", Toast.LENGTH_SHORT).show()
+            val isHls = com.spiderybook.services.HlsTracker.activeDownloads.value.values.any { it.fileName.hashCode().toLong() == item.id }
+            if (isHls) {
+                val hlsItem = com.spiderybook.services.HlsTracker.activeDownloads.value.values.first { it.fileName.hashCode().toLong() == item.id }
+                com.spiderybook.services.HlsTracker.cancelledDownloads.add(hlsItem.fileName)
+                Toast.makeText(context, "HLS Terminado/Cancelado", Toast.LENGTH_SHORT).show()
+            } else {
+                val dm = requireContext().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                try { dm.remove(item.id) } catch (e: Exception) {}
+                Toast.makeText(context, "Descarga cancelada", Toast.LENGTH_SHORT).show()
+            }
         }
         binding.rvActiveDownloads.layoutManager = LinearLayoutManager(context)
         binding.rvActiveDownloads.adapter = activeAdapter
@@ -74,6 +81,23 @@ class DownloadsFragment : BaseFragment<FragmentDownloadsBinding>(FragmentDownloa
                 activeList.add(ActiveDownload(id, title, bytesDownloaded, bytesTotal, statusText))
             }
             cursor.close()
+        }
+        
+        // Merge background Native HLS downloads into the UI list
+        val hlsDownloads = com.spiderybook.services.HlsTracker.activeDownloads.value.values
+        hlsDownloads.forEach { hls ->
+            if (!hls.isComplete && !com.spiderybook.services.HlsTracker.cancelledDownloads.contains(hls.fileName)) {
+                val statusText = hls.error ?: "Ensamblando (M3U8) - ${hls.percentage}%"
+                activeList.add(
+                    ActiveDownload(
+                        id = hls.fileName.hashCode().toLong(), 
+                        title = hls.fileName, 
+                        downloadedBytes = hls.percentage.toLong(), 
+                        totalBytes = 100L, 
+                        statusText = statusText
+                    )
+                )
+            }
         }
         
         if (activeList.isNotEmpty()) {
