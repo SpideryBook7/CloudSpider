@@ -163,6 +163,7 @@ class DLNAManager(private val context: Context) {
                 }
                 
                 localProxyServer?.setMediaSource(mediaUrl, headers)
+                localProxyServer?.localAddress = "$localIp:8192"
                 localProxyServer?.start()
 
                 val extension = if (mediaUrl.contains(".m3u8", ignoreCase = true)) ".m3u8" else ".mp4"

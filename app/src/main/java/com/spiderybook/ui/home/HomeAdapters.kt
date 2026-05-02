@@ -43,7 +43,9 @@ class TrendingAdapter(
             binding.tvMetadata.text = "⭐ ${String.format("%.1f", rating)}   ${String.format("%.1f", views)}M Views"
             
             binding.imgPoster.load(item.posterUrl) {
-                crossfade(true)
+                if (com.spiderybook.BuildConfig.FLAVOR != "legacy") {
+                    crossfade(true)
+                }
             }
             binding.root.setOnClickListener { onClick(item) }
         }
@@ -80,7 +82,9 @@ class ContinueWatchingAdapter(
             binding.progressBar.progress = ((item.progress ?: 0f) * 100).toInt()
             
             binding.imgPoster.load(item.posterUrl) {
-                crossfade(true)
+                if (com.spiderybook.BuildConfig.FLAVOR != "legacy") {
+                    crossfade(true)
+                }
             }
             binding.root.setOnClickListener { onClick(item) }
         }
@@ -119,8 +123,10 @@ class ChildItemAdapter(
         fun bind(item: SearchResponse) {
             binding.tvTitle.text = item.name
             binding.imgPoster.load(item.posterUrl) {
-                crossfade(true)
-                allowHardware(true)
+                if (com.spiderybook.BuildConfig.FLAVOR != "legacy") {
+                    crossfade(true)
+                    allowHardware(true)
+                }
             }
             
             // Handle new metadata text below title

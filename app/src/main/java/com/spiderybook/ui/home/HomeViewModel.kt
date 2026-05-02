@@ -33,7 +33,10 @@ class HomeViewModel @Inject constructor(
     }
     
     fun loadProviders() {
-        val providers = pluginManager.apis.map { it.name }
+        val providers = pluginManager.apis.map { it.name }.toMutableList()
+        if (com.spiderybook.BuildConfig.FLAVOR == "legacy") {
+            providers.removeAll { it.equals("Terabox", ignoreCase = true) || it.equals("Cinecalidad", ignoreCase = true) }
+        }
         _availableProviders.postValue(providers)
         
         if (providers.isNotEmpty()) {
@@ -59,6 +62,13 @@ class HomeViewModel @Inject constructor(
 
     fun clearPlayFirstEpisodeEvent() {
         _playFirstEpisodeEvent.value = null
+    }
+
+    private val _playSmartEpisodeEvent = MutableLiveData<Pair<com.spiderybook.domain.model.LoadResponse, Int>?>()
+    val playSmartEpisodeEvent: LiveData<Pair<com.spiderybook.domain.model.LoadResponse, Int>?> = _playSmartEpisodeEvent
+
+    fun clearPlaySmartEpisodeEvent() {
+        _playSmartEpisodeEvent.value = null
     }
 
     private val _filterCategories = MutableLiveData<List<String>>()
@@ -113,8 +123,8 @@ class HomeViewModel @Inject constructor(
                     // Process Categories
                     val categories = mutableListOf("Inicio")
                     
-                    // Add Special Tabs (Peliculas, Series, Dorama, Kids, Reality)
-                    val specialTabs = listOf("Peliculas", "Series", "Dorama", "Kids", "Reality")
+                    // Add Special Tabs (Peliculas, Series, Dorama, Kids, Reality, 4K UHD, etc)
+                    val specialTabs = listOf("Peliculas", "Series", "Dorama", "Kids", "Reality", "4K UHD", "Recién Agregadas")
                     specialTabs.forEach { tab ->
                         if (result.items.any { it.name == tab }) {
                             categories.add(tab)
@@ -144,8 +154,12 @@ class HomeViewModel @Inject constructor(
                         checkIfFeaturedIsFavorite(null)
                     }
                     
-                    // Load default category
-                    selectCategory("Inicio")
+                    // Default category
+                    if (result.items.any { it.name == "4K UHD" }) {
+                        selectCategory("4K UHD")
+                    } else {
+                        selectCategory("Inicio")
+                    }
                     
                 } else {
                     _homePage.setError("Failed to load home page")
@@ -161,7 +175,7 @@ class HomeViewModel @Inject constructor(
         
         if (category == "Inicio") {
             // Show only non-letter sections (Updates, Episodes) AND exclude Special Tabs
-            val specialTabs = listOf("Peliculas", "Series", "Dorama", "Kids", "Reality", "#")
+            val specialTabs = listOf("Peliculas", "Series", "Dorama", "Kids", "Reality", "#", "4K UHD", "Recién Agregadas")
             val inicioItems = data.items.filter { 
                 it.name.length > 1 && !specialTabs.contains(it.name)
             }.toMutableList()
@@ -192,7 +206,7 @@ class HomeViewModel @Inject constructor(
 
                     com.spiderybook.domain.model.SearchResponse(
                         name = if (historyObj.showTitle.isNotEmpty()) historyObj.showTitle else historyObj.name,
-                        url = historyObj.url,
+                        url = if (historyObj.showUrl.isNotEmpty()) historyObj.showUrl else historyObj.url,
                         apiName = historyObj.apiName,
                         type = if (historyObj.type != null) {
                              runCatching { enumValueOf<com.spiderybook.domain.model.TvType>(historyObj.type) }.getOrNull() 
@@ -305,6 +319,35 @@ class HomeViewModel @Inject constructor(
         
         if (data != null && data.episodes.isNotEmpty()) {
             _playFirstEpisodeEvent.postValue(data)
+        }
+    }
+
+    // Direct Play Logic for TV Box - skips ResultFragment entirely and Resumes automatically
+    fun playDirectItem(apiName: String, url: String) = launchIO {
+        val data = loadRepository.load(apiName, url)
+        if (data != null && data.episodes.isNotEmpty()) {
+            var targetIndex = data.episodes.lastIndex 
+            
+            // Map episodes to their history entity if available, identifying the absolute latest watched segment
+            val mappedHistory = data.episodes.mapIndexedNotNull { index, ep ->
+                currentHistoryList.find { it.url == ep.url }?.let { historyItem ->
+                    Triple(index, ep, historyItem)
+                }
+            }
+            
+            if (mappedHistory.isNotEmpty()) {
+                val lastWatched = mappedHistory.maxByOrNull { it.third.timestamp }!!
+                val isFinished = lastWatched.third.duration > 0 && lastWatched.third.playbackPosition >= (lastWatched.third.duration - 30000)
+                
+                if (!isFinished) {
+                    targetIndex = lastWatched.first // Resume unfinished episode
+                } else {
+                    // It was finished. Jump to the next chronological chapter (usually index - 1)
+                    targetIndex = if (lastWatched.first - 1 >= 0) lastWatched.first - 1 else lastWatched.first
+                }
+            }
+            
+            _playSmartEpisodeEvent.postValue(Pair(data, targetIndex))
         }
     }
 }

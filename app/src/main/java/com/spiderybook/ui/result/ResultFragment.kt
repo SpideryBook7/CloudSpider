@@ -39,14 +39,18 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
 
     override fun onResume() {
         super.onResume()
-        // Hide status bar and navigation bar - Immersive mode
-        activity?.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        // Hide status bar and navigation bar - Immersive mode (Modern devices only)
+        if (com.spiderybook.BuildConfig.FLAVOR != "legacy") {
+            activity?.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        }
     }
 
     override fun onPause() {
         super.onPause()
         // Restore status bar
-        activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        if (com.spiderybook.BuildConfig.FLAVOR != "legacy") {
+            activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        }
     }
 
     override fun onDestroyView() {
@@ -124,10 +128,16 @@ class ResultFragment : BaseFragment<FragmentResultBinding>(FragmentResultBinding
                 binding.tvCategories.text = categories
                 
                 // Load backdrop poster
-                binding.imgBackdrop.load(data.posterUrl) {
-                    allowHardware(true)
+                if (com.spiderybook.BuildConfig.FLAVOR != "legacy") {
+                    binding.imgBackdrop.load(data.posterUrl) {
+                        allowHardware(true)
+                        crossfade(true)
+                    }
+                    binding.imgBackdrop.alpha = 1f
+                } else {
+                    // Lite Mode: Hide giant backdrop completely to save TV Box RAM and prevent Canvas crashes
+                    binding.imgBackdrop.visibility = View.GONE
                 }
-                binding.imgBackdrop.alpha = 1f
                 
                 // Favorites Observer (Moved here to use data.name)
                 viewModel.isFavorite(url, data.name).observe(viewLifecycleOwner) { isFav ->

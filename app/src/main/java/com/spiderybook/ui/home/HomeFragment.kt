@@ -37,10 +37,20 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private fun setupRecyclerView() {
         // Initialize adapters
         parentAdapter = ParentItemAdapter { item ->
-            navigateToDetails(item.url, item.apiName, item.name, item.posterUrl, item.type?.name)
+            if (com.spiderybook.BuildConfig.FLAVOR == "legacy") {
+                android.widget.Toast.makeText(requireContext(), "Cargando ${item.name}...", android.widget.Toast.LENGTH_SHORT).show()
+                viewModel.playDirectItem(item.apiName, item.url)
+            } else {
+                navigateToDetails(item.url, item.apiName, item.name, item.posterUrl, item.type?.name)
+            }
         }
         childAdapter = ChildItemAdapter(emptyList()) { item ->
-             navigateToDetails(item.url, item.apiName, item.name, item.posterUrl, item.type?.name)
+            if (com.spiderybook.BuildConfig.FLAVOR == "legacy") {
+                android.widget.Toast.makeText(requireContext(), "Cargando ${item.name}...", android.widget.Toast.LENGTH_SHORT).show()
+                viewModel.playDirectItem(item.apiName, item.url)
+            } else {
+                navigateToDetails(item.url, item.apiName, item.name, item.posterUrl, item.type?.name)
+            }
         }
         
         // Default to parent adapter
@@ -132,8 +142,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
         
         viewModel.selectedCategory.observe(viewLifecycleOwner) { category ->
-            val isExploreMode = category != "Inicio"
-            binding.spinnerProvider.isVisible = !isExploreMode
+            binding.spinnerProvider.isVisible = true
             
             if (viewModel.featuredItem.value != null) {
                 binding.appbar.setExpanded(true, true)
@@ -203,9 +212,35 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                     putStringArrayListExtra("episodeNames", names)
                     putExtra("currentIndex", data.episodes.indexOf(firstEpisode))
                     putExtra("showName", data.name)
+                    putExtra("showUrl", data.url)
                 }
                 startActivity(intent)
                 viewModel.clearPlayFirstEpisodeEvent()
+            }
+        }
+
+        viewModel.playSmartEpisodeEvent.observe(viewLifecycleOwner) { eventData ->
+            if (eventData != null) {
+                val data = eventData.first
+                val targetIndex = eventData.second
+                val urls = java.util.ArrayList(data.episodes.map { it.url })
+                val names = java.util.ArrayList(data.episodes.map { it.name })
+                val targetEpisode = data.episodes[targetIndex]
+                
+                val intent = android.content.Intent(requireContext(), com.spiderybook.ui.player.PlayerActivity::class.java).apply {
+                    putExtra("data", targetEpisode.url)
+                    putExtra("apiName", data.apiName)
+                    putExtra("title", "${data.name} - ${targetEpisode.name}")
+                    putExtra("poster", data.posterUrl)
+                    putExtra("type", data.type)
+                    putStringArrayListExtra("episodeUrls", urls)
+                    putStringArrayListExtra("episodeNames", names)
+                    putExtra("currentIndex", targetIndex)
+                    putExtra("showName", data.name)
+                    putExtra("showUrl", data.url)
+                }
+                startActivity(intent)
+                viewModel.clearPlaySmartEpisodeEvent()
             }
         }
         

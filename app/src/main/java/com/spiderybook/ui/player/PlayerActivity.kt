@@ -123,13 +123,18 @@ class PlayerActivity : AppCompatActivity() {
                             posterUrl = poster,
                             apiName = apiName,
                             type = type,
-                            playbackPosition = savedPosition
+                            playbackPosition = savedPosition,
+                            showTitle = showName ?: "",
+                            showUrl = intent.getStringExtra("showUrl") ?: ""
                         )
                     )
                 }
             
             if (intent.getBooleanExtra("isDirectLink", false)) {
+                // Local offline file: skip extraction, jump straight to player
+                binding.progressBar.visibility = View.GONE
                 initializePlayer(data, "")
+                setupPlayerControls(emptyList())
             } else {
                 setupObservers()
                 viewModel.loadLinks(apiName, data)
@@ -314,18 +319,193 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 if (links.isNotEmpty()) {
-                     // Auto-Select the highest quality source.
-                     // Prioritize MP4 > Generic > M3U8, but always pick the highest explicit quality first
                      val bestLink = links.sortedByDescending { it.quality }.firstOrNull { it.url.contains(".mp4") && !it.isM3u8 } ?: links.sortedByDescending { it.quality }.firstOrNull { !it.isM3u8 } ?: links.sortedByDescending { it.quality }.first()
-                     initializePlayer(bestLink.url, bestLink.referer)
+                     
+                     if (!bestLink.isM3u8 && !bestLink.url.contains(".mp4") && !bestLink.url.contains("terabox")) {
+                         Toast.makeText(this@PlayerActivity, "Desencriptando enlace pesado...", Toast.LENGTH_SHORT).show()
+                         lifecycleScope.launch {
+                             var resolvedM3u8: String? = null
+                             val html = com.spiderybook.util.WebViewResolver.resolveCloudflareHtml(this@PlayerActivity, bestLink.url, bestLink.referer)
+                             if (html != null && html.contains("eval(function")) {
+                                 val dummyApi = object : com.spiderybook.plugins.MainAPI() {
+                                     override val name = "Dummy"
+                                     override val mainUrl = ""
+                                 }
+                                 val extractor = com.spiderybook.plugins.extractors.VidhideExtractor(dummyApi)
+                                 val extractedLinks = extractor.extract(bestLink.url, overrideHtml = html)
+                                 if (extractedLinks.isNotEmpty()) {
+                                     resolvedM3u8 = extractedLinks.first().url
+                                 }
+                             }
+
+                             if (resolvedM3u8 == null) {
+                                  resolvedM3u8 = com.spiderybook.util.WebViewResolver.interceptVideoUrl(this@PlayerActivity, bestLink.url, bestLink.referer)
+                             }
+
+                             if (resolvedM3u8 != null) {
+                                 initializePlayer(resolvedM3u8, bestLink.referer)
+                             } else {
+                                 Toast.makeText(this@PlayerActivity, "Error al desencriptar, enviando al navegador...", Toast.LENGTH_SHORT).show()
+                                 val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(bestLink.url))
+                                 startActivity(intent)
+                                 finish()
+                             }
+                         }
+                     } else {
+                         initializePlayer(bestLink.url, bestLink.referer)
+                     }
                 } else {
                     Toast.makeText(this, "No links found", Toast.LENGTH_SHORT).show()
                 }
+                setupPlayerControls(links)
             } else if (resource is Resource.Error) {
                  Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
+
+    /** Wire up all player UI controls. Safe to call with an empty list for local-file playback. */
+    private fun setupPlayerControls(links: List<com.spiderybook.plugins.MainAPI.ExtractorLink>) {
+        // Sources button — only shown when multiple streams available
+        val btnSources = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_sources_control)
+        if (btnSources != null) {
+            btnSources.visibility = if (links.size > 1) View.VISIBLE else View.GONE
+            btnSources.setOnClickListener { showSourceSelectionDialog(links) }
+        }
+
+        // Fullscreen / Rotation
+        val btnFullscreen = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_fullscreen)
+        btnFullscreen?.setOnClickListener {
+            requestedOrientation = if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+                android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            } else {
+                android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            }
+        }
+
+        // Back
+        val btnBack = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_back)
+        btnBack?.setOnClickListener { finish() }
+
+        // Lock
+        val btnLock     = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_lock)
+        val tvLock      = binding.playerView.findViewById<android.widget.TextView>(com.spiderybook.R.id.tv_lock)
+        val topBar      = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.layout_top_bar)
+        val btnEpisodes = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_episodes)
+        val btnSpeed    = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_speed)
+        val exoProgress = binding.playerView.findViewById<android.view.View>(androidx.media3.ui.R.id.exo_progress)
+        val btnNextEpisode = binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_next_episode)
+
+        btnEpisodes?.setOnClickListener { showEpisodesPanel() }
+
+        btnLock?.setOnClickListener {
+            isLocked = !isLocked
+            if (isLocked) {
+                btnLock.setColorFilter(android.graphics.Color.parseColor("#B366FF"))
+                tvLock?.setTextColor(android.graphics.Color.parseColor("#B366FF"))
+                Toast.makeText(this@PlayerActivity, "Pantalla Bloqueada", Toast.LENGTH_SHORT).show()
+                binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_play_custom)?.visibility   = View.INVISIBLE
+                binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_pause_custom)?.visibility  = View.INVISIBLE
+                binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_rewind_custom)?.visibility = View.INVISIBLE
+                binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_forward_custom)?.visibility= View.INVISIBLE
+                topBar?.visibility      = View.INVISIBLE
+                btnEpisodes?.visibility = View.INVISIBLE
+                btnSpeed?.visibility    = View.INVISIBLE
+                exoProgress?.visibility = View.INVISIBLE
+                btnNextEpisode?.visibility = View.INVISIBLE
+            } else {
+                btnLock.setColorFilter(android.graphics.Color.parseColor("#808080"))
+                tvLock?.setTextColor(android.graphics.Color.parseColor("#808080"))
+                Toast.makeText(this@PlayerActivity, "Pantalla Desbloqueada", Toast.LENGTH_SHORT).show()
+                val isPlaying = player?.isPlaying == true
+                binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_play_custom)?.visibility   = if (!isPlaying) View.VISIBLE else View.GONE
+                binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_pause_custom)?.visibility  = if (isPlaying) View.VISIBLE else View.GONE
+                binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_rewind_custom)?.visibility = View.VISIBLE
+                binding.playerView.findViewById<android.view.View>(com.spiderybook.R.id.btn_forward_custom)?.visibility= View.VISIBLE
+                topBar?.visibility      = View.VISIBLE
+                btnEpisodes?.visibility = View.VISIBLE
+                btnSpeed?.visibility    = View.VISIBLE
+                exoProgress?.visibility = View.VISIBLE
+            }
+        }
+
+        // Aspect Ratio
+        val btnAspectRatio = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_aspect_ratio)
+        btnAspectRatio?.setOnClickListener {
+            val newMode = if (binding.playerView.resizeMode == androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL) {
+                Toast.makeText(this@PlayerActivity, "Original (Fit)", Toast.LENGTH_SHORT).show()
+                androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+            } else {
+                Toast.makeText(this@PlayerActivity, "Stretch to Fill", Toast.LENGTH_SHORT).show()
+                androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
+            }
+            binding.playerView.resizeMode = newMode
+        }
+
+        // Next Episode
+        binding.playerView.findViewById<com.google.android.material.button.MaterialButton>(com.spiderybook.R.id.btn_next_episode)
+            ?.setOnClickListener { playNextEpisode() }
+
+        // Skip Intro
+        val btnSkipIntro = binding.playerView.findViewById<com.google.android.material.button.MaterialButton>(com.spiderybook.R.id.btn_skip_intro)
+        btnSkipIntro?.setOnClickListener {
+            player?.let { p ->
+                p.seekTo((p.currentPosition + 85_000L).coerceAtMost(p.duration))
+                btnSkipIntro.visibility = View.GONE
+            }
+        }
+
+        // Quality / Track Selection
+        val btnQuality = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_quality_settings)
+        btnQuality?.setOnClickListener {
+            player?.let { exoPlayer ->
+                androidx.media3.ui.TrackSelectionDialogBuilder(
+                    this@PlayerActivity,
+                    "Quality Options",
+                    exoPlayer,
+                    androidx.media3.common.C.TRACK_TYPE_VIDEO
+                ).setTheme(com.spiderybook.R.style.Theme_SpiderStream_Dialog)
+                    .build().show()
+            }
+        }
+
+        // Cast to TV
+        val btnCast = binding.playerView.findViewById<android.widget.ImageView>(com.spiderybook.R.id.btn_cast_control)
+        btnCast?.setOnClickListener {
+            val mediaUrl = currentMediaUrl
+            val mediaReferer = currentMediaReferer
+            if (mediaUrl.isNullOrEmpty()) {
+                Toast.makeText(this@PlayerActivity, "No media to cast", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val dialog = androidx.appcompat.app.AlertDialog.Builder(this@PlayerActivity)
+                .setTitle("Buscando Pantallas...")
+                .setMessage("Escaneando la red Wi-Fi local por TVs compatibles...")
+                .setCancelable(false).show()
+            lifecycleScope.launch {
+                val devices = dlnaManager.discoverDevices(3000)
+                dialog.dismiss()
+                if (devices.isEmpty()) {
+                    Toast.makeText(this@PlayerActivity, "No se encontraron TVs en la red", Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+                val names = devices.map { it.name }.toTypedArray()
+                androidx.appcompat.app.AlertDialog.Builder(this@PlayerActivity)
+                    .setTitle("Proyectar en:")
+                    .setItems(names) { _, which ->
+                        lifecycleScope.launch {
+                            val success = dlnaManager.playMedia(devices[which], mediaUrl, mediaReferer)
+                            if (success) {
+                                Toast.makeText(this@PlayerActivity, "Reproduciendo en la TV", Toast.LENGTH_LONG).show()
+                                player?.pause()
+                            } else {
+                                Toast.makeText(this@PlayerActivity, "Error al enviar el video a la TV", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }.setCancelable(true).show()
+            }
+        }
+    } // end setupPlayerControls
 
     private fun showSourceSelectionDialog(links: List<com.spiderybook.plugins.MainAPI.ExtractorLink>) {
         val names = links.map { it.name }.toTypedArray()
@@ -333,7 +513,37 @@ class PlayerActivity : AppCompatActivity() {
             .setTitle("Select Source")
             .setItems(names) { _, which ->
                 val link = links[which]
-                initializePlayer(link.url, link.referer)
+                if (!link.isM3u8 && !link.url.contains(".mp4") && !link.url.contains("terabox")) {
+                    Toast.makeText(this@PlayerActivity, "Desencriptando enlace pesado...", Toast.LENGTH_SHORT).show()
+                    lifecycleScope.launch {
+                        var resolvedM3u8: String? = null
+                        val html = com.spiderybook.util.WebViewResolver.resolveCloudflareHtml(this@PlayerActivity, link.url, link.referer)
+                        if (html != null && html.contains("eval(function")) {
+                            val dummyApi = object : com.spiderybook.plugins.MainAPI() {
+                                override val name = "Dummy"
+                                override val mainUrl = ""
+                            }
+                            val extractor = com.spiderybook.plugins.extractors.VidhideExtractor(dummyApi)
+                            val extractedLinks = extractor.extract(link.url, overrideHtml = html)
+                            if (extractedLinks.isNotEmpty()) {
+                                resolvedM3u8 = extractedLinks.first().url
+                            }
+                        }
+
+                        if (resolvedM3u8 == null) {
+                            resolvedM3u8 = com.spiderybook.util.WebViewResolver.interceptVideoUrl(this@PlayerActivity, link.url, link.referer)
+                        }
+
+                        if (resolvedM3u8 != null) {
+                            initializePlayer(resolvedM3u8, link.referer)
+                        } else {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(link.url))
+                            startActivity(intent)
+                        }
+                    }
+                } else {
+                    initializePlayer(link.url, link.referer)
+                }
             }
             .setCancelable(true)
             .show()
@@ -350,6 +560,8 @@ class PlayerActivity : AppCompatActivity() {
 
         // 1. Use OkHttp for robust header persistence across HTTP -> HTTPS redirects
         val okHttpClient = okhttp3.OkHttpClient.Builder()
+            .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
             .followRedirects(true)
             .followSslRedirects(true)
             .build()
@@ -376,7 +588,27 @@ class PlayerActivity : AppCompatActivity() {
         val renderersFactory = androidx.media3.exoplayer.DefaultRenderersFactory(this)
             .setExtensionRendererMode(androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
             
+        // Enhanced Buffering for Legacy/Slow Devices
+        val loadControl = if (com.spiderybook.BuildConfig.FLAVOR == "legacy") {
+            androidx.media3.exoplayer.DefaultLoadControl.Builder()
+                .setBufferDurationsMs(
+                    50000,  // Min buffer audio/video (50s)
+                    100000, // Max buffer (100s)
+                    2500,   // Buffer for playback to start (2.5s)
+                    5000    // Buffer for playback to resume (5s)
+                ).build()
+        } else {
+            androidx.media3.exoplayer.DefaultLoadControl()
+        }
+            
+        val trackSelector = androidx.media3.exoplayer.trackselection.DefaultTrackSelector(this)
+        trackSelector.parameters = trackSelector.buildUponParameters()
+            .setForceHighestSupportedBitrate(true)
+            .build()
+            
         player = ExoPlayer.Builder(this, renderersFactory)
+            .setTrackSelector(trackSelector)
+            .setLoadControl(loadControl)
             .setAudioAttributes(
                 androidx.media3.common.AudioAttributes.Builder()
                     .setUsage(androidx.media3.common.C.USAGE_MEDIA)
@@ -510,8 +742,16 @@ class PlayerActivity : AppCompatActivity() {
             // HLS streams that require Referer on segment requests — use explicit HlsMediaSource
             val mediaSource = getHlsSource(url, referer ?: "", dataSourceFactory)
             player?.setMediaSource(mediaSource)
+        } else if (url.startsWith("file://") || url.startsWith("/")) {
+            // LOCAL FILE: OkHttpDataSource cannot read file:// URIs.
+            // Use DefaultDataSourceFactory which handles file://, content://, and http://.
+            val localUri = if (url.startsWith("/")) android.net.Uri.fromFile(java.io.File(url)) else url.toUri()
+            val localDataFactory = androidx.media3.datasource.DefaultDataSourceFactory(this, "SpideryBookPlayer")
+            val localMediaItem = androidx.media3.common.MediaItem.Builder().setUri(localUri).build()
+            val localSource = androidx.media3.exoplayer.source.ProgressiveMediaSource.Factory(localDataFactory)
+                .createMediaSource(localMediaItem)
+            player?.setMediaSource(localSource)
         } else {
-            // Fallback for generic streams
             val mediaSource = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(dataSourceFactory)
                 .createMediaSource(mediaItem)
             player?.setMediaSource(mediaSource)

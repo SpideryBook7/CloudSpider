@@ -36,6 +36,12 @@ class MainActivity : AppCompatActivity() {
             navController = navHostFragment.navController
             androidx.navigation.ui.NavigationUI.setupWithNavController(binding.bottomNav, navController)
             
+            // Phase 2: TV Box Lite UI - Remove unneeded tabs
+            if (com.spiderybook.BuildConfig.FLAVOR == "legacy") {
+                binding.bottomNav.menu.removeItem(R.id.nav_favorites)
+                binding.bottomNav.menu.removeItem(R.id.nav_downloads)
+            }
+            
             // Hide BottomNav on non-top-level destinations
             navController.addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {

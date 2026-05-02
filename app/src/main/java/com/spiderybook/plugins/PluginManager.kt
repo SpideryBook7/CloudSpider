@@ -21,6 +21,7 @@ class PluginManager @Inject constructor(@ApplicationContext private val context:
         register(com.spiderybook.plugins.providers.AnimeFlvProvider(context))
         register(com.spiderybook.plugins.providers.PelisPlusProvider())
         register(com.spiderybook.plugins.providers.TeraboxProvider())
+        register(com.spiderybook.plugins.providers.CinecalidadProvider())
     }
     
     fun getAPI(name: String): MainAPI? {

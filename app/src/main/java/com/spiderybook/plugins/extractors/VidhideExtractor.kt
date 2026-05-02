@@ -6,11 +6,23 @@ import org.jsoup.Jsoup
 
 class VidhideExtractor(private val mainApi: MainAPI) {
 
-    suspend fun extract(url: String): List<MainAPI.ExtractorLink> {
+    suspend fun extract(url: String, customName: String = "Vidhide", okHttpClient: okhttp3.OkHttpClient? = null, overrideHtml: String? = null): List<MainAPI.ExtractorLink> {
         return try {
-            val doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-                .get()
+            val html = overrideHtml ?: if (okHttpClient != null) {
+                val req = okhttp3.Request.Builder()
+                    .url(url)
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+                    .header("Referer", url)
+                    .build()
+                okHttpClient.newCall(req).execute().body?.string() ?: ""
+            } else {
+                Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+                    .referrer(url)
+                    .get().outerHtml()
+            }
+            
+            val doc = Jsoup.parse(html)
             
             val scripts = doc.select("script")
             var videoUrl: String? = null
@@ -90,7 +102,7 @@ class VidhideExtractor(private val mainApi: MainAPI) {
 
                 results.add(
                     MainAPI.ExtractorLink(
-                        name = "Vidhide",
+                        name = customName,
                         url = videoUrl,
                         referer = url, 
                         quality = 0,
@@ -116,7 +128,7 @@ class VidhideExtractor(private val mainApi: MainAPI) {
                     if (!results.any { it.url == mp4Url }) {
                         results.add(
                             MainAPI.ExtractorLink(
-                                name = "Vidhide (MP4)",
+                                name = "$customName (MP4)",
                                 url = mp4Url,
                                 referer = url,
                                 quality = 0,

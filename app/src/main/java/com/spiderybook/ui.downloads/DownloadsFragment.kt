@@ -13,8 +13,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import com.spiderybook.databinding.FragmentDownloadsBinding
 import com.spiderybook.ui.common.BaseFragment
-import com.spiderybook.ui.result.EpisodeAdapter
-import com.spiderybook.domain.model.Episode
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 
@@ -87,13 +85,13 @@ class DownloadsFragment : BaseFragment<FragmentDownloadsBinding>(FragmentDownloa
         val hlsDownloads = com.spiderybook.services.HlsTracker.activeDownloads.value.values
         hlsDownloads.forEach { hls ->
             if (!hls.isComplete && !com.spiderybook.services.HlsTracker.cancelledDownloads.contains(hls.fileName)) {
-                val statusText = hls.error ?: "Ensamblando (M3U8) - ${hls.percentage}%"
+                val statusText = hls.error ?: "Ensamblando M3U8 — ${hls.percentage}%"
                 activeList.add(
                     ActiveDownload(
-                        id = hls.fileName.hashCode().toLong(), 
-                        title = hls.fileName, 
-                        downloadedBytes = hls.percentage.toLong(), 
-                        totalBytes = 100L, 
+                        id = hls.fileName.hashCode().toLong(),
+                        title = hls.fileName,
+                        downloadedBytes = hls.downloadedBytes,
+                        totalBytes = hls.totalBytes,
                         statusText = statusText
                     )
                 )
